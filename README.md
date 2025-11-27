@@ -2,7 +2,59 @@
 
 This document bundles core product decisions, UI layouts, economy rules, rewards, referrals, and platform behavior defined so far.
 
-Contents
+> **Theme:** Original Purple → White gradient UI preserved. No "Cosmic" or altered UI changes.
+
+---
+
+## 📚 Documentation Index
+
+### Feature Documentation
+| Feature | Description | Link |
+|---------|-------------|------|
+| VIP Systems | Both VIP systems (multiplier + full SVIP) | [docs/features/vip-systems.md](docs/features/vip-systems.md) |
+| Daily Rewards | 7-day login reward cycle | [docs/features/daily-rewards.md](docs/features/daily-rewards.md) |
+| Medals | Achievement and activity medals | [docs/features/medals.md](docs/features/medals.md) |
+| Wallet | Coins, Diamonds, and exchange | [docs/features/wallet.md](docs/features/wallet.md) |
+| Store | Cosmetics and item purchases | [docs/features/store.md](docs/features/store.md) |
+| Referrals | Get Coins and Get Cash programs | [docs/features/referrals.md](docs/features/referrals.md) |
+| CP | Couple Partnership system | [docs/features/cp.md](docs/features/cp.md) |
+| Video/Music | Room video/music mode | [docs/features/video-music-mode.md](docs/features/video-music-mode.md) |
+| Gifts | Gift economy and baggage | [docs/features/gifts.md](docs/features/gifts.md) |
+
+### Design Documentation
+| Topic | Link |
+|-------|------|
+| Design Tokens & Theme | [docs/design/tokens.md](docs/design/tokens.md) |
+| Logo Specification | [docs/design/logo.md](docs/design/logo.md) |
+| Accessibility | [docs/design/accessibility.md](docs/design/accessibility.md) |
+
+### Development Documentation
+| Topic | Link |
+|-------|------|
+| Pending Decisions | [docs/development/pending-decisions.md](docs/development/pending-decisions.md) |
+| API Reference | [api.md](api.md) |
+| Architecture | [architecture.md](architecture.md) |
+| Configuration | [configuration.md](configuration.md) |
+| Security | [security.md](security.md) |
+
+### Operations Documentation
+| Topic | Link |
+|-------|------|
+| Deployment | [deployment.md](deployment.md) |
+| Operations | [operations.md](operations.md) |
+| Troubleshooting | [troubleshooting.md](troubleshooting.md) |
+| Release Playbook | [release-playbook.md](release-playbook.md) |
+
+### Project Documentation
+| Topic | Link |
+|-------|------|
+| Getting Started | [getting-started.md](getting-started.md) |
+| Contributing | [contributing.md](contributing.md) |
+| Changelog | [changelog.md](changelog.md) |
+
+---
+
+## Contents
 - Branding & Platform
 - Authentication
 - Home & Navigation
@@ -74,6 +126,13 @@ Design tokens (baseline)
 ---
 
 ## VIP (SVIP)
+
+> **Note:** Both VIP systems are retained:
+> 1. **Daily Reward Multiplier VIP** — Original VIP system that multiplies daily login rewards
+> 2. **Full VIP (SVIP) System** — Complete VIP with levels, EXP boost, exclusive items, and more
+>
+> See [VIP Systems Documentation](docs/features/vip-systems.md) for comprehensive details.
+
 Tiers and multipliers
 - VIP1 1.20x
 - VIP2 1.40x
