@@ -64,8 +64,10 @@ Step-by-step guide for releasing Aura Voice Chat.
 |-------|-----------|-----------|-------------------------|
 | 1     | 1%        | 4 hours   | Error rate < 1%         |
 | 2     | 10%       | 12 hours  | Error rate < 1%         |
-| 3     | 50%       | 24 hours  | Error rate < 0.5%       |
+| 3     | 50%       | 24 hours  | Error rate < 1%         |
 | 4     | 100%      | —         | Full release            |
+
+> **Note:** Stricter thresholds (e.g., < 0.5%) may be applied for larger rollouts based on risk assessment.
 
 ### Announce
 - [ ] Internal: Slack/Discord announcement

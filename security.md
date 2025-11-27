@@ -90,7 +90,7 @@
 - Account deletion support
 
 ### Financial
-- KYC threshold for cash withdrawals (amount TBD)
+- KYC threshold for cash withdrawals (see [Pending Decisions](docs/development/pending-decisions.md#referral--get-cash) Question #41)
 - Anti-money laundering considerations
 - Transaction record retention
 

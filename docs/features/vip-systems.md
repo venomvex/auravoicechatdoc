@@ -60,6 +60,8 @@ The complete VIP system extends beyond daily rewards to provide a comprehensive 
 
 The full VIP system uses the same 10 tiers (VIP1–VIP10) but adds additional benefits at each level.
 
+> **Note:** The VIP multipliers are documented above in Section 1. This section extends those tiers with additional benefits.
+
 ### Benefits by Tier
 
 | Tier   | Daily Multiplier | EXP Boost | Exclusive Items | Priority Join | Seat Frame |
