@@ -12,13 +12,19 @@ This document bundles core product decisions, UI layouts, economy rules, rewards
 | Feature | Description | Link |
 |---------|-------------|------|
 | VIP Systems | Both VIP systems (multiplier + full SVIP) | [docs/features/vip-systems.md](docs/features/vip-systems.md) |
+| AuraPass (Full VIP) | Complete VIP specification with tiers | [docs/features/aurapass.md](docs/features/aurapass.md) |
+| AuraPass Spin | VIP Score earning through spins | [docs/features/aurapass-spin.md](docs/features/aurapass-spin.md) |
+| VIP Recharge Bonus | Bonus coins on recharge by VIP tier | [docs/features/vip-recharge-bonus.md](docs/features/vip-recharge-bonus.md) |
 | Daily Rewards | 7-day login reward cycle | [docs/features/daily-rewards.md](docs/features/daily-rewards.md) |
+| Recharge Event | Daily Surge, Aurora Milestones, Recharge Royale | [docs/features/recharge-event.md](docs/features/recharge-event.md) |
 | Medals | Achievement and activity medals | [docs/features/medals.md](docs/features/medals.md) |
 | Wallet | Coins, Diamonds, and exchange | [docs/features/wallet.md](docs/features/wallet.md) |
 | Store | Cosmetics and item purchases | [docs/features/store.md](docs/features/store.md) |
 | Referrals | Get Coins and Get Cash programs | [docs/features/referrals.md](docs/features/referrals.md) |
 | CP | Couple Partnership system | [docs/features/cp.md](docs/features/cp.md) |
+| Rooms | Voice/video rooms feature | [docs/features/rooms.md](docs/features/rooms.md) |
 | Video/Music | Room video/music mode | [docs/features/video-music-mode.md](docs/features/video-music-mode.md) |
+| Rocket System | Gamified engagement milestones | [docs/features/rocket-system.md](docs/features/rocket-system.md) |
 | Gifts | Gift economy and baggage | [docs/features/gifts.md](docs/features/gifts.md) |
 
 ### Design Documentation
@@ -27,6 +33,18 @@ This document bundles core product decisions, UI layouts, economy rules, rewards
 | Design Tokens & Theme | [docs/design/tokens.md](docs/design/tokens.md) |
 | Logo Specification | [docs/design/logo.md](docs/design/logo.md) |
 | Accessibility | [docs/design/accessibility.md](docs/design/accessibility.md) |
+| Naming Glossary | [docs/naming-glossary.md](docs/naming-glossary.md) |
+
+### UI/UX Documentation
+| Screen | Link |
+|--------|------|
+| Home Screen | [docs/ui/home-screen.md](docs/ui/home-screen.md) |
+| Me Screen | [docs/ui/me-screen.md](docs/ui/me-screen.md) |
+| Message Screen | [docs/ui/message-screen.md](docs/ui/message-screen.md) |
+| Settings Screen | [docs/ui/settings-screen.md](docs/ui/settings-screen.md) |
+| Onboarding Flow | [docs/ui/onboarding-flow.md](docs/ui/onboarding-flow.md) |
+| Room Settings | [docs/ui/room-settings.md](docs/ui/room-settings.md) |
+| Profile Modules | [docs/ui/profile-modules.md](docs/ui/profile-modules.md) |
 
 ### Development Documentation
 | Topic | Link |
