@@ -1,0 +1,204 @@
+{
+  "categories": {
+    "frames": {
+      "name": "Frames",
+      "description": "Profile picture borders with decorative effects",
+      "rarities": ["common", "rare", "epic", "legendary"],
+      "durationOptions": ["7d", "30d", "90d", "permanent"]
+    },
+    "themes": {
+      "name": "Themes",
+      "description": "Full UI customization for profile and rooms",
+      "types": ["profile", "room", "cp", "friend"]
+    },
+    "vehicles": {
+      "name": "Vehicles",
+      "description": "Animated entrance effects when joining rooms",
+      "rarities": ["common", "rare", "epic", "legendary"]
+    },
+    "entrance_styles": {
+      "name": "Entrance Styles",
+      "description": "Visual effects accompanying vehicle entrance",
+      "types": ["sparkle", "fire", "ice", "lightning", "petals", "hearts"]
+    },
+    "covers": {
+      "name": "Opening Page Covers",
+      "description": "Custom loading/splash screens",
+      "types": ["personal", "room", "cp"]
+    },
+    "mic_skins": {
+      "name": "Mic Skins",
+      "description": "Microphone visual customization in rooms",
+      "types": ["static", "animated", "reactive", "cp", "friend"]
+    },
+    "seat_effects": {
+      "name": "Seat Effects",
+      "description": "Visual effects when seated in room",
+      "types": ["hearts", "stars", "bubbles", "flames", "cp_hearts"]
+    },
+    "chat_bubbles": {
+      "name": "Chat Bubbles",
+      "description": "Message styling in room chat",
+      "types": ["standard", "themed", "animated", "cp", "friend"]
+    },
+    "room_cards": {
+      "name": "Room Card Backgrounds",
+      "description": "Profile card appearance in room lists",
+      "types": ["standard", "vip", "cp", "friend", "custom"]
+    }
+  },
+  "items": [
+    {
+      "id": "frame_golden_crown",
+      "category": "frames",
+      "name": "Golden Crown",
+      "description": "Majestic golden crown frame",
+      "rarity": "legendary",
+      "price": 5000000,
+      "duration": "permanent",
+      "source": ["store", "vip_reward"]
+    },
+    {
+      "id": "frame_basic_blue",
+      "category": "frames",
+      "name": "Blue Aura",
+      "description": "Simple blue glow frame",
+      "rarity": "common",
+      "price": 50000,
+      "duration": "7d",
+      "source": ["store"]
+    },
+    {
+      "id": "vehicle_yacht",
+      "category": "vehicles",
+      "name": "Luxury Yacht",
+      "description": "Sail in on a luxury yacht with balloons",
+      "rarity": "epic",
+      "price": 2000000,
+      "duration": "30d",
+      "source": ["store", "friend_reward"]
+    },
+    {
+      "id": "vehicle_carriage",
+      "category": "vehicles",
+      "name": "Romantic Carriage",
+      "description": "Horse-drawn carriage with roses",
+      "rarity": "legendary",
+      "price": 5000000,
+      "duration": "permanent",
+      "source": ["cp_reward"]
+    },
+    {
+      "id": "vehicle_jetski",
+      "category": "vehicles",
+      "name": "Jet Ski",
+      "description": "Speed in on a jet ski with balloons",
+      "rarity": "rare",
+      "price": 500000,
+      "duration": "14d",
+      "source": ["store", "friend_reward"]
+    },
+    {
+      "id": "theme_cp_romantic",
+      "category": "themes",
+      "name": "Romantic CP Theme",
+      "description": "Pink and red romantic theme for CP partners",
+      "type": "cp",
+      "price": 3000000,
+      "duration": "30d",
+      "source": ["cp_reward"]
+    },
+    {
+      "id": "theme_friend_ocean",
+      "category": "themes",
+      "name": "Ocean Friend Theme",
+      "description": "Blue nautical theme for friends",
+      "type": "friend",
+      "price": 1000000,
+      "duration": "30d",
+      "source": ["friend_reward"]
+    },
+    {
+      "id": "bubble_cp_hearts",
+      "category": "chat_bubbles",
+      "name": "CP Heart Bubbles",
+      "description": "Chat bubbles with heart decorations",
+      "type": "cp",
+      "price": 500000,
+      "duration": "14d",
+      "source": ["cp_reward"]
+    },
+    {
+      "id": "bubble_friend_wave",
+      "category": "chat_bubbles",
+      "name": "Friend Wave Bubbles",
+      "description": "Chat bubbles with wave pattern and Hi! text",
+      "type": "friend",
+      "price": 300000,
+      "duration": "14d",
+      "source": ["friend_reward"]
+    },
+    {
+      "id": "mic_cp_heart",
+      "category": "mic_skins",
+      "name": "CP Heart Mic",
+      "description": "Microphone with heart animation for CP pairs",
+      "type": "cp",
+      "price": 1000000,
+      "duration": "30d",
+      "source": ["cp_reward"]
+    }
+  ],
+  "cpCosmetics": [
+    {
+      "level": 1,
+      "unlocks": ["mic_effect_lv1", "room_card_lv1"]
+    },
+    {
+      "level": 2,
+      "unlocks": ["chat_bubbles_lv2"]
+    },
+    {
+      "level": 3,
+      "unlocks": ["vehicle_lv3"]
+    },
+    {
+      "level": 4,
+      "unlocks": ["background_lv4"]
+    },
+    {
+      "level": 5,
+      "unlocks": ["theme_lv5"]
+    },
+    {
+      "level": 10,
+      "unlocks": ["legendary_set_complete"]
+    }
+  ],
+  "friendCosmetics": [
+    {
+      "level": 2,
+      "unlocks": ["friend_bubbles"]
+    },
+    {
+      "level": 3,
+      "unlocks": ["friend_vehicle_basic"]
+    },
+    {
+      "level": 5,
+      "unlocks": ["friend_background_lv5"]
+    },
+    {
+      "level": 7,
+      "unlocks": ["friend_background_lv7", "friend_theme"]
+    },
+    {
+      "level": 10,
+      "unlocks": ["friend_set_complete"]
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-11-28"
+  }
+}

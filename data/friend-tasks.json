@@ -1,0 +1,56 @@
+{
+  "dailyTasks": [
+    {
+      "id": "friend_gift_any",
+      "name": "Send Gift to Friend",
+      "description": "Send any gift to your friend",
+      "expReward": 50,
+      "resetTime": "00:00 UTC",
+      "requirements": {
+        "action": "gift_send",
+        "target": "friend",
+        "minValue": 1
+      }
+    },
+    {
+      "id": "friend_room_together",
+      "name": "Room Time Together",
+      "description": "Spend 10 minutes in the same room with your friend",
+      "expReward": 100,
+      "resetTime": "00:00 UTC",
+      "requirements": {
+        "action": "room_presence",
+        "target": "friend",
+        "minDurationMinutes": 10
+      }
+    },
+    {
+      "id": "friend_react",
+      "name": "React to Friend",
+      "description": "React to your friend's messages",
+      "expReward": 25,
+      "resetTime": "00:00 UTC",
+      "requirements": {
+        "action": "message_react",
+        "target": "friend",
+        "minCount": 1
+      }
+    },
+    {
+      "id": "friend_visit_profile",
+      "name": "Visit Friend Profile",
+      "description": "Visit your friend's profile",
+      "expReward": 15,
+      "resetTime": "00:00 UTC",
+      "requirements": {
+        "action": "profile_visit",
+        "target": "friend",
+        "minCount": 1
+      }
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-11-28"
+  }
+}

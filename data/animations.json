@@ -1,0 +1,114 @@
+{
+  "vehicles": {
+    "standard": [
+      {"id": "aura_phoenix", "name": "Phoenix Rise", "duration": "4.5s", "rarity": "epic", "price": 1500000},
+      {"id": "aura_dragon", "name": "Storm Dragon", "duration": "5s", "rarity": "legendary", "price": 3000000},
+      {"id": "aura_yacht", "name": "Ocean Wave", "duration": "4s", "rarity": "rare", "price": 800000},
+      {"id": "aura_rocket", "name": "Cosmic Blast", "duration": "4.5s", "rarity": "epic", "price": 1200000},
+      {"id": "aura_butterfly", "name": "Mystic Butterfly", "duration": "3.5s", "rarity": "rare", "price": 500000},
+      {"id": "aura_sports_car", "name": "Velocity Rush", "duration": "4s", "rarity": "rare", "price": 600000},
+      {"id": "aura_helicopter", "name": "Sky Arrival", "duration": "4.5s", "rarity": "epic", "price": 1000000},
+      {"id": "aura_horse", "name": "Royal Stallion", "duration": "4s", "rarity": "rare", "price": 700000}
+    ],
+    "premium": [
+      {"id": "aura_throne", "name": "Emperor's Throne", "duration": "5.5s", "rarity": "legendary", "price": 5000000},
+      {"id": "aura_ufo", "name": "Cosmic Visitor", "duration": "5s", "rarity": "legendary", "price": 4000000},
+      {"id": "aura_train", "name": "Express Arrival", "duration": "5s", "rarity": "legendary", "price": 3500000},
+      {"id": "aura_balloon", "name": "Sky Festival", "duration": "5s", "rarity": "epic", "price": 2000000},
+      {"id": "aura_submarine", "name": "Deep Diver", "duration": "5s", "rarity": "legendary", "price": 4500000}
+    ],
+    "cp_exclusive": [
+      {"id": "aura_love_carriage", "name": "Love Carriage", "duration": "5.5s", "rarity": "legendary", "source": "cp_level_7"},
+      {"id": "aura_swan_boat", "name": "Swan Lake", "duration": "5s", "rarity": "epic", "source": "cp_level_5"},
+      {"id": "aura_cloud_chariot", "name": "Heaven's Ride", "duration": "5.5s", "rarity": "legendary", "source": "cp_level_10"}
+    ],
+    "friend_exclusive": [
+      {"id": "aura_jetski_duo", "name": "Ocean Friends", "duration": "4.5s", "rarity": "epic", "source": "friend_level_8"},
+      {"id": "aura_tandem_bike", "name": "Friendship Ride", "duration": "4s", "rarity": "rare", "source": "friend_level_5"}
+    ]
+  },
+  "giftAnimations": {
+    "fullScreen": [
+      {"id": "aura_rose_garden", "name": "Rose Garden", "duration": "5s", "minValue": 100000},
+      {"id": "aura_firework_show", "name": "Fireworks", "duration": "6s", "minValue": 250000},
+      {"id": "aura_golden_rain", "name": "Golden Rain", "duration": "5s", "minValue": 500000},
+      {"id": "aura_heart_explosion", "name": "Love Burst", "duration": "5s", "minValue": 500000},
+      {"id": "aura_aurora", "name": "Northern Lights", "duration": "6s", "minValue": 1000000},
+      {"id": "aura_castle_reveal", "name": "Royal Castle", "duration": "7s", "minValue": 2000000},
+      {"id": "aura_dragon_flight", "name": "Dragon Dance", "duration": "7s", "minValue": 5000000},
+      {"id": "aura_galaxy", "name": "Cosmic Journey", "duration": "8s", "minValue": 10000000}
+    ],
+    "legendary": [
+      {"id": "aura_universe", "name": "Universe Creator", "duration": "10s", "minValue": 50000000},
+      {"id": "aura_phoenix_rebirth", "name": "Phoenix Rebirth", "duration": "10s", "minValue": 50000000},
+      {"id": "aura_love_story", "name": "Love Story", "duration": "12s", "minValue": 100000000},
+      {"id": "aura_kingdom", "name": "Kingdom Rise", "duration": "12s", "minValue": 200000000}
+    ]
+  },
+  "frames": {
+    "animated": [
+      {"id": "aura_flame_frame", "name": "Eternal Flame", "effect": "flames flicker", "rarity": "epic", "price": 1000000},
+      {"id": "aura_ice_frame", "name": "Frozen Crown", "effect": "ice crystals shimmer", "rarity": "epic", "price": 1000000},
+      {"id": "aura_electric_frame", "name": "Thunder Strike", "effect": "lightning pulses", "rarity": "legendary", "price": 2000000},
+      {"id": "aura_rainbow_frame", "name": "Spectrum", "effect": "colors cycle", "rarity": "rare", "price": 500000},
+      {"id": "aura_star_frame", "name": "Starlight", "effect": "stars twinkle", "rarity": "rare", "price": 600000},
+      {"id": "aura_heart_frame", "name": "Love Pulse", "effect": "hearts pulse", "rarity": "epic", "source": "cp"},
+      {"id": "aura_wave_frame", "name": "Ocean Breeze", "effect": "waves flow", "rarity": "rare", "source": "friend"}
+    ]
+  },
+  "seatEffects": [
+    {"id": "aura_sparkle_seat", "name": "Starlight", "rarity": "common", "price": 100000},
+    {"id": "aura_glow_seat", "name": "Soft Glow", "rarity": "common", "price": 80000},
+    {"id": "aura_bubble_seat", "name": "Bubbles", "rarity": "common", "price": 120000},
+    {"id": "aura_fire_seat", "name": "Flame Throne", "rarity": "epic", "price": 800000},
+    {"id": "aura_ice_seat", "name": "Frost Crown", "rarity": "epic", "price": 800000},
+    {"id": "aura_lightning_seat", "name": "Thunder", "rarity": "legendary", "price": 1500000},
+    {"id": "aura_flower_seat", "name": "Bloom", "rarity": "rare", "price": 400000},
+    {"id": "aura_music_seat", "name": "Melody", "rarity": "rare", "price": 350000},
+    {"id": "aura_heart_seat", "name": "Love Hearts", "rarity": "epic", "source": "cp"},
+    {"id": "aura_cupid_seat", "name": "Cupid's Arrow", "rarity": "legendary", "source": "cp"},
+    {"id": "aura_rose_seat", "name": "Rose Garden", "rarity": "rare", "source": "cp"}
+  ],
+  "micEffects": [
+    {"id": "aura_pulse_mic", "name": "Sound Pulse", "type": "reactive", "rarity": "common", "price": 150000},
+    {"id": "aura_wave_mic", "name": "Sound Wave", "type": "reactive", "rarity": "rare", "price": 300000},
+    {"id": "aura_glow_mic", "name": "Voice Glow", "type": "reactive", "rarity": "common", "price": 200000},
+    {"id": "aura_flame_mic", "name": "Fire Mic", "type": "animated", "rarity": "epic", "price": 600000},
+    {"id": "aura_electric_mic", "name": "Thunder Mic", "type": "animated", "rarity": "legendary", "price": 1200000},
+    {"id": "aura_star_mic", "name": "Star Mic", "type": "animated", "rarity": "rare", "price": 400000},
+    {"id": "aura_heart_mic", "name": "Love Mic", "type": "animated", "rarity": "epic", "source": "cp"}
+  ],
+  "themes": [
+    {"id": "aura_royal", "name": "Royal Palace", "colors": ["gold", "purple", "red"], "rarity": "legendary", "price": 3000000},
+    {"id": "aura_ocean", "name": "Ocean Dreams", "colors": ["blue", "teal", "white"], "rarity": "epic", "price": 1500000},
+    {"id": "aura_forest", "name": "Enchanted Forest", "colors": ["green", "brown", "gold"], "rarity": "epic", "price": 1500000},
+    {"id": "aura_fire", "name": "Inferno", "colors": ["red", "orange", "black"], "rarity": "legendary", "price": 2500000},
+    {"id": "aura_ice", "name": "Arctic", "colors": ["white", "blue", "silver"], "rarity": "epic", "price": 1500000},
+    {"id": "aura_galaxy", "name": "Cosmic", "colors": ["purple", "blue", "stars"], "rarity": "legendary", "price": 3500000},
+    {"id": "aura_cherry", "name": "Cherry Blossom", "colors": ["pink", "white"], "rarity": "rare", "price": 800000},
+    {"id": "aura_night", "name": "Midnight", "colors": ["black", "purple", "stars"], "rarity": "epic", "price": 1200000},
+    {"id": "aura_romance", "name": "Eternal Love", "rarity": "legendary", "source": "cp"},
+    {"id": "aura_bestie", "name": "Best Friends", "rarity": "epic", "source": "friend"}
+  ],
+  "chatBubbles": [
+    {"id": "aura_classic", "name": "Classic", "rarity": "common", "price": 50000},
+    {"id": "aura_modern", "name": "Modern", "rarity": "common", "price": 80000},
+    {"id": "aura_fire_bubble", "name": "Flame Talk", "rarity": "epic", "price": 400000},
+    {"id": "aura_ice_bubble", "name": "Frost Chat", "rarity": "epic", "price": 400000},
+    {"id": "aura_neon_bubble", "name": "Neon Glow", "rarity": "rare", "price": 250000},
+    {"id": "aura_galaxy_bubble", "name": "Cosmic", "rarity": "legendary", "price": 600000},
+    {"id": "aura_cp_heart_bubble", "name": "Love Chat", "rarity": "epic", "source": "cp"},
+    {"id": "aura_friend_wave_bubble", "name": "Friend Wave", "rarity": "rare", "source": "friend"}
+  ],
+  "technicalSpecs": {
+    "format": {"entry": "lottie", "gift": "lottie", "frame": "lottie/gif"},
+    "maxSize": {"entry": 500, "giftSmall": 100, "giftFullScreen": 2000, "frame": 200},
+    "frameRate": {"standard": 30, "premium": 60},
+    "maxConcurrent": 3,
+    "skipAfter": 2
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-11-28"
+  }
+}

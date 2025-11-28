@@ -1,0 +1,286 @@
+{
+  "targets": {
+    "giftSending": [
+      {
+        "id": "bronze_gift",
+        "name": "Bronze Gift Target",
+        "description": "Send 1,000,000 coins in gifts",
+        "requirement": {"type": "coins_sent", "amount": 1000000, "minRecipients": 3},
+        "timePeriodDays": 7,
+        "earning": {"amount": 0.50, "currency": "USD"},
+        "clearanceDays": 5
+      },
+      {
+        "id": "silver_gift",
+        "name": "Silver Gift Target",
+        "description": "Send 5,000,000 coins in gifts",
+        "requirement": {"type": "coins_sent", "amount": 5000000, "minRecipients": 5},
+        "timePeriodDays": 7,
+        "earning": {"amount": 2.50, "currency": "USD"},
+        "clearanceDays": 5
+      },
+      {
+        "id": "gold_gift",
+        "name": "Gold Gift Target",
+        "description": "Send 10,000,000 coins in gifts",
+        "requirement": {"type": "coins_sent", "amount": 10000000, "minRecipients": 5},
+        "timePeriodDays": 10,
+        "earning": {"amount": 5.00, "currency": "USD"},
+        "clearanceDays": 5
+      },
+      {
+        "id": "platinum_gift",
+        "name": "Platinum Gift Target",
+        "description": "Send 25,000,000 coins in gifts",
+        "requirement": {"type": "coins_sent", "amount": 25000000, "minRecipients": 10},
+        "timePeriodDays": 10,
+        "earning": {"amount": 12.50, "currency": "USD"},
+        "clearanceDays": 5
+      },
+      {
+        "id": "diamond_gift",
+        "name": "Diamond Gift Target",
+        "description": "Send 50,000,000 coins in gifts",
+        "requirement": {"type": "coins_sent", "amount": 50000000, "minRecipients": 10},
+        "timePeriodDays": 14,
+        "earning": {"amount": 25.00, "currency": "USD"},
+        "clearanceDays": 5
+      },
+      {
+        "id": "elite_gift",
+        "name": "Elite Gift Target",
+        "description": "Send 100,000,000 coins in gifts",
+        "requirement": {"type": "coins_sent", "amount": 100000000, "minRecipients": 15},
+        "timePeriodDays": 14,
+        "earning": {"amount": 50.00, "currency": "USD"},
+        "clearanceDays": 7
+      },
+      {
+        "id": "master_gift",
+        "name": "Master Gift Target",
+        "description": "Send 500,000,000 coins in gifts",
+        "requirement": {"type": "coins_sent", "amount": 500000000, "minRecipients": 20},
+        "timePeriodDays": 30,
+        "earning": {"amount": 250.00, "currency": "USD"},
+        "clearanceDays": 7
+      },
+      {
+        "id": "legend_gift",
+        "name": "Legend Gift Target",
+        "description": "Send 1,000,000,000 coins in gifts",
+        "requirement": {"type": "coins_sent", "amount": 1000000000, "minRecipients": 25},
+        "timePeriodDays": 30,
+        "earning": {"amount": 500.00, "currency": "USD"},
+        "clearanceDays": 7
+      }
+    ],
+    "roomActivity": [
+      {
+        "id": "active_host",
+        "name": "Active Host",
+        "description": "Host rooms for 20 hours",
+        "requirement": {"type": "hosting_hours", "amount": 20},
+        "timePeriodDays": 7,
+        "earning": {"amount": 1.00, "currency": "USD"},
+        "clearanceDays": 5
+      },
+      {
+        "id": "super_host",
+        "name": "Super Host",
+        "description": "Host rooms for 50 hours",
+        "requirement": {"type": "hosting_hours", "amount": 50},
+        "timePeriodDays": 14,
+        "earning": {"amount": 3.00, "currency": "USD"},
+        "clearanceDays": 5
+      },
+      {
+        "id": "elite_host",
+        "name": "Elite Host",
+        "description": "Host rooms for 100 hours",
+        "requirement": {"type": "hosting_hours", "amount": 100},
+        "timePeriodDays": 30,
+        "earning": {"amount": 7.50, "currency": "USD"},
+        "clearanceDays": 5
+      },
+      {
+        "id": "room_star",
+        "name": "Room Star",
+        "description": "Get 1,000 unique visitors in your room",
+        "requirement": {"type": "unique_visitors", "amount": 1000},
+        "timePeriodDays": 7,
+        "earning": {"amount": 2.00, "currency": "USD"},
+        "clearanceDays": 5
+      },
+      {
+        "id": "room_legend",
+        "name": "Room Legend",
+        "description": "Get 10,000 unique visitors in your room",
+        "requirement": {"type": "unique_visitors", "amount": 10000},
+        "timePeriodDays": 30,
+        "earning": {"amount": 15.00, "currency": "USD"},
+        "clearanceDays": 5
+      }
+    ],
+    "socialEngagement": [
+      {
+        "id": "connector",
+        "name": "Connector",
+        "description": "Make 10 new friends",
+        "requirement": {"type": "new_friends", "amount": 10},
+        "timePeriodDays": 7,
+        "earning": {"amount": 0.25, "currency": "USD"},
+        "clearanceDays": 5
+      },
+      {
+        "id": "social_star",
+        "name": "Social Star",
+        "description": "Make 50 new friends",
+        "requirement": {"type": "new_friends", "amount": 50},
+        "timePeriodDays": 14,
+        "earning": {"amount": 1.50, "currency": "USD"},
+        "clearanceDays": 5
+      },
+      {
+        "id": "influencer",
+        "name": "Influencer",
+        "description": "Gain 500 new followers",
+        "requirement": {"type": "new_followers", "amount": 500},
+        "timePeriodDays": 30,
+        "earning": {"amount": 5.00, "currency": "USD"},
+        "clearanceDays": 5
+      },
+      {
+        "id": "cp_champion",
+        "name": "CP Champion",
+        "description": "Reach CP Level 5",
+        "requirement": {"type": "cp_level", "amount": 5},
+        "timePeriodDays": 30,
+        "earning": {"amount": 10.00, "currency": "USD"},
+        "clearanceDays": 7
+      }
+    ],
+    "dailyStreak": [
+      {
+        "id": "weekly_streak",
+        "name": "Weekly Streak",
+        "description": "Be active for 7 consecutive days",
+        "requirement": {"type": "consecutive_days", "amount": 7},
+        "earning": {"amount": 0.25, "currency": "USD"},
+        "clearanceDays": 5
+      },
+      {
+        "id": "biweekly_streak",
+        "name": "Bi-Weekly Streak",
+        "description": "Be active for 14 consecutive days",
+        "requirement": {"type": "consecutive_days", "amount": 14},
+        "earning": {"amount": 0.75, "currency": "USD"},
+        "clearanceDays": 5
+      },
+      {
+        "id": "monthly_streak",
+        "name": "Monthly Streak",
+        "description": "Be active for 30 consecutive days",
+        "requirement": {"type": "consecutive_days", "amount": 30},
+        "earning": {"amount": 2.00, "currency": "USD"},
+        "clearanceDays": 5
+      },
+      {
+        "id": "quarterly_streak",
+        "name": "Quarterly Streak",
+        "description": "Be active for 90 consecutive days",
+        "requirement": {"type": "consecutive_days", "amount": 90},
+        "earning": {"amount": 7.50, "currency": "USD"},
+        "clearanceDays": 7
+      }
+    ],
+    "combined": [
+      {
+        "id": "all_rounder",
+        "name": "All-Rounder",
+        "description": "Send 5M gifts + Host 20 hours + Make 10 friends",
+        "requirement": {
+          "type": "combined",
+          "conditions": [
+            {"type": "coins_sent", "amount": 5000000},
+            {"type": "hosting_hours", "amount": 20},
+            {"type": "new_friends", "amount": 10}
+          ]
+        },
+        "timePeriodDays": 14,
+        "earning": {"amount": 5.00, "currency": "USD"},
+        "clearanceDays": 7
+      },
+      {
+        "id": "power_user",
+        "name": "Power User",
+        "description": "Send 25M gifts + Host 50 hours + Make 50 friends",
+        "requirement": {
+          "type": "combined",
+          "conditions": [
+            {"type": "coins_sent", "amount": 25000000},
+            {"type": "hosting_hours", "amount": 50},
+            {"type": "new_friends", "amount": 50}
+          ]
+        },
+        "timePeriodDays": 30,
+        "earning": {"amount": 20.00, "currency": "USD"},
+        "clearanceDays": 7
+      },
+      {
+        "id": "elite_member",
+        "name": "Elite Member",
+        "description": "Send 100M gifts + Host 100 hours + Make 100 friends",
+        "requirement": {
+          "type": "combined",
+          "conditions": [
+            {"type": "coins_sent", "amount": 100000000},
+            {"type": "hosting_hours", "amount": 100},
+            {"type": "new_friends", "amount": 100}
+          ]
+        },
+        "timePeriodDays": 30,
+        "earning": {"amount": 75.00, "currency": "USD"},
+        "clearanceDays": 7
+      }
+    ]
+  },
+  "paymentMethods": {
+    "pakistan": [
+      {"id": "easypaisa", "name": "EasyPaisa", "type": "mobile_wallet", "processingTime": "instant-24h", "fee": 0.015},
+      {"id": "jazzcash", "name": "JazzCash", "type": "mobile_wallet", "processingTime": "instant-24h", "fee": 0.015},
+      {"id": "bank_pk", "name": "Bank Transfer", "type": "bank", "processingTime": "2-3 days", "fee": 0.02}
+    ],
+    "india": [
+      {"id": "upi", "name": "UPI", "type": "upi", "processingTime": "instant-4h", "fee": 0.01},
+      {"id": "paytm", "name": "Paytm", "type": "wallet", "processingTime": "instant-4h", "fee": 0.01},
+      {"id": "bank_in", "name": "Bank Transfer (NEFT/IMPS)", "type": "bank", "processingTime": "1-2 days", "fee": 0.02}
+    ],
+    "international": [
+      {"id": "paypal", "name": "PayPal", "type": "wallet", "processingTime": "1-3 days", "fee": 0.025},
+      {"id": "stripe", "name": "Stripe", "type": "bank", "processingTime": "3-5 days", "fee": 0.025},
+      {"id": "wire", "name": "Wire Transfer", "type": "bank", "processingTime": "5-7 days", "fee": 0.03}
+    ]
+  },
+  "kycLevels": [
+    {"level": "basic", "requirement": "phone_verified", "monthlyLimit": 50},
+    {"level": "standard", "requirement": "id_document", "monthlyLimit": 500},
+    {"level": "premium", "requirement": "id_address_proof", "monthlyLimit": 5000},
+    {"level": "enterprise", "requirement": "full_kyc", "monthlyLimit": null}
+  ],
+  "withdrawalLimits": {
+    "minimum": {"USD": 5, "PKR": 500, "INR": 200},
+    "daily": 500,
+    "weekly": 2000,
+    "monthly": 5000
+  },
+  "clearancePeriod": {
+    "standard": 5,
+    "large": 7,
+    "firstWithdrawal": 7,
+    "thresholdForLarge": 50
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-11-28"
+  }
+}

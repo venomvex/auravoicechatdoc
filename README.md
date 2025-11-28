@@ -1,8 +1,53 @@
 # Aura Voice Chat — Product Specification (Consolidated)
 
+**Developed by:** Hawkaye Visions LTD — A Pakistan-based technology company specializing in social voice chat applications.
+
 This document bundles core product decisions, UI layouts, economy rules, rewards, referrals, and platform behavior defined so far.
 
 > **Theme:** Original Purple → White gradient UI preserved. No "Cosmic" or altered UI changes.
+
+---
+
+## 🗺️ Complete Feature Map
+
+### Core Systems
+| System | Documentation | Data |
+|--------|---------------|------|
+| **EXP & Levels** | [docs/exp-level-system.md](docs/exp-level-system.md) | [data/level-rewards.json](data/level-rewards.json) |
+| **VIP/SVIP** | [docs/features/vip-systems.md](docs/features/vip-systems.md) | [data/vip-multipliers.json](data/vip-multipliers.json) |
+| **Games** | [docs/games-system.md](docs/games-system.md) | [data/games.json](data/games.json) |
+| **Events** | [docs/events-system.md](docs/events-system.md) | [data/events.json](data/events.json) |
+| **Jar Tasks** | — | [data/jar-tasks.json](data/jar-tasks.json) |
+
+### Economy & Monetization
+| System | Documentation | Data |
+|--------|---------------|------|
+| **Earning System** | [docs/earning-system.md](docs/earning-system.md) | [data/earning-targets.json](data/earning-targets.json) |
+| **Reseller System** | [docs/reseller-system.md](docs/reseller-system.md) | [data/reseller-config.json](data/reseller-config.json) |
+| **Gifts & Records** | [docs/gifts-and-records.md](docs/gifts-and-records.md) | — |
+| **Wallet** | [docs/features/wallet.md](docs/features/wallet.md) | — |
+
+### Social & Relationships
+| System | Documentation | Data |
+|--------|---------------|------|
+| **CP & Friends** | [docs/cp-friend-system.md](docs/cp-friend-system.md) | [data/cp-levels.json](data/cp-levels.json), [data/friend-rewards.json](data/friend-rewards.json) |
+| **Family** | [docs/family-system.md](docs/family-system.md) | — |
+| **Rankings** | [docs/ranking-and-leaderboards.md](docs/ranking-and-leaderboards.md) | [data/rankings.json](data/rankings.json) |
+
+### Profile & Customization
+| System | Documentation | Data |
+|--------|---------------|------|
+| **Profile & Inventory** | [docs/profile-and-inventory.md](docs/profile-and-inventory.md) | — |
+| **Medals** | [docs/medals-system.md](docs/medals-system.md) | [data/medals.json](data/medals.json) |
+| **Animations & Effects** | [docs/animations-effects.md](docs/animations-effects.md) | [data/animations.json](data/animations.json), [data/cosmetics.json](data/cosmetics.json) |
+
+### Platform & Legal
+| System | Documentation | Data |
+|--------|---------------|------|
+| **Privacy & Terms** | [docs/privacy-and-terms.md](docs/privacy-and-terms.md) | — |
+| **Owner CMS** | [docs/owner-cms.md](docs/owner-cms.md) | — |
+| **Firebase Setup** | [docs/firebase-setup.md](docs/firebase-setup.md) | — |
+| **Build & Gradle** | [docs/build-and-gradle.md](docs/build-and-gradle.md) | — |
 
 ---
 

@@ -1,0 +1,112 @@
+{
+  "levelFormula": {
+    "expForLevel": "100 × N × (N + 1) / 2",
+    "totalExpAtLevel": "100 × N × (N + 1) × (N + 2) / 6"
+  },
+  "levels": [
+    {"level": 1, "totalExp": 0, "expForLevel": 0, "reward": {"coins": 5000, "description": "Welcome bonus"}},
+    {"level": 2, "totalExp": 100, "expForLevel": 100, "reward": {"coins": 1000}},
+    {"level": 3, "totalExp": 300, "expForLevel": 200, "reward": {"coins": 2000}},
+    {"level": 4, "totalExp": 600, "expForLevel": 300, "reward": {"coins": 3000}},
+    {"level": 5, "totalExp": 1000, "expForLevel": 400, "reward": {"coins": 5000, "cosmetic": {"type": "frame", "id": "level_5_frame", "duration": "3d"}}},
+    {"level": 6, "totalExp": 1500, "expForLevel": 500, "reward": {"coins": 6000}},
+    {"level": 7, "totalExp": 2100, "expForLevel": 600, "reward": {"coins": 7000}},
+    {"level": 8, "totalExp": 2800, "expForLevel": 700, "reward": {"coins": 8000}},
+    {"level": 9, "totalExp": 3600, "expForLevel": 800, "reward": {"coins": 9000}},
+    {"level": 10, "totalExp": 4500, "expForLevel": 900, "reward": {"coins": 15000, "cosmetic": {"type": "frame", "id": "level_10_frame", "duration": "7d"}}},
+    {"level": 15, "totalExp": 11250, "expForLevel": 1350, "reward": {"coins": 25000, "cosmetic": {"type": "mic_skin", "id": "level_15_mic", "duration": "7d"}}},
+    {"level": 20, "totalExp": 20000, "expForLevel": 1750, "reward": {"coins": 50000, "cosmetic": {"type": "vehicle", "id": "level_20_vehicle", "duration": "7d"}, "feature": "super_mic_access"}},
+    {"level": 25, "totalExp": 31250, "expForLevel": 2250, "reward": {"coins": 75000, "cosmetic": {"type": "theme", "id": "level_25_theme", "duration": "7d"}}},
+    {"level": 30, "totalExp": 45000, "expForLevel": 2750, "reward": {"coins": 100000, "cosmetic": {"type": "frame", "id": "level_30_frame", "duration": "14d"}, "feature": "premium_games"}},
+    {"level": 40, "totalExp": 80000, "expForLevel": 3500, "reward": {"coins": 200000, "cosmetic": {"type": "vehicle", "id": "level_40_vehicle", "duration": "14d"}, "feature": "vip_room_create"}},
+    {"level": 50, "totalExp": 125000, "expForLevel": 4500, "reward": {"coins": 500000, "cosmetic": {"type": "bundle", "id": "level_50_premium_set", "duration": "30d"}, "feature": "exclusive_events"}},
+    {"level": 60, "totalExp": 180000, "expForLevel": 5500, "reward": {"coins": 1000000, "cosmetic": {"type": "bundle", "id": "level_60_legendary_set", "duration": "permanent"}, "badge": "legend_chat"}},
+    {"level": 70, "totalExp": 245000, "expForLevel": 6500, "reward": {"coins": 2000000, "badge": "exclusive_70"}},
+    {"level": 80, "totalExp": 320000, "expForLevel": 7500, "reward": {"coins": 3500000, "cosmetic": {"type": "vehicle", "id": "legendary_vehicle", "duration": "permanent"}}},
+    {"level": 90, "totalExp": 405000, "expForLevel": 8500, "reward": {"coins": 5000000, "badge": "master"}},
+    {"level": 100, "totalExp": 500000, "expForLevel": 9500, "reward": {"coins": 10000000, "badge": "legend", "title": "Aura Legend"}}
+  ],
+  "expSources": {
+    "daily": {
+      "login": {"exp": 50, "limit": 1},
+      "firstMessage": {"exp": 10, "limit": 1},
+      "firstRoomJoin": {"exp": 20, "limit": 1},
+      "completeDailyTasks": {"exp": 100, "limit": 1}
+    },
+    "room": {
+      "joinRoom": {"exp": 5, "limit": 20},
+      "spend10Min": {"exp": 10, "limit": 60},
+      "chatMessage": {"exp": 1, "limit": 100},
+      "micPerMin": {"exp": 2, "limit": 120},
+      "hostPer10Min": {"exp": 15, "limit": 90}
+    },
+    "social": {
+      "addFriend": {"exp": 25, "limit": 10},
+      "acceptFriend": {"exp": 15, "limit": 10},
+      "visitProfile": {"exp": 2, "limit": 50},
+      "followUser": {"exp": 10, "limit": 20},
+      "getFollowed": {"exp": 5, "limit": null}
+    },
+    "gifts": {
+      "sendGift": {"exp": 1, "per": 100, "limit": 500},
+      "receiveGift": {"exp": 1, "per": 200, "limit": null},
+      "sendToNewUser": {"multiplier": 2}
+    },
+    "games": {
+      "playGame": {"exp": 10, "limit": null},
+      "winGame": {"exp": 25, "limit": null},
+      "winStreak3": {"exp": 50, "limit": null},
+      "hitJackpot": {"exp": 500, "limit": null},
+      "dailyFirstGame": {"exp": 100, "limit": 1}
+    },
+    "oneTime": {
+      "completeProfile": {"exp": 200},
+      "verifyPhone": {"exp": 300},
+      "linkSocialAccount": {"exp": 100},
+      "firstRecharge": {"exp": 500},
+      "joinFamily": {"exp": 200},
+      "formCP": {"exp": 500}
+    }
+  },
+  "vipMultipliers": {
+    "VIP1": 1.1,
+    "VIP2": 1.15,
+    "VIP3": 1.2,
+    "VIP4": 1.25,
+    "VIP5": 1.3,
+    "VIP6": 1.35,
+    "VIP7": 1.4,
+    "VIP8": 1.45,
+    "VIP9": 1.5,
+    "VIP10": 1.6
+  },
+  "featureUnlocks": {
+    "1": ["basic_room_access"],
+    "5": ["create_rooms"],
+    "10": ["custom_room_settings", "10_seat_rooms"],
+    "15": ["12_seat_rooms"],
+    "20": ["16_seat_rooms", "super_mic_access"],
+    "25": ["advanced_room_themes"],
+    "30": ["premium_game_access", "20_seat_rooms"],
+    "40": ["vip_room_creation"],
+    "50": ["exclusive_events_access", "24_seat_rooms"],
+    "60": ["legend_chat_badge"]
+  },
+  "badgeStyles": {
+    "1-9": {"type": "bronze", "animated": false},
+    "10-19": {"type": "silver", "animated": false},
+    "20-29": {"type": "gold", "animated": false},
+    "30-39": {"type": "platinum", "animated": false},
+    "40-49": {"type": "diamond", "animated": false},
+    "50-59": {"type": "ruby", "animated": false},
+    "60-69": {"type": "emerald", "animated": false},
+    "70-79": {"type": "sapphire", "animated": false},
+    "80-89": {"type": "crown", "animated": true},
+    "90-99": {"type": "master", "animated": true},
+    "100": {"type": "legend", "animated": true}
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-11-28"
+  }
+}

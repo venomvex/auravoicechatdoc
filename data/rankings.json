@@ -1,0 +1,136 @@
+{
+  "rankingTypes": {
+    "room": {
+      "name": "Room Ranking",
+      "description": "Rankings for voice chat rooms",
+      "metrics": ["gifts_received", "active_users", "duration", "engagement"],
+      "periods": ["daily", "weekly", "monthly", "allTime"]
+    },
+    "player_charm": {
+      "name": "Charm Ranking",
+      "description": "Players ranked by diamonds received",
+      "metric": "diamonds_received",
+      "periods": ["daily", "weekly", "monthly", "allTime"]
+    },
+    "player_wealth": {
+      "name": "Wealth Ranking",
+      "description": "Players ranked by coins spent on gifts",
+      "metric": "coins_spent",
+      "periods": ["daily", "weekly", "monthly", "allTime"]
+    },
+    "player_level": {
+      "name": "Level Ranking",
+      "description": "Players ranked by user level",
+      "metric": "user_level",
+      "periods": ["allTime"]
+    },
+    "player_followers": {
+      "name": "Followers Ranking",
+      "description": "Players ranked by follower count",
+      "metric": "followers",
+      "periods": ["allTime"]
+    },
+    "cp": {
+      "name": "CP Ranking",
+      "description": "CP pairs ranked by total EXP",
+      "metric": "cp_exp",
+      "periods": ["weekly", "monthly", "allTime"]
+    },
+    "family": {
+      "name": "Family Ranking",
+      "description": "Families ranked by activity points",
+      "metric": "activity_points",
+      "periods": ["weekly", "monthly", "allTime"]
+    }
+  },
+  "rewards": {
+    "room": {
+      "daily": {
+        "1": 100000,
+        "2-3": 50000,
+        "4-10": 20000,
+        "11-50": 5000,
+        "51-100": 1000
+      },
+      "weekly": {
+        "1": 1000000,
+        "2-3": 500000,
+        "4-10": 200000,
+        "11-50": 50000,
+        "51-100": 10000
+      },
+      "monthly": {
+        "1": 10000000,
+        "2-3": 5000000,
+        "4-10": 2000000,
+        "11-50": 500000,
+        "51-100": 100000
+      }
+    },
+    "player_charm": {
+      "weekly": {
+        "1": {"coins": 500000, "cosmetic": {"type": "frame", "duration": "7d"}},
+        "2-3": {"coins": 200000},
+        "4-10": {"coins": 50000},
+        "11-50": {"coins": 10000}
+      },
+      "monthly": {
+        "1": {"coins": 5000000, "cosmetic": {"type": "frame", "duration": "30d"}},
+        "2-3": {"coins": 2000000, "cosmetic": {"type": "frame", "duration": "7d"}},
+        "4-10": {"coins": 500000},
+        "11-50": {"coins": 100000}
+      }
+    },
+    "cp": {
+      "weekly": {
+        "1": {"coins": 2000000, "cosmetic": {"type": "cp_frame", "duration": "7d"}},
+        "2-3": {"coins": 1000000},
+        "4-10": {"coins": 200000},
+        "11-50": {"coins": 50000}
+      },
+      "monthly": {
+        "1": {"coins": 20000000, "cosmetic": {"type": "cp_frame", "duration": "30d"}},
+        "2-3": {"coins": 10000000, "cosmetic": {"type": "cp_frame", "duration": "7d"}},
+        "4-10": {"coins": 2000000},
+        "11-50": {"coins": 500000}
+      }
+    },
+    "family": {
+      "weekly": {
+        "1": 5000000,
+        "2-3": 2000000,
+        "4-10": 500000,
+        "11-20": 200000,
+        "21-50": 50000,
+        "51-100": 10000
+      },
+      "monthly": {
+        "1": {"coins": 50000000, "cosmetic": {"type": "family_frame", "duration": "30d"}},
+        "2-3": {"coins": 20000000, "cosmetic": {"type": "family_frame", "duration": "7d"}},
+        "4-10": {"coins": 5000000},
+        "11-20": {"coins": 2000000},
+        "21-50": {"coins": 500000},
+        "51-100": {"coins": 100000}
+      }
+    }
+  },
+  "resetSchedule": {
+    "daily": "00:00 UTC",
+    "weekly": "Sunday 00:00 UTC",
+    "monthly": "1st of month 00:00 UTC"
+  },
+  "displaySettings": {
+    "topFeatured": 3,
+    "perPage": 20,
+    "maxDisplay": {
+      "daily": 50,
+      "weekly": 100,
+      "monthly": 100,
+      "allTime": 500
+    }
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-11-28"
+  }
+}

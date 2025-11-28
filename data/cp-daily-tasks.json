@@ -1,0 +1,82 @@
+{
+  "dailyTasks": [
+    {
+      "id": "cp_gift_any",
+      "name": "Send Gift to CP",
+      "description": "Send any gift to your CP partner",
+      "expReward": 100,
+      "resetTime": "00:00 UTC",
+      "requirements": {
+        "action": "gift_send",
+        "target": "cp_partner",
+        "minValue": 1
+      }
+    },
+    {
+      "id": "cp_room_together",
+      "name": "Room Time Together",
+      "description": "Spend 30 minutes in the same room with your CP partner",
+      "expReward": 200,
+      "resetTime": "00:00 UTC",
+      "requirements": {
+        "action": "room_presence",
+        "target": "cp_partner",
+        "minDurationMinutes": 30
+      }
+    },
+    {
+      "id": "cp_chat",
+      "name": "Chat with CP",
+      "description": "Send 10 messages to your CP partner",
+      "expReward": 50,
+      "resetTime": "00:00 UTC",
+      "requirements": {
+        "action": "message_send",
+        "target": "cp_partner",
+        "minCount": 10
+      }
+    },
+    {
+      "id": "cp_visit_profile",
+      "name": "Visit CP Profile",
+      "description": "Visit your CP partner's profile",
+      "expReward": 25,
+      "resetTime": "00:00 UTC",
+      "requirements": {
+        "action": "profile_visit",
+        "target": "cp_partner",
+        "minCount": 1
+      }
+    }
+  ],
+  "weeklyTasks": [
+    {
+      "id": "cp_weekly_gift_milestone",
+      "name": "Weekly Gift Goal",
+      "description": "Send gifts worth 100,000 coins to your CP partner this week",
+      "expReward": 5000,
+      "resetTime": "Sunday 00:00 UTC",
+      "requirements": {
+        "action": "gift_send",
+        "target": "cp_partner",
+        "minValue": 100000
+      }
+    },
+    {
+      "id": "cp_weekly_room_hours",
+      "name": "Weekly Room Time",
+      "description": "Spend 5 hours in rooms with your CP partner this week",
+      "expReward": 3000,
+      "resetTime": "Sunday 00:00 UTC",
+      "requirements": {
+        "action": "room_presence",
+        "target": "cp_partner",
+        "minDurationMinutes": 300
+      }
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-11-28"
+  }
+}

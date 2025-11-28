@@ -1,0 +1,340 @@
+{
+  "categories": {
+    "gift": {
+      "name": "Gift Medals",
+      "description": "Awarded for sending and receiving gifts"
+    },
+    "achievement": {
+      "name": "Achievement Medals",
+      "description": "Awarded for reaching progression milestones"
+    },
+    "activity": {
+      "name": "Activity Medals",
+      "description": "Awarded for consistent engagement"
+    },
+    "special": {
+      "name": "Special Medals",
+      "description": "Event and relationship medals"
+    }
+  },
+  "medals": [
+    {
+      "id": "gift_sender_1",
+      "name": "Gift Sender I",
+      "category": "gift",
+      "description": "Send 10,000 coins in gifts",
+      "icon": "medal_gift_sender_1.png",
+      "milestone": 10000,
+      "milestoneType": "coins_sent",
+      "rewards": {
+        "coins": 1000
+      },
+      "duration": "permanent"
+    },
+    {
+      "id": "gift_sender_2",
+      "name": "Gift Sender II",
+      "category": "gift",
+      "description": "Send 100,000 coins in gifts",
+      "icon": "medal_gift_sender_2.png",
+      "milestone": 100000,
+      "milestoneType": "coins_sent",
+      "rewards": {
+        "coins": 5000
+      },
+      "duration": "permanent"
+    },
+    {
+      "id": "gift_sender_3",
+      "name": "Gift Sender III",
+      "category": "gift",
+      "description": "Send 1,000,000 coins in gifts",
+      "icon": "medal_gift_sender_3.png",
+      "milestone": 1000000,
+      "milestoneType": "coins_sent",
+      "rewards": {
+        "coins": 25000
+      },
+      "duration": "permanent"
+    },
+    {
+      "id": "gift_sender_4",
+      "name": "Gift Sender IV",
+      "category": "gift",
+      "description": "Send 10,000,000 coins in gifts",
+      "icon": "medal_gift_sender_4.png",
+      "milestone": 10000000,
+      "milestoneType": "coins_sent",
+      "rewards": {
+        "coins": 100000
+      },
+      "duration": "permanent"
+    },
+    {
+      "id": "gift_sender_5",
+      "name": "Gift Sender V",
+      "category": "gift",
+      "description": "Send 100,000,000 coins in gifts",
+      "icon": "medal_gift_sender_5.png",
+      "milestone": 100000000,
+      "milestoneType": "coins_sent",
+      "rewards": {
+        "coins": 500000
+      },
+      "duration": "permanent"
+    },
+    {
+      "id": "gift_receiver_1",
+      "name": "Gift Receiver I",
+      "category": "gift",
+      "description": "Receive 10,000 diamonds",
+      "icon": "medal_gift_receiver_1.png",
+      "milestone": 10000,
+      "milestoneType": "diamonds_received",
+      "rewards": {
+        "coins": 1000
+      },
+      "duration": "permanent"
+    },
+    {
+      "id": "login_7d",
+      "name": "7 Day Streak",
+      "category": "activity",
+      "description": "Logged in for 7 cumulative days",
+      "icon": "medal_login_7d.png",
+      "milestone": 7,
+      "milestoneType": "login_days",
+      "rewards": {
+        "coins": 10000,
+        "cosmetic": {
+          "type": "badge",
+          "id": "badge_7d",
+          "duration": "7d"
+        }
+      },
+      "duration": "permanent"
+    },
+    {
+      "id": "login_30d",
+      "name": "30 Day Veteran",
+      "category": "activity",
+      "description": "Logged in for 30 cumulative days",
+      "icon": "medal_login_30d.png",
+      "milestone": 30,
+      "milestoneType": "login_days",
+      "rewards": {
+        "coins": 50000,
+        "cosmetic": {
+          "type": "frame",
+          "id": "frame_30d",
+          "duration": "7d"
+        }
+      },
+      "duration": "permanent"
+    },
+    {
+      "id": "login_60d",
+      "name": "60 Day Regular",
+      "category": "activity",
+      "description": "Logged in for 60 cumulative days",
+      "icon": "medal_login_60d.png",
+      "milestone": 60,
+      "milestoneType": "login_days",
+      "rewards": {
+        "coins": 100000,
+        "cosmetic": {
+          "type": "mic_skin",
+          "id": "mic_60d",
+          "duration": "7d"
+        }
+      },
+      "duration": "permanent"
+    },
+    {
+      "id": "login_90d",
+      "name": "90 Day Dedicated",
+      "category": "activity",
+      "description": "Logged in for 90 cumulative days",
+      "icon": "medal_login_90d.png",
+      "milestone": 90,
+      "milestoneType": "login_days",
+      "rewards": {
+        "coins": 200000,
+        "cosmetic": {
+          "type": "seat_effect",
+          "id": "seat_90d",
+          "duration": "7d"
+        }
+      },
+      "duration": "permanent"
+    },
+    {
+      "id": "login_180d",
+      "name": "180 Day Loyal",
+      "category": "activity",
+      "description": "Logged in for 180 cumulative days",
+      "icon": "medal_login_180d.png",
+      "milestone": 180,
+      "milestoneType": "login_days",
+      "rewards": {
+        "coins": 500000,
+        "cosmetic": {
+          "type": "frame",
+          "id": "frame_180d",
+          "duration": "30d"
+        }
+      },
+      "duration": "permanent"
+    },
+    {
+      "id": "login_365d",
+      "name": "365 Day Legend",
+      "category": "activity",
+      "description": "Logged in for 365 cumulative days",
+      "icon": "medal_login_365d.png",
+      "milestone": 365,
+      "milestoneType": "login_days",
+      "rewards": {
+        "coins": 1000000,
+        "cosmetic": {
+          "type": "premium_set",
+          "id": "legendary_365d",
+          "duration": "permanent"
+        }
+      },
+      "duration": "permanent"
+    },
+    {
+      "id": "level_10",
+      "name": "Rising Star",
+      "category": "achievement",
+      "description": "Reach Level 10",
+      "icon": "medal_level_10.png",
+      "milestone": 10,
+      "milestoneType": "user_level",
+      "rewards": {
+        "coins": 10000,
+        "cosmetic": {
+          "type": "frame",
+          "id": "frame_level_10",
+          "duration": "7d"
+        }
+      },
+      "duration": "permanent"
+    },
+    {
+      "id": "level_20",
+      "name": "Established",
+      "category": "achievement",
+      "description": "Reach Level 20",
+      "icon": "medal_level_20.png",
+      "milestone": 20,
+      "milestoneType": "user_level",
+      "rewards": {
+        "coins": 25000,
+        "cosmetic": {
+          "type": "frame",
+          "id": "frame_level_20",
+          "duration": "14d"
+        }
+      },
+      "duration": "permanent"
+    },
+    {
+      "id": "level_60",
+      "name": "Master",
+      "category": "achievement",
+      "description": "Reach Level 60",
+      "icon": "medal_level_60.png",
+      "milestone": 60,
+      "milestoneType": "user_level",
+      "rewards": {
+        "coins": 500000,
+        "cosmetic": {
+          "type": "vehicle",
+          "id": "vehicle_level_60",
+          "duration": "30d"
+        }
+      },
+      "duration": "permanent"
+    },
+    {
+      "id": "cp_first",
+      "name": "First Love",
+      "category": "special",
+      "description": "Form your first CP partnership",
+      "icon": "medal_cp_first.png",
+      "milestone": 1,
+      "milestoneType": "cp_formed",
+      "rewards": {
+        "coins": 10000
+      },
+      "duration": "permanent"
+    },
+    {
+      "id": "cp_level_5",
+      "name": "Growing Love",
+      "category": "special",
+      "description": "Reach CP Level 5",
+      "icon": "medal_cp_level_5.png",
+      "milestone": 5,
+      "milestoneType": "cp_level",
+      "rewards": {
+        "coins": 100000
+      },
+      "duration": "permanent"
+    },
+    {
+      "id": "cp_level_10",
+      "name": "Eternal Love",
+      "category": "special",
+      "description": "Reach CP Level 10",
+      "icon": "medal_cp_level_10.png",
+      "milestone": 10,
+      "milestoneType": "cp_level",
+      "rewards": {
+        "coins": 1000000,
+        "cosmetic": {
+          "type": "frame",
+          "id": "frame_cp_10",
+          "duration": "permanent"
+        }
+      },
+      "duration": "permanent"
+    },
+    {
+      "id": "family_member",
+      "name": "Family Member",
+      "category": "special",
+      "description": "Join a family",
+      "icon": "medal_family_member.png",
+      "milestone": 1,
+      "milestoneType": "family_joined",
+      "rewards": {
+        "coins": 5000
+      },
+      "duration": "permanent"
+    },
+    {
+      "id": "family_founder",
+      "name": "Family Founder",
+      "category": "special",
+      "description": "Create a family",
+      "icon": "medal_family_founder.png",
+      "milestone": 1,
+      "milestoneType": "family_created",
+      "rewards": {
+        "coins": 25000
+      },
+      "duration": "permanent"
+    }
+  ],
+  "displaySettings": {
+    "maxDisplayed": 10,
+    "defaultOrder": ["achievement", "activity", "gift", "special"]
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-11-28"
+  }
+}

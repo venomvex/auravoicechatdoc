@@ -1,0 +1,91 @@
+{
+  "sellerTiers": [
+    {
+      "tier": "bronze",
+      "name": "Bronze Seller",
+      "duration": 30,
+      "fee": 50,
+      "currency": "USD",
+      "wholesaleDiscount": 0.10,
+      "badge": "seller_bronze"
+    },
+    {
+      "tier": "silver",
+      "name": "Silver Seller",
+      "duration": 90,
+      "fee": 120,
+      "currency": "USD",
+      "wholesaleDiscount": 0.15,
+      "badge": "seller_silver"
+    },
+    {
+      "tier": "gold",
+      "name": "Gold Seller",
+      "duration": 180,
+      "fee": 200,
+      "currency": "USD",
+      "wholesaleDiscount": 0.20,
+      "badge": "seller_gold"
+    },
+    {
+      "tier": "platinum",
+      "name": "Platinum Seller",
+      "duration": 365,
+      "fee": 350,
+      "currency": "USD",
+      "wholesaleDiscount": 0.25,
+      "badge": "seller_platinum"
+    },
+    {
+      "tier": "diamond",
+      "name": "Diamond Seller",
+      "duration": null,
+      "fee": 500,
+      "currency": "USD",
+      "wholesaleDiscount": 0.30,
+      "badge": "seller_diamond"
+    }
+  ],
+  "wholesalePackages": [
+    {"coins": 1000000, "basePrice": 10, "currency": "USD"},
+    {"coins": 5000000, "basePrice": 50, "currency": "USD"},
+    {"coins": 10000000, "basePrice": 100, "currency": "USD"},
+    {"coins": 50000000, "basePrice": 500, "currency": "USD"},
+    {"coins": 100000000, "basePrice": 1000, "currency": "USD"}
+  ],
+  "volumeBonuses": [
+    {"minSales": 1000000, "maxSales": 5000000, "bonusRate": 0.02},
+    {"minSales": 5000000, "maxSales": 10000000, "bonusRate": 0.03},
+    {"minSales": 10000000, "maxSales": 25000000, "bonusRate": 0.04},
+    {"minSales": 25000000, "maxSales": 50000000, "bonusRate": 0.05},
+    {"minSales": 50000000, "maxSales": 100000000, "bonusRate": 0.06},
+    {"minSales": 100000000, "maxSales": null, "bonusRate": 0.08}
+  ],
+  "streakBonuses": [
+    {"days": 7, "bonus": 100000, "description": "7-day active sales"},
+    {"days": 30, "bonus": 500000, "description": "30-day active sales"},
+    {"days": 90, "bonus": 2000000, "description": "90-day active sales"}
+  ],
+  "referralBonuses": [
+    {"referredTier": "bronze", "bonus": 500000},
+    {"referredTier": "silver", "bonus": 1000000},
+    {"referredTier": "gold", "bonus": 2000000},
+    {"referredTier": "platinum", "bonus": 3000000},
+    {"referredTier": "diamond", "bonus": 5000000}
+  ],
+  "transactionLimits": {
+    "minimum": 100000,
+    "maximum": 100000000,
+    "dailyNewBuyer": 5000000,
+    "dailyVerifiedBuyer": 50000000
+  },
+  "sellerRequirements": {
+    "minAccountAgeDays": 30,
+    "minLevel": 20,
+    "kycRequired": true
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-11-28"
+  }
+}

@@ -1,0 +1,134 @@
+{
+  "friendLevels": [
+    {
+      "level": 1,
+      "expRequired": 0,
+      "privileges": ["friend_badge"],
+      "rewards": {
+        "coins": 1000
+      }
+    },
+    {
+      "level": 2,
+      "expRequired": 10000,
+      "privileges": ["friend_bubbles"],
+      "rewards": {
+        "coins": 5000,
+        "cosmetic": {
+          "type": "chat_bubble",
+          "id": "friend_bubble_lv2",
+          "duration": "7d"
+        }
+      }
+    },
+    {
+      "level": 3,
+      "expRequired": 50000,
+      "privileges": ["friend_vehicle"],
+      "rewards": {
+        "coins": 10000,
+        "cosmetic": {
+          "type": "vehicle",
+          "id": "friend_vehicle_lv3",
+          "duration": "7d"
+        }
+      }
+    },
+    {
+      "level": 4,
+      "expRequired": 100000,
+      "privileges": ["enhanced_bubbles"],
+      "rewards": {
+        "coins": 25000,
+        "cosmetic": {
+          "type": "chat_bubble",
+          "id": "friend_bubble_lv4",
+          "duration": "14d"
+        }
+      }
+    },
+    {
+      "level": 5,
+      "expRequired": 200000,
+      "privileges": ["friend_background_lv5"],
+      "rewards": {
+        "coins": 50000,
+        "cosmetic": {
+          "type": "background",
+          "id": "friend_bg_lv5",
+          "duration": "14d"
+        }
+      }
+    },
+    {
+      "level": 6,
+      "expRequired": 400000,
+      "privileges": ["friend_theme"],
+      "rewards": {
+        "coins": 100000,
+        "cosmetic": {
+          "type": "theme",
+          "id": "friend_theme_lv6",
+          "duration": "14d"
+        }
+      }
+    },
+    {
+      "level": 7,
+      "expRequired": 800000,
+      "privileges": ["friend_background_lv7"],
+      "rewards": {
+        "coins": 200000,
+        "cosmetic": {
+          "type": "background",
+          "id": "friend_bg_lv7",
+          "duration": "30d"
+        }
+      }
+    },
+    {
+      "level": 8,
+      "expRequired": 1500000,
+      "privileges": ["premium_friend_vehicle"],
+      "rewards": {
+        "coins": 400000,
+        "cosmetic": {
+          "type": "vehicle",
+          "id": "friend_vehicle_lv8",
+          "duration": "30d"
+        }
+      }
+    },
+    {
+      "level": 9,
+      "expRequired": 3000000,
+      "privileges": ["friend_background_lv9"],
+      "rewards": {
+        "coins": 800000,
+        "cosmetic": {
+          "type": "background",
+          "id": "friend_bg_lv9",
+          "duration": "30d"
+        }
+      }
+    },
+    {
+      "level": 10,
+      "expRequired": 6000000,
+      "privileges": ["full_friend_set"],
+      "rewards": {
+        "coins": 2000000,
+        "cosmetic": {
+          "type": "bundle",
+          "id": "friend_set_lv10",
+          "duration": "permanent",
+          "includes": ["frame", "vehicle", "background", "theme", "bubbles"]
+        }
+      }
+    }
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-11-28"
+  }
+}

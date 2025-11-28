@@ -1,0 +1,135 @@
+{
+  "tiers": [
+    {
+      "tier": 1,
+      "name": "VIP 1",
+      "rechargeRequired": 10,
+      "currency": "USD",
+      "expMultiplier": 1.1,
+      "dailyRewardMultiplier": 1.2,
+      "giftBonusPercent": 5,
+      "features": ["vip_badge", "priority_support"],
+      "monthlyCoins": 10000
+    },
+    {
+      "tier": 2,
+      "name": "VIP 2",
+      "rechargeRequired": 50,
+      "currency": "USD",
+      "expMultiplier": 1.15,
+      "dailyRewardMultiplier": 1.4,
+      "giftBonusPercent": 7,
+      "features": ["vip_badge", "priority_support", "exclusive_frame_7d"],
+      "monthlyCoins": 25000
+    },
+    {
+      "tier": 3,
+      "name": "VIP 3",
+      "rechargeRequired": 100,
+      "currency": "USD",
+      "expMultiplier": 1.2,
+      "dailyRewardMultiplier": 1.6,
+      "giftBonusPercent": 10,
+      "features": ["vip_badge", "priority_support", "exclusive_frame_7d", "custom_id_discount"],
+      "monthlyCoins": 50000
+    },
+    {
+      "tier": 4,
+      "name": "VIP 4",
+      "rechargeRequired": 250,
+      "currency": "USD",
+      "expMultiplier": 1.25,
+      "dailyRewardMultiplier": 1.8,
+      "giftBonusPercent": 12,
+      "features": ["vip_badge", "priority_support", "exclusive_frame_14d", "custom_id_discount", "vip_vehicle_7d"],
+      "monthlyCoins": 100000
+    },
+    {
+      "tier": 5,
+      "name": "VIP 5",
+      "rechargeRequired": 500,
+      "currency": "USD",
+      "expMultiplier": 1.3,
+      "dailyRewardMultiplier": 2.0,
+      "giftBonusPercent": 15,
+      "features": ["vip_badge", "priority_support", "exclusive_frame_30d", "custom_id_discount", "vip_vehicle_14d", "super_mic_access"],
+      "monthlyCoins": 200000
+    },
+    {
+      "tier": 6,
+      "name": "VIP 6",
+      "rechargeRequired": 1000,
+      "currency": "USD",
+      "expMultiplier": 1.35,
+      "dailyRewardMultiplier": 2.2,
+      "giftBonusPercent": 18,
+      "features": ["vip_badge", "priority_support", "exclusive_frame_30d", "custom_id_free", "vip_vehicle_30d", "super_mic_access", "vip_theme_14d"],
+      "monthlyCoins": 350000
+    },
+    {
+      "tier": 7,
+      "name": "VIP 7",
+      "rechargeRequired": 2500,
+      "currency": "USD",
+      "expMultiplier": 1.4,
+      "dailyRewardMultiplier": 2.4,
+      "giftBonusPercent": 20,
+      "features": ["vip_badge", "priority_support", "exclusive_frame_permanent", "custom_id_free", "vip_vehicle_30d", "super_mic_access", "vip_theme_30d", "exclusive_games"],
+      "monthlyCoins": 500000
+    },
+    {
+      "tier": 8,
+      "name": "VIP 8",
+      "rechargeRequired": 5000,
+      "currency": "USD",
+      "expMultiplier": 1.45,
+      "dailyRewardMultiplier": 2.6,
+      "giftBonusPercent": 22,
+      "features": ["vip_badge", "priority_support", "exclusive_frame_permanent", "custom_id_free", "vip_vehicle_permanent", "super_mic_access", "vip_theme_30d", "exclusive_games", "vip_seat_effect"],
+      "monthlyCoins": 750000
+    },
+    {
+      "tier": 9,
+      "name": "VIP 9",
+      "rechargeRequired": 10000,
+      "currency": "USD",
+      "expMultiplier": 1.5,
+      "dailyRewardMultiplier": 2.8,
+      "giftBonusPercent": 25,
+      "features": ["svip_badge", "priority_support", "exclusive_frame_permanent", "custom_id_free", "vip_vehicle_permanent", "super_mic_access", "vip_theme_permanent", "exclusive_games", "vip_seat_effect", "personal_manager"],
+      "monthlyCoins": 1000000
+    },
+    {
+      "tier": 10,
+      "name": "VIP 10 (SVIP)",
+      "rechargeRequired": 25000,
+      "currency": "USD",
+      "expMultiplier": 1.6,
+      "dailyRewardMultiplier": 3.0,
+      "giftBonusPercent": 30,
+      "features": ["svip_badge", "priority_support", "exclusive_frame_permanent", "custom_id_free", "svip_vehicle_permanent", "super_mic_access", "svip_theme_permanent", "exclusive_games", "svip_seat_effect", "personal_manager", "legendary_set"],
+      "monthlyCoins": 2000000
+    }
+  ],
+  "benefits": {
+    "expMultiplier": "Bonus EXP on all activities",
+    "dailyRewardMultiplier": "Multiplied daily login rewards",
+    "giftBonusPercent": "Extra coins when sending gifts",
+    "monthlyCoins": "Free monthly coin allocation",
+    "priority_support": "24/7 priority customer support",
+    "custom_id_discount": "50% off custom ID",
+    "custom_id_free": "Free custom ID",
+    "super_mic_access": "Super Mic feature unlocked",
+    "personal_manager": "Dedicated account manager",
+    "exclusive_games": "Access to VIP-only games"
+  },
+  "maintenance": {
+    "retentionPeriod": 30,
+    "downgradeProtection": 7,
+    "reactivationBonus": 0.1
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-11-28"
+  }
+}

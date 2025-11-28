@@ -1,0 +1,101 @@
+{
+  "cpLevels": [
+    {
+      "level": 1,
+      "cumulativeCoins": 72000000,
+      "expRequired": 3960000,
+      "giftReward": 288000,
+      "frameCoins": 216000,
+      "baggageCoins": 108000,
+      "privileges": ["mic_effect_lv1", "room_card_lv1"]
+    },
+    {
+      "level": 2,
+      "cumulativeCoins": 135000000,
+      "expRequired": 7425000,
+      "giftReward": 540000,
+      "frameCoins": 405000,
+      "baggageCoins": 202500,
+      "privileges": ["chat_bubbles_lv2"]
+    },
+    {
+      "level": 3,
+      "cumulativeCoins": 270000000,
+      "expRequired": 17010000,
+      "giftReward": 1296000,
+      "frameCoins": 810000,
+      "baggageCoins": 405000,
+      "privileges": ["vehicle_lv3"]
+    },
+    {
+      "level": 4,
+      "cumulativeCoins": 450000000,
+      "expRequired": 31230000,
+      "giftReward": 2448000,
+      "frameCoins": 1350000,
+      "baggageCoins": 675000,
+      "privileges": ["background_lv4"]
+    },
+    {
+      "level": 5,
+      "cumulativeCoins": 675000000,
+      "expRequired": 46845000,
+      "giftReward": 3672000,
+      "frameCoins": 2025000,
+      "baggageCoins": 1012500,
+      "privileges": ["theme_lv5"]
+    },
+    {
+      "level": 6,
+      "cumulativeCoins": 990000000,
+      "expRequired": 68706000,
+      "giftReward": 5385600,
+      "frameCoins": 2970000,
+      "baggageCoins": 1485000,
+      "privileges": ["enhanced_mic_lv6"]
+    },
+    {
+      "level": 7,
+      "cumulativeCoins": 1350000000,
+      "expRequired": 93690000,
+      "giftReward": 7344000,
+      "frameCoins": 4050000,
+      "baggageCoins": 2025000,
+      "privileges": ["premium_vehicle_lv7"]
+    },
+    {
+      "level": 8,
+      "cumulativeCoins": 2250000000,
+      "expRequired": 156150000,
+      "giftReward": 12240000,
+      "frameCoins": 6750000,
+      "baggageCoins": 3375000,
+      "privileges": ["premium_background_lv8"]
+    },
+    {
+      "level": 9,
+      "cumulativeCoins": 4500000000,
+      "expRequired": 312300000,
+      "giftReward": 24480000,
+      "frameCoins": 13500000,
+      "baggageCoins": 6750000,
+      "privileges": ["premium_theme_lv9"]
+    },
+    {
+      "level": 10,
+      "cumulativeCoins": 9000000000,
+      "expRequired": 624600000,
+      "giftReward": 48960000,
+      "frameCoins": 27000000,
+      "baggageCoins": 13500000,
+      "privileges": ["legendary_set_lv10"]
+    }
+  ],
+  "formationFee": 3000000,
+  "expPerCoin": 1,
+  "dissolutionCooldownDays": 7,
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-11-28"
+  }
+}
