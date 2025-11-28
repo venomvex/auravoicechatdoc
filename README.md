@@ -9,23 +9,33 @@ This document bundles core product decisions, UI layouts, economy rules, rewards
 ## 📚 Documentation Index
 
 ### Feature Documentation
+
+#### VIP & Progression
 | Feature | Description | Link |
 |---------|-------------|------|
 | VIP Systems | Both VIP systems (multiplier + full SVIP) | [docs/features/vip-systems.md](docs/features/vip-systems.md) |
 | AuraPass (Full VIP) | Complete VIP specification with tiers | [docs/features/aurapass.md](docs/features/aurapass.md) |
 | AuraPass Spin | VIP Score earning through spins | [docs/features/aurapass-spin.md](docs/features/aurapass-spin.md) |
 | VIP Recharge Bonus | Bonus coins on recharge by VIP tier | [docs/features/vip-recharge-bonus.md](docs/features/vip-recharge-bonus.md) |
+
+#### Rewards & Economy
+| Feature | Description | Link |
+|---------|-------------|------|
 | Daily Rewards | 7-day login reward cycle | [docs/features/daily-rewards.md](docs/features/daily-rewards.md) |
 | Recharge Event | Daily Surge, Aurora Milestones, Recharge Royale | [docs/features/recharge-event.md](docs/features/recharge-event.md) |
 | Medals | Achievement and activity medals | [docs/features/medals.md](docs/features/medals.md) |
 | Wallet | Coins, Diamonds, and exchange | [docs/features/wallet.md](docs/features/wallet.md) |
 | Store | Cosmetics and item purchases | [docs/features/store.md](docs/features/store.md) |
+| Gifts | Gift economy and baggage | [docs/features/gifts.md](docs/features/gifts.md) |
+
+#### Social & Engagement
+| Feature | Description | Link |
+|---------|-------------|------|
 | Referrals | Get Coins and Get Cash programs | [docs/features/referrals.md](docs/features/referrals.md) |
 | CP | Couple Partnership system | [docs/features/cp.md](docs/features/cp.md) |
 | Rooms | Voice/video rooms feature | [docs/features/rooms.md](docs/features/rooms.md) |
 | Video/Music | Room video/music mode | [docs/features/video-music-mode.md](docs/features/video-music-mode.md) |
 | Rocket System | Gamified engagement milestones | [docs/features/rocket-system.md](docs/features/rocket-system.md) |
-| Gifts | Gift economy and baggage | [docs/features/gifts.md](docs/features/gifts.md) |
 
 ### Design Documentation
 | Topic | Link |
@@ -77,7 +87,9 @@ This document bundles core product decisions, UI layouts, economy rules, rewards
 - Authentication
 - Home & Navigation
 - Daily Login Rewards
-- VIP (SVIP)
+- VIP (SVIP) & AuraPass
+- Recharge Events (Daily Surge, Aurora Milestones, Recharge Royale)
+- Rocket Launch System
 - Medals System
 - Wallet, Coins & Diamonds
 - Store & Items
@@ -166,6 +178,34 @@ Tiers and multipliers
 Notes
 - VIP multiplier applies to Daily Rewards at claim.
 - Additional VIP benefits (future-ready): EXP boost, exclusive items, priority join.
+
+### VIP-Linked Programs
+- **VIP Recharge Bonus:** Immediate bonus coins on every recharge based on tier (2%–30%). See [VIP Recharge Bonus](docs/features/vip-recharge-bonus.md).
+- **AuraPass Spin:** Earn VIP Score through spin tickets gained from recharges. See [AuraPass Spin](docs/features/aurapass-spin.md).
+
+---
+
+## Recharge Events
+
+Multi-layer recharge incentive system with daily, weekly, and monthly rewards. See [Recharge Event](docs/features/recharge-event.md) for full details.
+
+| Layer | Name | Cycle | Description |
+|-------|------|-------|-------------|
+| Daily | Daily Surge | Daily reset (00:00 UTC) | Random reward after meeting threshold |
+| Monthly | Aurora Milestones | Calendar month | Cumulative recharge ladder with 11 tiers (5M → 2,500M) |
+| Weekly | Recharge Royale | Monday 00:00 UTC → Monday 00:00 UTC | Ranking competition with top 200 rewards |
+
+---
+
+## Rocket Launch System
+
+Gamified engagement system that tracks cumulative gift sending in rooms. See [Rocket System](docs/features/rocket-system.md) for full details.
+
+- **6 Rocket Milestones** per room: 2.5M → 5M → 10M → 15M → 20M → 30M coins
+- **Event Sequence:** Threshold reached → 10s countdown → Launch animation → Rewards distribution
+- **Rewards:** Top 3 senders receive coins + EXP; random participants receive bonus rewards
+- **Teddy Bear Gift:** Chance-based premium gift for Top 1 sender (10%–90% based on rocket level)
+- **Regional System:** Each region maintains independent rocket states per room
 
 ---
 

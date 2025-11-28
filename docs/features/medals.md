@@ -154,4 +154,5 @@ Returns public medals only (excludes hidden).
 - [Daily Login Rewards](./daily-rewards.md)
 - [VIP Systems](./vip-systems.md)
 - [Store & Items](./store.md)
-- [Product Specification](../README.md)
+- [Recharge Event](./recharge-event.md)
+- [Product Specification](../../README.md)

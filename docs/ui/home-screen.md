@@ -155,3 +155,6 @@ Applies Aura branding (purple→white gradient), includes the Rewards icon (bott
 - [Daily Rewards](../features/daily-rewards.md)
 - [CP Partnership](../features/cp.md)
 - [Video/Music Mode](../features/video-music-mode.md)
+- [Rocket System](../features/rocket-system.md)
+- [Recharge Event](../features/recharge-event.md)
+- [Product Specification](../../README.md)

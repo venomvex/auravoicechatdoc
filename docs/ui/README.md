@@ -53,4 +53,5 @@ This folder contains UI/UX specifications for Aura Voice Chat screens.
 
 - [Design Tokens](../design/tokens.md)
 - [Accessibility](../design/accessibility.md)
+- [Naming Glossary](../naming-glossary.md)
 - [Product Specification](../../README.md)

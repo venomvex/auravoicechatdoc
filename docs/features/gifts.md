@@ -157,4 +157,6 @@ Request:
 - [Wallet & Currency](./wallet.md)
 - [CP Partnership](./cp.md)
 - [Store & Items](./store.md)
-- [Product Specification](../README.md)
+- [Rocket System](./rocket-system.md)
+- [Rooms](./rooms.md)
+- [Product Specification](../../README.md)

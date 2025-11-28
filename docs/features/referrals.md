@@ -178,4 +178,6 @@ GET  /referrals/cash/ranking?page=N
 ## Related Documentation
 
 - [Wallet & Currency](./wallet.md)
-- [Product Specification](../README.md)
+- [VIP Systems](./vip-systems.md)
+- [Recharge Event](./recharge-event.md)
+- [Product Specification](../../README.md)

@@ -140,4 +140,7 @@ For significant transactions, confirmation dialogs appear:
 - [Store & Items](./store.md)
 - [Gift System](./gifts.md)
 - [Referral Programs](./referrals.md)
-- [Product Specification](../README.md)
+- [Recharge Event](./recharge-event.md)
+- [VIP Recharge Bonus](./vip-recharge-bonus.md)
+- [Naming Glossary](../naming-glossary.md)
+- [Product Specification](../../README.md)

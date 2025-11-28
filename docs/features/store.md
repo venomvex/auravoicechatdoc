@@ -153,5 +153,7 @@ Request:
 
 - [Wallet & Currency](./wallet.md)
 - [VIP Systems](./vip-systems.md)
+- [AuraPass (Full VIP)](./aurapass.md)
 - [Medals System](./medals.md)
-- [Product Specification](../README.md)
+- [Recharge Event](./recharge-event.md)
+- [Product Specification](../../README.md)

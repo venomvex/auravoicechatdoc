@@ -10,20 +10,30 @@ Format follows [Keep a Changelog](https://keepachangelog.com/) and [Semantic Ver
 
 ### Added
 - VIP systems documentation (both multiplier-only and full SVIP)
+- AuraPass (Full VIP) specification with 10 tiers and comprehensive perks
+- AuraPass Spin program for earning VIP Score through spin tickets
+- VIP Recharge Bonus program for tier-based recharge bonuses
+- Recharge Event system with Daily Surge, Aurora Milestones, and Recharge Royale
+- Rocket Launch System for gamified room engagement
 - Comprehensive feature documentation for all major features
 - Design tokens and theme specification
 - Accessibility guidelines
-- Complete API reference
+- Complete API reference with new endpoints for Rocket System, Recharge Events, and AuraPass programs
 - Troubleshooting guide
 - Operations runbooks
+- Naming Glossary for canonical terms (Star Coins, Nova XP, etc.)
 
 ### Changed
 - Consolidated pending decisions into single document
 - Reorganized documentation structure with docs/ folder
 - Updated all skeleton documentation files with content
+- Reorganized Feature Documentation index by category (VIP & Progression, Rewards & Economy, Social & Engagement)
+- Updated Architecture with new services (Rocket, Recharge, AuraPass)
+- Enhanced data models with RocketState, RechargeProgress, and AuraPassProgress entities
 
 ### Fixed
 - Documentation structure and cross-linking
+- Related documentation links in all feature files
 
 ### Deprecated
 - N/A

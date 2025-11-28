@@ -163,4 +163,6 @@ Request:
 ## Related Documentation
 
 - [Rooms Overview](./rooms.md)
-- [Product Specification](../README.md)
+- [Rocket System](./rocket-system.md)
+- [Gifts & Baggage](./gifts.md)
+- [Product Specification](../../README.md)

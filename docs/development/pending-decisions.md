@@ -397,5 +397,9 @@ The following require screenshots or design assets:
 
 ## Related Documentation
 
-- [Product Specification](../README.md)
-- [Feature Documentation](../docs/features/)
+- [Product Specification](../../README.md)
+- [Feature Documentation](../features/)
+- [VIP Systems](../features/vip-systems.md)
+- [AuraPass](../features/aurapass.md)
+- [Recharge Event](../features/recharge-event.md)
+- [Rocket System](../features/rocket-system.md)

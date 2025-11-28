@@ -324,6 +324,160 @@ POST /rooms/{id}/video/exit
 
 ---
 
+## Rocket System Endpoints
+
+### Get Room Rocket State
+```
+GET /room/{roomId}/rocket/state
+```
+
+Response:
+```json
+{
+  "roomId": "R112233",
+  "region": "Pakistan",
+  "currentRocket": 3,
+  "currentTotalSent": 10453219,
+  "nextMilestone": 15000000,
+  "milestones": [
+    { "rocket": 1, "trigger": 2500000, "launchedAtUtc": "2025-11-26T05:10:00Z" },
+    { "rocket": 2, "trigger": 5000000, "launchedAtUtc": "2025-11-26T06:20:00Z" }
+  ]
+}
+```
+
+### Increment Contribution
+```
+POST /room/{roomId}/rocket/contribution
+```
+
+### Get Active Rockets by Region
+```
+GET /region/{region}/rockets/active
+```
+
+### Get Rocket Rewards
+```
+GET /room/{roomId}/rocket/{rocketNumber}/rewards
+```
+
+---
+
+## Recharge Event Endpoints
+
+### Get Recharge Status (Composite)
+```
+GET /programs/recharge/status
+```
+
+Response includes daily surge, monthly milestones, and weekly ranking status.
+
+### Claim Daily Surge Reward
+```
+POST /programs/recharge/daily/claim
+```
+
+### Claim Milestone Bundle
+```
+POST /programs/recharge/milestone/claim
+```
+
+Request:
+```json
+{
+  "threshold": 5000000
+}
+```
+
+### Get Milestone Ladder
+```
+GET /programs/recharge/milestones
+```
+
+### Get Daily Surge Pools
+```
+GET /programs/recharge/daily-pools
+```
+
+### Get Weekly Leaderboard
+```
+GET /programs/recharge/weekly-leaderboard?page=1
+```
+
+### Get Weekly Rewards
+```
+GET /programs/recharge/weekly-rewards
+```
+
+### Get Recharge Logs
+```
+GET /programs/recharge/logs
+```
+
+---
+
+## AuraPass Program Endpoints
+
+### AuraPass Spin — Get Status
+```
+GET /programs/aurapass-spin/status
+```
+
+Response:
+```json
+{
+  "ticketBalance": 5,
+  "vipScore": 125000,
+  "currentTier": "VIP4",
+  "wheels": {
+    "spark": { "ticketCost": 1, "available": true },
+    "flare": { "ticketCost": 3, "available": true }
+  }
+}
+```
+
+### AuraPass Spin — Execute Spin
+```
+POST /programs/aurapass-spin/spin
+```
+
+Request:
+```json
+{
+  "wheel": "spark",
+  "count": 1
+}
+```
+
+### AuraPass Spin — Get Records
+```
+GET /programs/aurapass-spin/records?cursor=xxx
+```
+
+### VIP Recharge Bonus — Get Status
+```
+GET /programs/vip-recharge-bonus/status
+```
+
+Response:
+```json
+{
+  "currentTier": "VIP5",
+  "bonusPercentage": 12,
+  "caps": {
+    "perRecharge": 1000000,
+    "perDay": 5000000
+  }
+}
+```
+
+### VIP Recharge Bonus — Get Records
+```
+GET /programs/vip-recharge-bonus/records?cursor=xxx
+```
+
+---
+
 ## Pagination
 
 ### Convention

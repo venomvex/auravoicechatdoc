@@ -177,3 +177,7 @@ Items (3 equally spaced columns):
 - [Wallet](../features/wallet.md)
 - [Medals](../features/medals.md)
 - [VIP Systems](../features/vip-systems.md)
+- [AuraPass](../features/aurapass.md)
+- [Referrals](../features/referrals.md)
+- [Store](../features/store.md)
+- [Product Specification](../../README.md)

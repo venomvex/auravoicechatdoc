@@ -35,15 +35,18 @@ Aura Voice Chat is a mobile-first voice and video chat application built on a mi
 
 ### Key Components
 
-| Component       | Responsibility                              |
-|-----------------|---------------------------------------------|
-| API Gateway     | Authentication, rate limiting, routing      |
-| Auth Service    | OTP, OAuth, session management              |
-| User Service    | Profiles, medals, VIP, relationships        |
-| Rewards Service | Daily rewards, referrals, economy           |
-| Room Service    | Voice/video rooms, seats, chat              |
-| Gift Service    | Gift catalog, transactions, animations      |
-| Media Service   | Video/music playback, YouTube integration   |
+| Component         | Responsibility                              |
+|-------------------|---------------------------------------------|
+| API Gateway       | Authentication, rate limiting, routing      |
+| Auth Service      | OTP, OAuth, session management              |
+| User Service      | Profiles, medals, VIP, relationships        |
+| Rewards Service   | Daily rewards, referrals, economy           |
+| Room Service      | Voice/video rooms, seats, chat              |
+| Gift Service      | Gift catalog, transactions, animations      |
+| Media Service     | Video/music playback, YouTube integration   |
+| Rocket Service    | Room rocket milestones, regional events     |
+| Recharge Service  | Daily Surge, Aurora Milestones, Royale      |
+| AuraPass Service  | VIP tiers, spin program, recharge bonuses   |
 
 ---
 
@@ -79,7 +82,7 @@ Aura Voice Chat is a mobile-first voice and video chat application built on a mi
 User
 ├── id, name, avatar, level
 ├── coins, diamonds
-├── vipTier, vipExpiry
+├── vipTier, vipScore, vipExpiry
 └── settings
 
 DailyReward
@@ -95,12 +98,30 @@ Room
 ├── id, name, ownerId
 ├── type (voice/video/music)
 ├── seats[], settings
-└── playlist[]
+├── playlist[]
+└── rocketState
 
 Gift
 ├── id, name, price
 ├── region, animation
 └── diamondValue
+
+RocketState
+├── roomId, region
+├── currentRocket, currentTotalSent
+├── nextMilestone
+└── milestones[]
+
+RechargeProgress
+├── userId, dailySurgeLevel
+├── monthlyTotal, claimedThresholds[]
+├── weeklyTotal, weeklyRank
+└── lastRechargeDate
+
+AuraPassProgress
+├── userId, vipScore, currentTier
+├── spinTickets, spinHistory[]
+└── rechargeBonusHistory[]
 ```
 
 ### Relationships
@@ -109,6 +130,9 @@ Gift
 - User → Room: Ownership, Participation
 - User → Medal: Earned, Displayed
 - User → Gift: Sent, Received
+- Room → RocketState: Per-region rocket progression
+- User → RechargeProgress: Recharge event tracking
+- User → AuraPassProgress: VIP progression and spin history
 
 ---
 

@@ -157,7 +157,12 @@ The following are planned or under consideration for the VIP systems:
 
 ## Related Documentation
 
+- [AuraPass (Full VIP)](./aurapass.md)
+- [AuraPass Spin](./aurapass-spin.md)
+- [VIP Recharge Bonus](./vip-recharge-bonus.md)
 - [Daily Login Rewards](./daily-rewards.md)
+- [Recharge Event](./recharge-event.md)
 - [Medals System](./medals.md)
 - [Store & Items](./store.md)
-- [Product Specification](../README.md)
+- [Naming Glossary](../naming-glossary.md)
+- [Product Specification](../../README.md)

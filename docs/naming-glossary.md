@@ -64,10 +64,23 @@ Prefix all recharge-related events with `recharge_`:
 - `recharge_milestone_claim`
 - `recharge_royale_rank_claim`
 
+Prefix all rocket-related events with `rocket_`:
+- `rocket_threshold_reached`
+- `rocket_launch`
+- `rocket_rewards_distributed`
+
+Prefix all AuraPass-related events with `aurapass_`:
+- `aurapass_spin_complete`
+- `aurapass_tier_upgrade`
+
 ---
 
 ## Related Documentation
 
 - [Recharge Event](./features/recharge-event.md)
+- [Rocket System](./features/rocket-system.md)
 - [AuraPass (VIP)](./features/aurapass.md)
+- [AuraPass Spin](./features/aurapass-spin.md)
+- [VIP Recharge Bonus](./features/vip-recharge-bonus.md)
+- [Daily Rewards](./features/daily-rewards.md)
 - [Product Specification](../README.md)

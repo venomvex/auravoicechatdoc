@@ -148,6 +148,9 @@ Response:
 ## Related Documentation
 
 - [VIP Systems](./vip-systems.md)
+- [AuraPass (Full VIP)](./aurapass.md)
+- [Recharge Event](./recharge-event.md)
 - [Medals System](./medals.md)
 - [Wallet & Currency](./wallet.md)
-- [Product Specification](../README.md)
+- [Naming Glossary](../naming-glossary.md)
+- [Product Specification](../../README.md)
