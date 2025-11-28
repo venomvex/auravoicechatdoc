@@ -9,6 +9,22 @@ Format follows [Keep a Changelog](https://keepachangelog.com/) and [Semantic Ver
 ## [Unreleased]
 
 ### Added
+- **Games System** — Complete game mechanics for Lucky Spin, Dice Roll, Card Flip, Treasure Box, Lucky Number, Coin Toss, Slot Machine with Firebase integration
+- **EXP & Level System** — Level 1-100 progression with rewards, feature unlocks, VIP multipliers, and Firebase cloud functions
+- **Events System** — Room slider events, recharge events, seasonal events, competitions, lucky events with full configuration
+- **Custom Animations** — Original Aura-branded vehicles, gift animations, frames, seat effects, mic effects, and themes
+- **Earning System** — User earning through activity targets with multi-region payouts (EasyPaisa, JazzCash, UPI, Paytm, PayPal, bank)
+- **Reseller System** — Seller tiers, wholesale pricing, seller panel, volume bonuses
+- **CP & Friend System** — Complete CP levels (Lv.1-10), Friend levels, privileges, daily tasks
+- **Family System** — Creation, roles, perks, ranking, cooldowns
+- **Medals System** — Gift/Achievement/Activity/Special medals with milestones
+- **Profile & Inventory** — Frames, themes, vehicles, Custom ID, Super Mic
+- **Rankings** — Room, Player, CP, Family leaderboards with rewards
+- **Privacy & Terms** — Consolidated Privacy Policy and Terms of Service
+- **Owner CMS** — Full admin controls, versioning, rollback capabilities
+- **Firebase Setup** — Auth, Crashlytics, Analytics, Firestore rules, cloud functions
+- **Build & Gradle** — Gradle 8.4, SDK 28-34, CI/CD configuration
+- Complete data JSON files for all systems (games, levels, events, animations, VIP, jar tasks)
 - VIP systems documentation (both multiplier-only and full SVIP)
 - Comprehensive feature documentation for all major features
 - Design tokens and theme specification

@@ -1,0 +1,141 @@
+{
+  "eventTypes": {
+    "room_slider": {
+      "maxActive": 5,
+      "displayOrder": ["eligibility", "endingSoon", "priority"]
+    },
+    "recharge": {
+      "types": ["first_recharge", "daily_surge", "aurora_milestone", "recharge_royale"]
+    },
+    "seasonal": {
+      "events": ["new_year", "valentine", "eid", "diwali", "christmas", "anniversary"]
+    },
+    "competition": {
+      "events": ["gift_king", "charm_queen", "room_star", "cp_champions", "family_war"]
+    }
+  },
+  "rechargeEvents": {
+    "first_recharge": {
+      "name": "First Recharge Bonus",
+      "bonusPercent": 100,
+      "oneTime": true
+    },
+    "daily_surge": {
+      "name": "Daily Surge",
+      "tiers": [
+        {"day": 1, "bonus": 0.10},
+        {"day": 2, "bonus": 0.12},
+        {"day": 3, "bonus": 0.15},
+        {"day": 4, "bonus": 0.18},
+        {"day": 5, "bonus": 0.20},
+        {"day": 6, "bonus": 0.25},
+        {"day": 7, "bonus": 0.30, "extraReward": {"type": "frame", "duration": "7d"}}
+      ]
+    },
+    "aurora_milestone": {
+      "name": "Aurora Milestones",
+      "milestones": [
+        {"amount": 10, "currency": "USD", "reward": {"coins": 100000}},
+        {"amount": 50, "currency": "USD", "reward": {"coins": 600000, "cosmetic": {"type": "frame", "duration": "7d"}}},
+        {"amount": 100, "currency": "USD", "reward": {"coins": 1500000, "cosmetic": {"type": "vehicle", "duration": "7d"}}},
+        {"amount": 500, "currency": "USD", "reward": {"coins": 10000000, "cosmetic": {"type": "theme", "duration": "30d"}}},
+        {"amount": 1000, "currency": "USD", "reward": {"coins": 25000000, "cosmetic": {"type": "legendary_set", "duration": "permanent"}}}
+      ]
+    }
+  },
+  "luckyEvents": {
+    "lucky_bag": {
+      "tiers": [
+        {"name": "Bronze", "cost": 10000, "minReward": 5000, "maxReward": 50000},
+        {"name": "Silver", "cost": 50000, "minReward": 25000, "maxReward": 250000},
+        {"name": "Gold", "cost": 200000, "minReward": 100000, "maxReward": 2000000},
+        {"name": "Diamond", "cost": 1000000, "minReward": 500000, "maxReward": 10000000}
+      ],
+      "probabilities": {
+        "0.5x": [0.15, 0.12, 0.10, 0.08],
+        "1x": [0.40, 0.35, 0.30, 0.25],
+        "2x": [0.30, 0.32, 0.35, 0.37],
+        "5x": [0.12, 0.15, 0.18, 0.20],
+        "10x": [0.025, 0.05, 0.06, 0.08],
+        "20x": [0.005, 0.01, 0.01, 0.02]
+      }
+    },
+    "lucky_draw": {
+      "prizes": [
+        {"name": "Small Coins", "probability": 0.35, "value": {"type": "coins", "amount": 1000}},
+        {"name": "Medium Coins", "probability": 0.25, "value": {"type": "coins", "amount": 5000}},
+        {"name": "Event Frame (3d)", "probability": 0.15, "value": {"type": "frame", "duration": "3d"}},
+        {"name": "Event Frame (7d)", "probability": 0.10, "value": {"type": "frame", "duration": "7d"}},
+        {"name": "Large Coins", "probability": 0.08, "value": {"type": "coins", "amount": 25000}},
+        {"name": "Event Vehicle (7d)", "probability": 0.05, "value": {"type": "vehicle", "duration": "7d"}},
+        {"name": "Grand Prize", "probability": 0.02, "value": {"type": "coins", "amount": 500000}}
+      ]
+    }
+  },
+  "competitionEvents": {
+    "gift_king": {
+      "name": "Gift King",
+      "duration": "weekly",
+      "metric": "coins_sent",
+      "rewards": {
+        "1": {"coins": 5000000, "cosmetic": {"type": "frame", "id": "gift_king_frame", "duration": "7d"}},
+        "2-3": {"coins": 2000000},
+        "4-10": {"coins": 500000},
+        "11-50": {"coins": 100000}
+      }
+    },
+    "charm_queen": {
+      "name": "Charm Queen",
+      "duration": "weekly",
+      "metric": "diamonds_received",
+      "rewards": {
+        "1": {"coins": 5000000, "cosmetic": {"type": "frame", "id": "charm_queen_frame", "duration": "7d"}},
+        "2-3": {"coins": 2000000},
+        "4-10": {"coins": 500000},
+        "11-50": {"coins": 100000}
+      }
+    },
+    "room_star": {
+      "name": "Room Star",
+      "duration": "weekly",
+      "metric": "room_visitors",
+      "rewards": {
+        "1": {"coins": 3000000, "badge": "room_star"},
+        "2-3": {"coins": 1000000},
+        "4-10": {"coins": 250000}
+      }
+    },
+    "cp_champions": {
+      "name": "CP Champions",
+      "duration": "monthly",
+      "metric": "cp_exp_gained",
+      "rewards": {
+        "1": {"coins": 10000000, "cosmetic": {"type": "cp_set", "duration": "30d"}},
+        "2-3": {"coins": 5000000},
+        "4-10": {"coins": 1000000}
+      }
+    },
+    "family_war": {
+      "name": "Family War",
+      "duration": "weekly",
+      "metric": "family_activity",
+      "rewards": {
+        "1": {"coins": 20000000, "distributed": "family"},
+        "2-3": {"coins": 10000000, "distributed": "family"},
+        "4-10": {"coins": 2000000, "distributed": "family"}
+      }
+    }
+  },
+  "seasonalEvents": {
+    "new_year": {"name": "Aura Celebration", "duration": 14, "bonusMultiplier": 2.0},
+    "valentine": {"name": "Hearts Festival", "duration": 7, "cpBonus": true},
+    "eid": {"name": "Eid Mubarak", "duration": 7, "specialGifts": true},
+    "diwali": {"name": "Festival of Lights", "duration": 7, "specialGifts": true},
+    "christmas": {"name": "Winter Wonderland", "duration": 14, "specialGifts": true},
+    "anniversary": {"name": "Aura Birthday", "duration": 7, "megaRewards": true}
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-11-28"
+  }
+}

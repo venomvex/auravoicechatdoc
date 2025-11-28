@@ -1,0 +1,141 @@
+{
+  "games": {
+    "lucky_spin": {
+      "id": "lucky_spin",
+      "name": "Lucky Spin Wheel",
+      "description": "Spin the wheel to win big rewards!",
+      "enabled": true,
+      "minLevel": 1,
+      "segments": [
+        {"id": "lose", "label": "Try Again", "multiplier": 0, "probability": 0.20, "color": "#808080"},
+        {"id": "2x", "label": "2x", "multiplier": 2, "probability": 0.25, "color": "#4CAF50"},
+        {"id": "3x", "label": "3x", "multiplier": 3, "probability": 0.20, "color": "#8BC34A"},
+        {"id": "5x", "label": "5x", "multiplier": 5, "probability": 0.15, "color": "#FFEB3B"},
+        {"id": "10x", "label": "10x", "multiplier": 10, "probability": 0.10, "color": "#FF9800"},
+        {"id": "25x", "label": "25x", "multiplier": 25, "probability": 0.05, "color": "#FF5722"},
+        {"id": "50x", "label": "50x", "multiplier": 50, "probability": 0.03, "color": "#E91E63"},
+        {"id": "100x", "label": "100x", "multiplier": 100, "probability": 0.015, "color": "#9C27B0"},
+        {"id": "jackpot", "label": "JACKPOT", "multiplier": 500, "probability": 0.005, "color": "#FFD700"}
+      ],
+      "betTiers": [
+        {"id": "low", "amount": 1000, "minLevel": 1},
+        {"id": "medium", "amount": 10000, "minLevel": 10},
+        {"id": "high", "amount": 100000, "minLevel": 20},
+        {"id": "vip", "amount": 1000000, "minLevel": 30, "vipRequired": 3}
+      ]
+    },
+    "dice_roll": {
+      "id": "dice_roll",
+      "name": "Dice Roll",
+      "description": "Roll the dice and bet on the outcome!",
+      "enabled": true,
+      "minLevel": 5,
+      "betTypes": [
+        {"id": "high", "label": "High (8-12)", "payout": 1.8, "outcomes": [8,9,10,11,12]},
+        {"id": "low", "label": "Low (2-6)", "payout": 1.8, "outcomes": [2,3,4,5,6]},
+        {"id": "seven", "label": "Lucky 7", "payout": 5, "outcomes": [7]},
+        {"id": "double", "label": "Double", "payout": 10, "type": "double"},
+        {"id": "snake_eyes", "label": "Snake Eyes (1-1)", "payout": 30, "outcomes": [[1,1]]},
+        {"id": "boxcars", "label": "Boxcars (6-6)", "payout": 30, "outcomes": [[6,6]]}
+      ],
+      "betLimits": {"min": 500, "max": 500000}
+    },
+    "card_flip": {
+      "id": "card_flip",
+      "name": "Higher or Lower",
+      "description": "Guess if the next card is higher or lower!",
+      "enabled": true,
+      "minLevel": 10,
+      "multipliers": [
+        {"streak": 1, "multiplier": 1.5},
+        {"streak": 2, "multiplier": 1.5},
+        {"streak": 3, "multiplier": 2.0},
+        {"streak": 4, "multiplier": 2.0},
+        {"streak": 5, "multiplier": 3.0},
+        {"streak": 6, "multiplier": 5.0}
+      ],
+      "betLimits": {"min": 1000, "max": 200000}
+    },
+    "treasure_box": {
+      "id": "treasure_box",
+      "name": "Treasure Hunt",
+      "description": "Open treasure boxes but avoid the bombs!",
+      "enabled": true,
+      "minLevel": 15,
+      "gridSize": 9,
+      "boxTypes": {
+        "coin": {"count": 3, "values": [5000, 10000, 15000]},
+        "multiplier_2x": {"count": 2},
+        "multiplier_3x": {"count": 1},
+        "bomb": {"count": 3}
+      },
+      "entryFees": [5000, 10000, 25000, 50000, 100000]
+    },
+    "lucky_number": {
+      "id": "lucky_number",
+      "name": "Lucky Number",
+      "description": "Pick a number 1-100 and test your luck!",
+      "enabled": true,
+      "minLevel": 5,
+      "range": {"min": 1, "max": 100},
+      "payouts": [
+        {"distance": 0, "multiplier": 100},
+        {"distance": 1, "multiplier": 50},
+        {"distance": 3, "multiplier": 20},
+        {"distance": 5, "multiplier": 10},
+        {"distance": 10, "multiplier": 5},
+        {"distance": 20, "multiplier": 2}
+      ],
+      "betLimits": {"min": 1000, "max": 250000}
+    },
+    "coin_toss": {
+      "id": "coin_toss",
+      "name": "Coin Flip",
+      "description": "Classic heads or tails!",
+      "enabled": true,
+      "minLevel": 1,
+      "payouts": {
+        "single": 1.9,
+        "double": 3.6,
+        "triple": 6.8
+      },
+      "betLimits": {"min": 500, "max": 100000}
+    },
+    "slot_machine": {
+      "id": "slot_machine",
+      "name": "Aura Slots",
+      "description": "Spin the reels for big wins!",
+      "enabled": true,
+      "minLevel": 10,
+      "symbols": [
+        {"id": "cherry", "emoji": "🍒", "multiplier": 5, "probability": 0.15},
+        {"id": "lemon", "emoji": "🍋", "multiplier": 10, "probability": 0.12},
+        {"id": "orange", "emoji": "🍊", "multiplier": 15, "probability": 0.10},
+        {"id": "star", "emoji": "⭐", "multiplier": 25, "probability": 0.08},
+        {"id": "diamond", "emoji": "💎", "multiplier": 50, "probability": 0.05},
+        {"id": "seven", "emoji": "7️⃣", "multiplier": 100, "probability": 0.02},
+        {"id": "crown", "emoji": "👑", "multiplier": 0, "probability": 0.005, "jackpot": true}
+      ],
+      "jackpotContribution": 0.01,
+      "minJackpot": 10000000,
+      "betLimits": {"min": 1000, "max": 500000}
+    }
+  },
+  "settings": {
+    "rateLimit": {"gamesPerMinute": 60},
+    "dailyLossLimit": 1000000,
+    "sessionTimeout": 14400,
+    "coolOffPeriod": 86400
+  },
+  "exp": {
+    "playGame": 10,
+    "winGame": 25,
+    "winStreak3": 50,
+    "jackpot": 500,
+    "dailyFirst": 100
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-11-28"
+  }
+}

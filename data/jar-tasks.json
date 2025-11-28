@@ -1,0 +1,143 @@
+{
+  "jarSystem": {
+    "description": "Jar system for daily task completion and rewards",
+    "resetTime": "00:00 UTC",
+    "maxJarLevel": 10
+  },
+  "dailyTasks": [
+    {
+      "id": "daily_login",
+      "name": "Daily Login",
+      "description": "Log in to the app",
+      "jarPoints": 10,
+      "exp": 50,
+      "coins": 1000,
+      "autoComplete": true
+    },
+    {
+      "id": "send_message",
+      "name": "Send Messages",
+      "description": "Send 10 messages in any room",
+      "requirement": {"type": "messages", "count": 10},
+      "jarPoints": 15,
+      "exp": 30,
+      "coins": 500
+    },
+    {
+      "id": "join_rooms",
+      "name": "Join Rooms",
+      "description": "Join 3 different rooms",
+      "requirement": {"type": "room_joins", "count": 3},
+      "jarPoints": 20,
+      "exp": 40,
+      "coins": 1000
+    },
+    {
+      "id": "spend_time",
+      "name": "Room Time",
+      "description": "Spend 30 minutes in rooms",
+      "requirement": {"type": "room_time_minutes", "count": 30},
+      "jarPoints": 25,
+      "exp": 60,
+      "coins": 1500
+    },
+    {
+      "id": "send_gift",
+      "name": "Send a Gift",
+      "description": "Send any gift to another user",
+      "requirement": {"type": "gifts_sent", "count": 1},
+      "jarPoints": 30,
+      "exp": 50,
+      "coins": 2000
+    },
+    {
+      "id": "use_mic",
+      "name": "Use Microphone",
+      "description": "Use microphone for 10 minutes",
+      "requirement": {"type": "mic_time_minutes", "count": 10},
+      "jarPoints": 25,
+      "exp": 50,
+      "coins": 1500
+    },
+    {
+      "id": "add_friend",
+      "name": "Make a Friend",
+      "description": "Add a new friend",
+      "requirement": {"type": "friends_added", "count": 1},
+      "jarPoints": 20,
+      "exp": 40,
+      "coins": 1000
+    },
+    {
+      "id": "play_game",
+      "name": "Play a Game",
+      "description": "Play any game",
+      "requirement": {"type": "games_played", "count": 1},
+      "jarPoints": 15,
+      "exp": 30,
+      "coins": 500
+    }
+  ],
+  "jarLevels": [
+    {"level": 1, "pointsRequired": 0, "reward": {"coins": 5000}},
+    {"level": 2, "pointsRequired": 50, "reward": {"coins": 10000}},
+    {"level": 3, "pointsRequired": 100, "reward": {"coins": 15000, "exp": 100}},
+    {"level": 4, "pointsRequired": 150, "reward": {"coins": 25000, "exp": 150}},
+    {"level": 5, "pointsRequired": 200, "reward": {"coins": 40000, "exp": 200, "cosmetic": {"type": "frame", "duration": "3d"}}},
+    {"level": 6, "pointsRequired": 250, "reward": {"coins": 60000, "exp": 250}},
+    {"level": 7, "pointsRequired": 300, "reward": {"coins": 85000, "exp": 300}},
+    {"level": 8, "pointsRequired": 350, "reward": {"coins": 120000, "exp": 400, "cosmetic": {"type": "frame", "duration": "7d"}}},
+    {"level": 9, "pointsRequired": 400, "reward": {"coins": 175000, "exp": 500}},
+    {"level": 10, "pointsRequired": 450, "reward": {"coins": 250000, "exp": 750, "cosmetic": {"type": "vehicle", "duration": "7d"}}}
+  ],
+  "streakBonus": {
+    "enabled": true,
+    "bonuses": [
+      {"days": 3, "bonusPercent": 10},
+      {"days": 7, "bonusPercent": 25, "extraReward": {"coins": 50000}},
+      {"days": 14, "bonusPercent": 40, "extraReward": {"coins": 150000, "cosmetic": {"type": "frame", "duration": "7d"}}},
+      {"days": 30, "bonusPercent": 60, "extraReward": {"coins": 500000, "cosmetic": {"type": "vehicle", "duration": "14d"}}}
+    ]
+  },
+  "weeklyTasks": [
+    {
+      "id": "weekly_gifts",
+      "name": "Weekly Gifter",
+      "description": "Send gifts worth 100,000 coins this week",
+      "requirement": {"type": "coins_gifted", "count": 100000},
+      "reward": {"coins": 50000, "exp": 500}
+    },
+    {
+      "id": "weekly_host",
+      "name": "Weekly Host",
+      "description": "Host rooms for 5 hours this week",
+      "requirement": {"type": "hosting_hours", "count": 5},
+      "reward": {"coins": 75000, "exp": 600}
+    },
+    {
+      "id": "weekly_social",
+      "name": "Social Butterfly",
+      "description": "Make 10 new friends this week",
+      "requirement": {"type": "friends_added", "count": 10},
+      "reward": {"coins": 40000, "exp": 400}
+    },
+    {
+      "id": "weekly_games",
+      "name": "Game Master",
+      "description": "Play 20 games this week",
+      "requirement": {"type": "games_played", "count": 20},
+      "reward": {"coins": 60000, "exp": 500}
+    }
+  ],
+  "rules": {
+    "taskReset": "00:00 UTC daily",
+    "weeklyReset": "Monday 00:00 UTC",
+    "jarPointsExpire": false,
+    "maxDailyPoints": 160,
+    "vipBonusApplies": true
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2025-11-28"
+  }
+}
