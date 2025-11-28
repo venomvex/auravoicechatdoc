@@ -1,0 +1,27 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AllowCognitoSMSSending",
+      "Effect": "Allow",
+      "Action": [
+        "sns:Publish"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "sns:Protocol": "sms"
+        }
+      }
+    },
+    {
+      "Sid": "AllowCognitoEmailSending",
+      "Effect": "Allow",
+      "Action": [
+        "ses:SendEmail",
+        "ses:SendRawEmail"
+      ],
+      "Resource": "*"
+    }
+  ]
+}

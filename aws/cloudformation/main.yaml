@@ -1,0 +1,676 @@
+# Aura Voice Chat - Main CloudFormation Stack
+# Developer: Hawkaye Visions LTD — Pakistan
+#
+# This is the main stack that imports all nested stacks.
+# Deploy with: aws cloudformation create-stack --stack-name aura-voice-chat --template-body file://main.yaml --capabilities CAPABILITY_IAM
+
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Aura Voice Chat - Complete AWS Infrastructure Stack'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: production
+    AllowedValues:
+      - development
+      - staging
+      - production
+    Description: Deployment environment
+
+  ProjectName:
+    Type: String
+    Default: aura-voice-chat
+    Description: Project name for resource naming
+
+  DBPassword:
+    Type: String
+    NoEcho: true
+    MinLength: 8
+    Description: PostgreSQL database master password
+
+  AdminEmail:
+    Type: String
+    Description: Admin email for Cognito and notifications
+
+  InstanceType:
+    Type: String
+    Default: t3.micro
+    AllowedValues:
+      - t3.micro
+      - t3.small
+      - t3.medium
+      - t3.large
+    Description: EC2 instance type
+
+  DBInstanceClass:
+    Type: String
+    Default: db.t3.micro
+    AllowedValues:
+      - db.t3.micro
+      - db.t3.small
+      - db.t3.medium
+    Description: RDS instance class
+
+  KeyPairName:
+    Type: AWS::EC2::KeyPair::KeyName
+    Description: EC2 key pair for SSH access
+
+Mappings:
+  RegionAMI:
+    us-east-1:
+      AMI: ami-0c7217cdde317cfec  # Ubuntu 22.04 LTS
+    us-west-2:
+      AMI: ami-008fe2fc65df48dac  # Ubuntu 22.04 LTS
+    eu-west-1:
+      AMI: ami-0694d931cee176e7d  # Ubuntu 22.04 LTS
+    ap-southeast-1:
+      AMI: ami-078c1149d8ad719a7  # Ubuntu 22.04 LTS
+
+Resources:
+  # VPC and Networking
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-vpc'
+        - Key: Environment
+          Value: !Ref Environment
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-igw'
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: !Select [0, !GetAZs '']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-public-subnet-1'
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: !Select [1, !GetAZs '']
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-public-subnet-2'
+
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.10.0/24
+      AvailabilityZone: !Select [0, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-private-subnet-1'
+
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: 10.0.11.0/24
+      AvailabilityZone: !Select [1, !GetAZs '']
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-private-subnet-2'
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-public-rt'
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet1
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet2
+      RouteTableId: !Ref PublicRouteTable
+
+  # Security Groups
+  EC2SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub '${ProjectName}-ec2-sg'
+      GroupDescription: Security group for EC2 instance
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+          Description: SSH access
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+          Description: HTTP
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+          Description: HTTPS
+        - IpProtocol: tcp
+          FromPort: 3000
+          ToPort: 3000
+          CidrIp: 0.0.0.0/0
+          Description: Node.js app
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-ec2-sg'
+
+  RDSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub '${ProjectName}-rds-sg'
+      GroupDescription: Security group for RDS PostgreSQL
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref EC2SecurityGroup
+          Description: PostgreSQL from EC2
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-rds-sg'
+
+  # RDS PostgreSQL
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupName: !Sub '${ProjectName}-db-subnet-group'
+      DBSubnetGroupDescription: Subnet group for RDS
+      SubnetIds:
+        - !Ref PrivateSubnet1
+        - !Ref PrivateSubnet2
+
+  RDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBInstanceIdentifier: !Sub '${ProjectName}-postgres'
+      DBInstanceClass: !Ref DBInstanceClass
+      Engine: postgres
+      EngineVersion: '15.4'
+      AllocatedStorage: '20'
+      StorageType: gp3
+      DBName: auravoicechat
+      MasterUsername: aura_admin
+      MasterUserPassword: !Ref DBPassword
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      VPCSecurityGroups:
+        - !Ref RDSSecurityGroup
+      PubliclyAccessible: false
+      BackupRetentionPeriod: 7
+      MultiAZ: false
+      StorageEncrypted: true
+      DeletionProtection: false
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-postgres'
+        - Key: Environment
+          Value: !Ref Environment
+
+  # S3 Buckets
+  FileStorageBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${ProjectName}-files-${AWS::AccountId}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+              - PUT
+              - POST
+              - DELETE
+              - HEAD
+            AllowedOrigins:
+              - '*'
+            MaxAge: 3600
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldVersions
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 30
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-files'
+        - Key: Environment
+          Value: !Ref Environment
+
+  # Cognito User Pool
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub '${ProjectName}-user-pool'
+      AutoVerifiedAttributes:
+        - email
+        - phone_number
+      UsernameAttributes:
+        - email
+        - phone_number
+      MfaConfiguration: OPTIONAL
+      EnabledMfas:
+        - SMS_MFA
+      SmsConfiguration:
+        ExternalId: !Sub '${ProjectName}-cognito-external-id'
+        SnsCallerArn: !GetAtt CognitoSNSRole.Arn
+      Schema:
+        - Name: email
+          AttributeDataType: String
+          Mutable: true
+          Required: true
+        - Name: phone_number
+          AttributeDataType: String
+          Mutable: true
+          Required: false
+        - Name: name
+          AttributeDataType: String
+          Mutable: true
+          Required: false
+        - Name: display_name
+          AttributeDataType: String
+          Mutable: true
+          Required: false
+      Policies:
+        PasswordPolicy:
+          MinimumLength: 8
+          RequireLowercase: true
+          RequireNumbers: true
+          RequireSymbols: false
+          RequireUppercase: true
+      AccountRecoverySetting:
+        RecoveryMechanisms:
+          - Name: verified_email
+            Priority: 1
+          - Name: verified_phone_number
+            Priority: 2
+      UserPoolTags:
+        Environment: !Ref Environment
+        Project: !Ref ProjectName
+
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: !Sub '${ProjectName}-app-client'
+      UserPoolId: !Ref UserPool
+      GenerateSecret: true
+      ExplicitAuthFlows:
+        - ALLOW_ADMIN_USER_PASSWORD_AUTH
+        - ALLOW_CUSTOM_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_USER_SRP_AUTH
+      PreventUserExistenceErrors: ENABLED
+      SupportedIdentityProviders:
+        - COGNITO
+      RefreshTokenValidity: 30
+      AccessTokenValidity: 1
+      IdTokenValidity: 1
+      TokenValidityUnits:
+        RefreshToken: days
+        AccessToken: hours
+        IdToken: hours
+
+  IdentityPool:
+    Type: AWS::Cognito::IdentityPool
+    Properties:
+      IdentityPoolName: !Sub '${ProjectName}_identity_pool'
+      AllowUnauthenticatedIdentities: false
+      CognitoIdentityProviders:
+        - ClientId: !Ref UserPoolClient
+          ProviderName: !GetAtt UserPool.ProviderName
+
+  # Cognito SNS Role (for SMS)
+  CognitoSNSRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-cognito-sns-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cognito-idp.amazonaws.com
+            Action: 'sts:AssumeRole'
+            Condition:
+              StringEquals:
+                'sts:ExternalId': !Sub '${ProjectName}-cognito-external-id'
+      Policies:
+        - PolicyName: CognitoSNSPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'sns:Publish'
+                Resource: '*'
+
+  # SNS Topics for Push Notifications
+  PushNotificationTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub '${ProjectName}-push-notifications'
+      DisplayName: Aura Voice Chat Notifications
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  # EC2 IAM Role
+  EC2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-ec2-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+      Policies:
+        - PolicyName: AuraVoiceChatEC2Policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                  - 's3:PutObject'
+                  - 's3:DeleteObject'
+                  - 's3:ListBucket'
+                Resource:
+                  - !Sub 'arn:aws:s3:::${FileStorageBucket}'
+                  - !Sub 'arn:aws:s3:::${FileStorageBucket}/*'
+              - Effect: Allow
+                Action:
+                  - 'cognito-idp:AdminCreateUser'
+                  - 'cognito-idp:AdminDeleteUser'
+                  - 'cognito-idp:AdminGetUser'
+                  - 'cognito-idp:AdminUpdateUserAttributes'
+                  - 'cognito-idp:AdminInitiateAuth'
+                  - 'cognito-idp:AdminRespondToAuthChallenge'
+                  - 'cognito-idp:ListUsers'
+                Resource: !GetAtt UserPool.Arn
+              - Effect: Allow
+                Action:
+                  - 'sns:Publish'
+                  - 'sns:CreatePlatformEndpoint'
+                  - 'sns:DeleteEndpoint'
+                Resource:
+                  - !Ref PushNotificationTopic
+                  - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:app/*'
+
+  EC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: !Sub '${ProjectName}-ec2-profile'
+      Roles:
+        - !Ref EC2Role
+
+  # EC2 Instance
+  EC2Instance:
+    Type: AWS::EC2::Instance
+    DependsOn:
+      - RDSInstance
+    Properties:
+      InstanceType: !Ref InstanceType
+      ImageId: !FindInMap [RegionAMI, !Ref 'AWS::Region', AMI]
+      KeyName: !Ref KeyPairName
+      IamInstanceProfile: !Ref EC2InstanceProfile
+      NetworkInterfaces:
+        - DeviceIndex: 0
+          SubnetId: !Ref PublicSubnet1
+          GroupSet:
+            - !Ref EC2SecurityGroup
+          AssociatePublicIpAddress: true
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set -e
+          
+          # Update system
+          apt update && apt upgrade -y
+          
+          # Install Node.js 18
+          curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+          apt install -y nodejs
+          
+          # Install PostgreSQL client
+          apt install -y postgresql-client
+          
+          # Install PM2
+          npm install -g pm2
+          
+          # Install Nginx
+          apt install -y nginx
+          
+          # Create app directory
+          mkdir -p /opt/aura-voice-chat
+          chown ubuntu:ubuntu /opt/aura-voice-chat
+          
+          # Write environment variables
+          cat > /opt/aura-voice-chat/.env << 'EOF'
+          NODE_ENV=production
+          PORT=3000
+          
+          # AWS Configuration
+          AWS_REGION=${AWS::Region}
+          
+          # Cognito
+          COGNITO_USER_POOL_ID=${UserPool}
+          COGNITO_CLIENT_ID=${UserPoolClient}
+          COGNITO_IDENTITY_POOL_ID=${IdentityPool}
+          
+          # Database
+          DB_HOST=${RDSInstance.Endpoint.Address}
+          DB_PORT=5432
+          DB_NAME=auravoicechat
+          DB_USER=aura_admin
+          DB_PASSWORD=${DBPassword}
+          DATABASE_URL=postgresql://aura_admin:${DBPassword}@${RDSInstance.Endpoint.Address}:5432/auravoicechat
+          
+          # S3
+          S3_BUCKET_NAME=${FileStorageBucket}
+          S3_BUCKET_REGION=${AWS::Region}
+          
+          # SNS
+          SNS_TOPIC_ARN=${PushNotificationTopic}
+          
+          # JWT
+          JWT_SECRET=$(openssl rand -hex 32)
+          JWT_EXPIRES_IN=7d
+          
+          # Redis
+          REDIS_URL=redis://localhost:6379
+          
+          # CORS
+          CORS_ORIGIN=*
+          EOF
+          
+          # Install Redis
+          apt install -y redis-server
+          systemctl enable redis-server
+          systemctl start redis-server
+          
+          # Configure Nginx
+          cat > /etc/nginx/sites-available/aura-voice-chat << 'NGINX'
+          upstream aura_backend {
+              server 127.0.0.1:3000;
+              keepalive 64;
+          }
+          
+          server {
+              listen 80;
+              server_name _;
+          
+              location / {
+                  proxy_pass http://aura_backend;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade $http_upgrade;
+                  proxy_set_header Connection 'upgrade';
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto $scheme;
+                  proxy_cache_bypass $http_upgrade;
+                  proxy_read_timeout 86400;
+              }
+          
+              location /socket.io/ {
+                  proxy_pass http://aura_backend;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade $http_upgrade;
+                  proxy_set_header Connection "upgrade";
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+              }
+          }
+          NGINX
+          
+          ln -sf /etc/nginx/sites-available/aura-voice-chat /etc/nginx/sites-enabled/
+          rm -f /etc/nginx/sites-enabled/default
+          systemctl restart nginx
+          
+          # Signal completion
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource EC2Instance --region ${AWS::Region}
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-server'
+        - Key: Environment
+          Value: !Ref Environment
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: PT15M
+
+  # Elastic IP for EC2
+  ElasticIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      InstanceId: !Ref EC2Instance
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-eip'
+
+Outputs:
+  VPCId:
+    Description: VPC ID
+    Value: !Ref VPC
+    Export:
+      Name: !Sub '${AWS::StackName}-VPCId'
+
+  EC2PublicIP:
+    Description: EC2 instance public IP
+    Value: !Ref ElasticIP
+    Export:
+      Name: !Sub '${AWS::StackName}-EC2PublicIP'
+
+  EC2InstanceId:
+    Description: EC2 instance ID
+    Value: !Ref EC2Instance
+    Export:
+      Name: !Sub '${AWS::StackName}-EC2InstanceId'
+
+  RDSEndpoint:
+    Description: RDS PostgreSQL endpoint
+    Value: !GetAtt RDSInstance.Endpoint.Address
+    Export:
+      Name: !Sub '${AWS::StackName}-RDSEndpoint'
+
+  RDSPort:
+    Description: RDS PostgreSQL port
+    Value: !GetAtt RDSInstance.Endpoint.Port
+    Export:
+      Name: !Sub '${AWS::StackName}-RDSPort'
+
+  S3BucketName:
+    Description: S3 bucket for file storage
+    Value: !Ref FileStorageBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-S3BucketName'
+
+  CognitoUserPoolId:
+    Description: Cognito User Pool ID
+    Value: !Ref UserPool
+    Export:
+      Name: !Sub '${AWS::StackName}-CognitoUserPoolId'
+
+  CognitoUserPoolArn:
+    Description: Cognito User Pool ARN
+    Value: !GetAtt UserPool.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-CognitoUserPoolArn'
+
+  CognitoClientId:
+    Description: Cognito App Client ID
+    Value: !Ref UserPoolClient
+    Export:
+      Name: !Sub '${AWS::StackName}-CognitoClientId'
+
+  CognitoIdentityPoolId:
+    Description: Cognito Identity Pool ID
+    Value: !Ref IdentityPool
+    Export:
+      Name: !Sub '${AWS::StackName}-CognitoIdentityPoolId'
+
+  SNSTopicArn:
+    Description: SNS Topic ARN for push notifications
+    Value: !Ref PushNotificationTopic
+    Export:
+      Name: !Sub '${AWS::StackName}-SNSTopicArn'

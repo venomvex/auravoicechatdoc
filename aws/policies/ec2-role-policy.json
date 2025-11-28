@@ -1,0 +1,74 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "S3Access",
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:DeleteObject",
+        "s3:ListBucket",
+        "s3:GetBucketLocation"
+      ],
+      "Resource": [
+        "arn:aws:s3:::aura-voice-chat-files-*",
+        "arn:aws:s3:::aura-voice-chat-files-*/*"
+      ]
+    },
+    {
+      "Sid": "CognitoAccess",
+      "Effect": "Allow",
+      "Action": [
+        "cognito-idp:AdminCreateUser",
+        "cognito-idp:AdminDeleteUser",
+        "cognito-idp:AdminGetUser",
+        "cognito-idp:AdminUpdateUserAttributes",
+        "cognito-idp:AdminSetUserPassword",
+        "cognito-idp:AdminInitiateAuth",
+        "cognito-idp:AdminRespondToAuthChallenge",
+        "cognito-idp:AdminUserGlobalSignOut",
+        "cognito-idp:ListUsers",
+        "cognito-idp:GetUser",
+        "cognito-idp:DescribeUserPool"
+      ],
+      "Resource": "arn:aws:cognito-idp:*:*:userpool/*"
+    },
+    {
+      "Sid": "SNSAccess",
+      "Effect": "Allow",
+      "Action": [
+        "sns:Publish",
+        "sns:CreatePlatformEndpoint",
+        "sns:DeleteEndpoint",
+        "sns:SetEndpointAttributes",
+        "sns:GetEndpointAttributes"
+      ],
+      "Resource": [
+        "arn:aws:sns:*:*:aura-voice-chat-*",
+        "arn:aws:sns:*:*:app/*"
+      ]
+    },
+    {
+      "Sid": "CloudWatchLogsAccess",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents",
+        "logs:DescribeLogStreams"
+      ],
+      "Resource": "arn:aws:logs:*:*:log-group:/aws/ec2/aura-voice-chat*"
+    },
+    {
+      "Sid": "SSMAccess",
+      "Effect": "Allow",
+      "Action": [
+        "ssm:GetParameter",
+        "ssm:GetParameters",
+        "ssm:GetParametersByPath"
+      ],
+      "Resource": "arn:aws:ssm:*:*:parameter/aura-voice-chat/*"
+    }
+  ]
+}

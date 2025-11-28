@@ -13,11 +13,8 @@ if (nodeEnv === 'production') {
   if (!process.env.JWT_SECRET) {
     throw new Error('JWT_SECRET environment variable is required in production');
   }
-  if (!process.env.JWT_REFRESH_SECRET) {
-    throw new Error('JWT_REFRESH_SECRET environment variable is required in production');
-  }
-  if (!process.env.DATABASE_URL) {
-    throw new Error('DATABASE_URL environment variable is required in production');
+  if (!process.env.DATABASE_URL && !process.env.DB_HOST) {
+    throw new Error('DATABASE_URL or DB_HOST environment variable is required in production');
   }
 }
 
@@ -28,6 +25,15 @@ export const config = {
   
   // Database
   databaseUrl: process.env.DATABASE_URL || '',
+  database: {
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '5432', 10),
+    name: process.env.DB_NAME || 'auravoicechat',
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || '',
+    poolMin: parseInt(process.env.DB_POOL_MIN || '2', 10),
+    poolMax: parseInt(process.env.DB_POOL_MAX || '20', 10),
+  },
   
   // Redis
   redisUrl: process.env.REDIS_URL || 'redis://localhost:6379',
@@ -38,11 +44,9 @@ export const config = {
   jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || (nodeEnv === 'development' ? 'dev-refresh-secret-change-in-prod' : ''),
   jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
   
-  // Firebase
-  firebase: {
-    projectId: process.env.FIREBASE_PROJECT_ID || '',
-    clientEmail: process.env.FIREBASE_CLIENT_EMAIL || '',
-    privateKey: (process.env.FIREBASE_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
+  // AWS (loaded from aws.config.ts)
+  aws: {
+    region: process.env.AWS_REGION || 'us-east-1',
   },
   
   // Twilio
