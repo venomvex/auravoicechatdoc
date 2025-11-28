@@ -2,6 +2,8 @@
 
 Complete documentation for the Admin Panel in Aura Voice Chat. The admin system is hierarchical with Owner at the top, Country Admins managing each country, Regular Admins handling daily operations, and Customer Support staff helping users.
 
+**App Developer:** Hawkaye Visions LTD — Lahore, Pakistan
+
 ## Overview
 
 The Admin Panel provides tools for day-to-day app management including user moderation, content review, support tickets, and basic analytics. Users escalate issues from Customer Support → Regular Admin → Country Admin → Owner.

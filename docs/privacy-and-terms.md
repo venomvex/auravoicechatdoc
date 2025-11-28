@@ -2,13 +2,17 @@
 
 This document consolidates the Privacy Policy and Terms & Conditions for Aura Voice Chat.
 
+**Developer:** Hawkaye Visions LTD  
+**Headquarters:** Lahore, Pakistan  
+**Business Type:** Private Limited Technology Company
+
 ---
 
 ## Privacy Policy
 
 ### 1. Introduction
 
-Aura Voice Chat ("we", "our", "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application.
+Aura Voice Chat, developed and operated by Hawkaye Visions LTD ("we", "our", "us", "Hawkaye Visions"), is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application.
 
 ### 2. Information We Collect
 
@@ -311,12 +315,16 @@ By accessing or using Aura Voice Chat, you agree to be bound by these Terms of S
 
 ### 15. Contact Information
 
+**Hawkaye Visions LTD**  
+Lahore, Punjab, Pakistan
+
 | Purpose | Contact |
 |---------|---------|
 | General Support | support@auravoicechat.app |
 | Privacy Concerns | privacy@auravoicechat.app |
-| Legal Matters | legal@auravoicechat.app |
+| Legal Matters | legal@hawkayevisions.com |
 | Report Abuse | abuse@auravoicechat.app |
+| Business Inquiries | info@hawkayevisions.com |
 
 ---
 

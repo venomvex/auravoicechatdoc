@@ -2,6 +2,8 @@
 
 Complete guide for Firebase configuration, Crashlytics, Analytics, database setup, security rules, and environment management for Aura Voice Chat.
 
+**Developer:** Hawkaye Visions LTD — Pakistan
+
 ## Overview
 
 Aura Voice Chat uses Firebase for:

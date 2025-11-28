@@ -1,5 +1,7 @@
 # Aura Voice Chat — Product Specification (Consolidated)
 
+**Developed by:** Hawkaye Visions LTD — A Pakistan-based technology company specializing in social voice chat applications.
+
 This document bundles core product decisions, UI layouts, economy rules, rewards, referrals, and platform behavior defined so far.
 
 > **Theme:** Original Purple → White gradient UI preserved. No "Cosmic" or altered UI changes.

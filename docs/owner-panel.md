@@ -2,6 +2,8 @@
 
 Complete documentation for the Owner Panel in Aura Voice Chat. The Owner Panel provides full control over all app operations, economy, and business management. **Only the designated Owner ID can access this panel.**
 
+**App Developer:** Hawkaye Visions LTD — Lahore, Pakistan
+
 ## Overview
 
 The Owner Panel is the highest-level administrative interface with **COMPLETE and UNRESTRICTED** control over the app. There is only **ONE Owner** in the entire app hierarchy.

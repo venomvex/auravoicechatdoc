@@ -2,6 +2,8 @@
 
 Comprehensive guide for Android build configuration, Gradle settings, SDK targets, dependencies, and CI/CD setup for Aura Voice Chat.
 
+**Developer:** Hawkaye Visions LTD — Pakistan
+
 ## Overview
 
 Aura Voice Chat is built for Android using Kotlin with Gradle as the build system. This document covers all build-related configuration.
