@@ -8,6 +8,38 @@ This document bundles core product decisions, UI layouts, economy rules, rewards
 
 ---
 
+## 🚀 Quick Start
+
+### Backend Setup (Development)
+```bash
+cd backend
+npm install
+npm run build
+npm run dev
+```
+
+### Backend Setup (Fresh Server)
+For deploying to a fresh Ubuntu EC2 instance:
+```bash
+chmod +x scripts/setup.sh
+./scripts/setup.sh
+# Script shows all output and waits for Enter before closing
+```
+
+### Requirements
+- Node.js >= 18.0.0
+- PostgreSQL (port 5433)
+- Redis (optional, for caching)
+
+### Environment Configuration
+Copy `.env.example` to `.env` and update with your credentials:
+- AWS credentials (Cognito, S3, SNS)
+- PostgreSQL database URL
+- JWT secrets
+- Twilio (for OTP)
+
+---
+
 ## 🗺️ Complete Feature Map
 
 ### Core Systems

@@ -243,10 +243,14 @@ REDIS_URL=redis://localhost:6379
 JWT_SECRET=$JWT_SECRET
 JWT_EXPIRES_IN=7d
 
-# Firebase (configure these)
-FIREBASE_PROJECT_ID=
-FIREBASE_CLIENT_EMAIL=
-FIREBASE_PRIVATE_KEY=
+# AWS (configure these)
+AWS_REGION=$AWS_REGION
+AWS_ACCESS_KEY_ID=YOUR_AWS_ACCESS_KEY_HERE
+AWS_SECRET_ACCESS_KEY=YOUR_AWS_SECRET_KEY_HERE
+
+# Cognito (configure these)
+COGNITO_USER_POOL_ID=
+COGNITO_CLIENT_ID=
 
 # Twilio (configure these)
 TWILIO_ACCOUNT_SID=
@@ -405,7 +409,8 @@ echo "  pm2 restart aura-backend # Restart app"
 echo ""
 echo -e "${CYAN}Configuration:${NC}"
 echo "  Update $BACKEND_DIR/.env with:"
-echo "  - Firebase credentials"
+echo "  - AWS credentials"
+echo "  - Cognito credentials"
 echo "  - Twilio credentials"
 echo "  - Payment gateway credentials"
 echo ""

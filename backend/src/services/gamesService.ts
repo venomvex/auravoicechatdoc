@@ -95,7 +95,7 @@ const GAME_CONFIGS = {
       '💎💎💎': 50,
       '7️⃣7️⃣7️⃣': 100,
       '👑👑👑': 'jackpot'
-    }
+    } as Record<string, number | string>
   }
 };
 

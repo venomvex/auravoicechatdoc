@@ -32,7 +32,7 @@ if [ ! -f ".env" ] && [ ! -f ".env.${DEPLOY_ENV}" ]; then
     echo "   - DATABASE_URL"
     echo "   - REDIS_URL"
     echo "   - JWT_SECRET"
-    echo "   - FIREBASE_PROJECT_ID"
+    echo "   - AWS_REGION"
     exit 1
 fi
 

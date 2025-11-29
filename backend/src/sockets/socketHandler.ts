@@ -9,7 +9,7 @@ import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import { socketConfig, SOCKET_EVENTS, NAMESPACES } from '../config/socket.config';
 import { logger } from '../utils/logger';
-import { verifyToken } from '../middleware/authMiddleware';
+import { verifyToken } from '../middleware/auth';
 import { query } from '../config/database.config';
 
 interface AuthenticatedSocket extends Socket {

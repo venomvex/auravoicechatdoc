@@ -48,7 +48,7 @@ cd "$ANDROID_DIR"
 # Check for required files
 if [ ! -f "app/google-services.json" ]; then
     echo "❌ Error: google-services.json not found in app/"
-    echo "   Please download it from Firebase Console"
+    echo "   Please download it from Google Play Console or Firebase Console"
     exit 1
 fi
 

@@ -263,3 +263,139 @@ export const verifyToken = async (token: string): Promise<any> => {
     return null;
   }
 };
+
+/**
+ * Require Admin role middleware
+ */
+export const requireAdmin = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    if (!req.user?.id) {
+      throw new AppError('Authentication required', 401, 'UNAUTHORIZED');
+    }
+    
+    const result = await query('SELECT role FROM users WHERE id = $1', [req.user.id]);
+    
+    if (result.rows.length === 0) {
+      throw new AppError('User not found', 404, 'USER_NOT_FOUND');
+    }
+    
+    const role = result.rows[0].role;
+    if (!['admin', 'country_admin', 'owner'].includes(role)) {
+      throw new AppError('Admin access required', 403, 'FORBIDDEN');
+    }
+    
+    next();
+  } catch (error) {
+    if (error instanceof AppError) {
+      next(error);
+    } else {
+      next(new AppError('Authorization failed', 403, 'FORBIDDEN'));
+    }
+  }
+};
+
+/**
+ * Require Country Admin role middleware
+ */
+export const requireCountryAdmin = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    if (!req.user?.id) {
+      throw new AppError('Authentication required', 401, 'UNAUTHORIZED');
+    }
+    
+    const result = await query('SELECT role FROM users WHERE id = $1', [req.user.id]);
+    
+    if (result.rows.length === 0) {
+      throw new AppError('User not found', 404, 'USER_NOT_FOUND');
+    }
+    
+    const role = result.rows[0].role;
+    if (!['country_admin', 'owner'].includes(role)) {
+      throw new AppError('Country Admin access required', 403, 'FORBIDDEN');
+    }
+    
+    next();
+  } catch (error) {
+    if (error instanceof AppError) {
+      next(error);
+    } else {
+      next(new AppError('Authorization failed', 403, 'FORBIDDEN'));
+    }
+  }
+};
+
+/**
+ * Require Owner role middleware
+ */
+export const requireOwner = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    if (!req.user?.id) {
+      throw new AppError('Authentication required', 401, 'UNAUTHORIZED');
+    }
+    
+    const result = await query('SELECT role FROM users WHERE id = $1', [req.user.id]);
+    
+    if (result.rows.length === 0) {
+      throw new AppError('User not found', 404, 'USER_NOT_FOUND');
+    }
+    
+    const role = result.rows[0].role;
+    if (role !== 'owner') {
+      throw new AppError('Owner access required', 403, 'FORBIDDEN');
+    }
+    
+    next();
+  } catch (error) {
+    if (error instanceof AppError) {
+      next(error);
+    } else {
+      next(new AppError('Authorization failed', 403, 'FORBIDDEN'));
+    }
+  }
+};
+
+/**
+ * Require Seller role middleware
+ */
+export const requireSeller = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    if (!req.user?.id) {
+      throw new AppError('Authentication required', 401, 'UNAUTHORIZED');
+    }
+    
+    const result = await query('SELECT role FROM users WHERE id = $1', [req.user.id]);
+    
+    if (result.rows.length === 0) {
+      throw new AppError('User not found', 404, 'USER_NOT_FOUND');
+    }
+    
+    const role = result.rows[0].role;
+    if (!['seller', 'country_admin', 'owner'].includes(role)) {
+      throw new AppError('Seller access required', 403, 'FORBIDDEN');
+    }
+    
+    next();
+  } catch (error) {
+    if (error instanceof AppError) {
+      next(error);
+    } else {
+      next(new AppError('Authorization failed', 403, 'FORBIDDEN'));
+    }
+  }
+};

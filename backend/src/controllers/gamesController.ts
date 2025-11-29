@@ -8,7 +8,7 @@ import * as gamesService from '../services/gamesService';
 import { logger } from '../utils/logger';
 
 // Get available games
-export const getGames = async (req: Request, res: Response, next: NextFunction) => {
+export const getGames = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const games = await gamesService.getAvailableGames();
     res.json({ games });
@@ -18,9 +18,13 @@ export const getGames = async (req: Request, res: Response, next: NextFunction) 
 };
 
 // Get game stats for user
-export const getGameStats = async (req: Request, res: Response, next: NextFunction) => {
+export const getGameStats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = req.user!.id;
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'User not authenticated' } });
+      return;
+    }
     const stats = await gamesService.getUserGameStats(userId);
     res.json({ stats });
   } catch (error) {
@@ -29,7 +33,7 @@ export const getGameStats = async (req: Request, res: Response, next: NextFuncti
 };
 
 // Get all jackpots
-export const getJackpots = async (req: Request, res: Response, next: NextFunction) => {
+export const getJackpots = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const jackpots = await gamesService.getAllJackpots();
     res.json({ jackpots });
@@ -39,7 +43,7 @@ export const getJackpots = async (req: Request, res: Response, next: NextFunctio
 };
 
 // Get jackpot for specific game
-export const getJackpot = async (req: Request, res: Response, next: NextFunction) => {
+export const getJackpot = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { gameType } = req.params;
     const jackpot = await gamesService.getJackpot(gameType);
@@ -50,9 +54,13 @@ export const getJackpot = async (req: Request, res: Response, next: NextFunction
 };
 
 // Start game session
-export const startGame = async (req: Request, res: Response, next: NextFunction) => {
+export const startGame = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = req.user!.id;
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'User not authenticated' } });
+      return;
+    }
     const { gameType } = req.params;
     const { betAmount, roomId } = req.body;
 
@@ -70,9 +78,13 @@ export const startGame = async (req: Request, res: Response, next: NextFunction)
 };
 
 // Perform game action
-export const gameAction = async (req: Request, res: Response, next: NextFunction) => {
+export const gameAction = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = req.user!.id;
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'User not authenticated' } });
+      return;
+    }
     const { gameType } = req.params;
     const { sessionId, action, data } = req.body;
 
@@ -91,9 +103,13 @@ export const gameAction = async (req: Request, res: Response, next: NextFunction
 };
 
 // Cashout game
-export const cashout = async (req: Request, res: Response, next: NextFunction) => {
+export const cashout = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = req.user!.id;
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'User not authenticated' } });
+      return;
+    }
     const { gameType } = req.params;
     const { sessionId } = req.body;
 
@@ -110,9 +126,13 @@ export const cashout = async (req: Request, res: Response, next: NextFunction) =
 };
 
 // Get game history
-export const getGameHistory = async (req: Request, res: Response, next: NextFunction) => {
+export const getGameHistory = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = req.user!.id;
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'User not authenticated' } });
+      return;
+    }
     const { gameType } = req.params;
     const { page = 1, limit = 20 } = req.query;
 
