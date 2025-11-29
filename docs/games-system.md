@@ -4,47 +4,46 @@ Comprehensive documentation for all games in Aura Voice Chat, including mechanic
 
 ## Overview
 
-Aura Voice Chat features multiple interactive games that users can play in rooms. Games provide entertainment and opportunities to win coins through skill and chance.
+Aura Voice Chat features five interactive games that users can play in rooms. Games provide entertainment and opportunities to win coins through skill and chance.
 
 ---
 
 ## Available Games
 
-### 1. Lucky Spin Wheel
+### 1. Lucky 777 Pro (5-Line Slot Machine)
 
 **Mechanics:**
-- Wheel with multiple prize segments
-- Each spin costs coins
-- Prizes range from small rewards to jackpots
+- 5-reel slot machine with 5 paylines
+- Classic fruit symbols with high payouts
+- Progressive jackpot available
 
-| Segment | Probability | Reward |
-|---------|------------|--------|
-| 2x | 25% | 2x bet amount |
-| 3x | 20% | 3x bet amount |
-| 5x | 15% | 5x bet amount |
-| 10x | 10% | 10x bet amount |
-| 25x | 5% | 25x bet amount |
-| 50x | 3% | 50x bet amount |
-| 100x | 1.5% | 100x bet amount |
-| Jackpot | 0.5% | 500x bet amount |
-| Lose | 20% | 0 coins |
+| Symbol | Payout (3 Match) |
+|--------|------------------|
+| 777 | 1,000,000,000 |
+| Bell | 300,000,000 |
+| Diamond | 100,000,000 |
+| Watermelon | 50,000,000 |
+| Orange | 30,000,000 |
+| Grape | 15,000,000 |
+| Mango | 5,000,000 |
+| Cherry | 3,000,000 |
 
 **Bet Amounts:**
-| Tier | Amount | Min Level |
-|------|--------|-----------|
-| Low | 1,000 coins | 1 |
-| Medium | 10,000 coins | 10 |
-| High | 100,000 coins | 20 |
-| VIP | 1,000,000 coins | 30 + VIP 3 |
+- Minimum: 100 coins
+- Maximum: 500,000 coins
 
 **Firebase Structure:**
 ```json
 {
-  "games/lucky_spin/{sessionId}": {
+  "games/lucky_777_pro/{sessionId}": {
     "userId": "user_123",
     "betAmount": 10000,
-    "result": "5x",
-    "winAmount": 50000,
+    "reels": [["cherry", "bell", "777"], ["orange", "777", "diamond"], ...],
+    "middleRow": ["bell", "777", "777", "grape", "mango"],
+    "winningSymbol": null,
+    "matchCount": 0,
+    "isJackpot": false,
+    "winAmount": 0,
     "timestamp": 1701234567890,
     "roomId": "room_456"
   }
@@ -53,38 +52,37 @@ Aura Voice Chat features multiple interactive games that users can play in rooms
 
 ---
 
-### 2. Dice Roll
+### 2. Lucky 77 Pro (Single-Line Slot Machine)
 
 **Mechanics:**
-- Roll two dice (1-6 each)
-- Bet on outcome: High (8-12), Low (2-6), or Specific (7)
-- Payouts vary by bet type
+- 3-reel classic slot machine
+- Simple and fast gameplay
+- 77x multiplier for triple 7s
 
-| Bet Type | Outcome | Payout |
-|----------|---------|--------|
-| High | Sum 8-12 | 1.8x |
-| Low | Sum 2-6 | 1.8x |
-| Seven | Sum = 7 | 5x |
-| Double | Same number | 10x |
-| Snake Eyes | Both 1s | 30x |
-| Boxcars | Both 6s | 30x |
+| Combination | Multiplier |
+|-------------|------------|
+| 7-7-7 | 77x |
+| Crown-Crown-Crown | 50x |
+| Star-Star-Star | 25x |
+| Gem-Gem-Gem | 15x |
+| Bell-Bell-Bell | 10x |
+| Cherry-Cherry-Cherry | 5x |
+| Bar-Bar-Bar | 3x |
 
 **Bet Limits:**
-- Minimum: 500 coins
-- Maximum: 500,000 coins
+- Minimum: 100 coins
+- Maximum: 100,000 coins
 
 **Firebase Structure:**
 ```json
 {
-  "games/dice/{sessionId}": {
+  "games/lucky_77_pro/{sessionId}": {
     "userId": "user_123",
-    "betType": "high",
     "betAmount": 5000,
-    "dice1": 4,
-    "dice2": 5,
-    "sum": 9,
-    "won": true,
-    "winAmount": 9000,
+    "reels": ["7", "7", "crown"],
+    "multiplier": 0,
+    "isJackpot": false,
+    "winAmount": 0,
     "timestamp": 1701234567890
   }
 }
@@ -92,134 +90,133 @@ Aura Voice Chat features multiple interactive games that users can play in rooms
 
 ---
 
-### 3. Card Flip (Higher or Lower)
+### 3. Greedy Baby (Food Wheel Selection)
 
 **Mechanics:**
-- One card shown face-up
-- Guess if next card is higher or lower
-- Consecutive correct guesses multiply winnings
+- Colorful food-themed wheel with 9 items
+- Select an item and bet on the outcome
+- Timer counts down during bet period
+- Elephant mascot spins the wheel
 
-| Streak | Multiplier | Cumulative |
-|--------|------------|------------|
-| 1 | 1.5x | 1.5x |
-| 2 | 1.5x | 2.25x |
-| 3 | 2x | 4.5x |
-| 4 | 2x | 9x |
-| 5 | 3x | 27x |
-| 6+ | 5x | 135x+ |
+| Food Item | Multiplier | Probability |
+|-----------|------------|-------------|
+| Chicken | 45x | 2% |
+| Pizza | 25x | 5% |
+| Burger | 25x | 5% |
+| Orange | 15x | 8% |
+| Fish | 10x | 12% |
+| Apple | 5x | 20% |
+| Lemon | 5x | 20% |
+| Strawberry | 5x | 20% |
+| Fruit Bowl | 5x | 8% |
 
-**Rules:**
-- Same value = automatic loss
-- Can cash out after any correct guess
-- Ace can be high or low (player's choice)
+**Bet Options:** 100, 1K, 5K, 10K, 50K, 100K coins
 
 **Firebase Structure:**
 ```json
 {
-  "games/card_flip/{sessionId}": {
+  "games/greedy_baby/{sessionId}": {
     "userId": "user_123",
-    "initialBet": 10000,
-    "currentCard": "7H",
-    "streak": 3,
-    "currentMultiplier": 4.5,
-    "potentialWin": 45000,
-    "history": ["3D", "7H"],
-    "status": "active"
+    "betAmount": 10000,
+    "selectedItem": "chicken",
+    "winningItem": "pizza",
+    "won": false,
+    "winAmount": 0,
+    "todaysWin": 0,
+    "timestamp": 1701234567890
   }
 }
 ```
 
 ---
 
-### 4. Treasure Box
+### 4. Lucky Fruit (3x3 Grid Fruit Selection)
 
 **Mechanics:**
-- Grid of 9 treasure boxes
-- 3 contain prizes, 3 contain bombs, 3 contain multipliers
-- Pick boxes until you hit a bomb or choose to cash out
+- 3x3 grid of fruit slots
+- Select one fruit and bet on the outcome
+- Special Lucky and Super Lucky bonus items
+- Result history shown at bottom
 
-| Box Type | Effect |
-|----------|--------|
-| Coin Box | Add fixed coins to pot |
-| Multiplier (2x) | Double current pot |
-| Multiplier (3x) | Triple current pot |
-| Bomb | Lose all, game ends |
+| Fruit | Multiplier | Probability |
+|-------|------------|-------------|
+| Strawberry | 45x | 3% |
+| Mango | 25x | 6% |
+| Watermelon | 15x | 8% |
+| Apple | 10x | 5% |
+| Orange | 5x | 20% |
+| Lemon | 5x | 20% |
+| Grape | 5x | 18% |
+| Cherry | 5x | 18% |
+| Lucky | 10-40x bonus | 1.5% |
+| Super Lucky | 50-150x bonus | 0.5% |
 
-**Entry Fee:** 5,000 - 100,000 coins
+**Bet Options:** 5K, 10K, 50K, 100K, 500K coins
 
 **Firebase Structure:**
 ```json
 {
-  "games/treasure/{sessionId}": {
+  "games/lucky_fruit/{sessionId}": {
     "userId": "user_123",
-    "entryFee": 10000,
-    "boxGrid": ["coin", "bomb", "2x", "coin", "bomb", "3x", "coin", "bomb", "2x"],
-    "revealed": [0, 3],
-    "currentPot": 25000,
-    "status": "active"
+    "betAmount": 50000,
+    "selectedFruit": "lemon",
+    "winningFruit": "super_lucky",
+    "won": true,
+    "specialBonus": "super_lucky",
+    "winAmount": 5000000,
+    "resultHistory": [{"fruit": "orange", "timestamp": "..."}],
+    "timestamp": 1701234567890
   }
 }
 ```
 
 ---
 
-### 5. Lucky Number
+### 5. Gift Wheel System
 
 **Mechanics:**
-- Pick a number between 1-100
-- System generates random number
-- Closer your pick = higher reward
+- Spin the wheel to win gift items
+- Standard and Advanced (premium) draw options
+- Draw records track all wins
+- Items can be collected or sent as gifts
 
-| Distance | Payout |
-|----------|--------|
-| Exact match | 100x |
-| Within 1 | 50x |
-| Within 3 | 20x |
-| Within 5 | 10x |
-| Within 10 | 5x |
-| Within 20 | 2x |
-| >20 away | 0x |
+| Gift Item | Value | Standard Prob | Advanced Prob |
+|-----------|-------|---------------|---------------|
+| Love Wings | 920,000 | 1% | 2% |
+| Rose Bouquet | 100,000 | 5% | 10% |
+| Golden Butterfly | 50,000 | 10% | 15% |
+| Heart Gift | 35,000 | 15% | 18% |
+| Crown | 25,000 | 18% | 15% |
+| Star | 15,000 | 20% | 16% |
+| Gem | 10,000 | 22% | 18% |
+| Lucky Coin | 5,000 | 9% | 6% |
 
-**Bet Range:** 1,000 - 250,000 coins
+**Spin Costs:**
+- Standard Draw: 10,000 coins per spin
+- Advanced Draw: 50,000 coins per spin
+- Multi-draw options: 1x, 10x
 
----
+**Draw Records:**
+- Full history of all draws
+- Shows draw type, items won, total value
+- Date and time of each draw
 
-### 6. Coin Toss
-
-**Mechanics:**
-- Simple heads or tails
-- 50/50 chance
-- Option to double down
-
-| Bet Type | Payout |
-|----------|--------|
-| Single | 1.9x |
-| Double (2 correct) | 3.6x |
-| Triple (3 correct) | 6.8x |
-
----
-
-### 7. Slot Machine
-
-**Mechanics:**
-- 3-reel classic slot machine
-- Multiple symbol combinations
-- Progressive jackpot
-
-| Combination | Payout |
-|-------------|--------|
-| 🍒🍒🍒 | 5x |
-| 🍋🍋🍋 | 10x |
-| 🍊🍊🍊 | 15x |
-| ⭐⭐⭐ | 25x |
-| 💎💎💎 | 50x |
-| 7️⃣7️⃣7️⃣ | 100x |
-| 👑👑👑 | Progressive Jackpot |
-
-**Progressive Jackpot:**
-- 1% of all bets contribute to jackpot pool
-- Minimum jackpot: 10,000,000 coins
-- Resets to minimum after win
+**Firebase Structure:**
+```json
+{
+  "games/gift_wheel/{sessionId}": {
+    "userId": "user_123",
+    "drawType": "advanced",
+    "drawCount": 10,
+    "wonItems": [
+      {"id": "rose_bouquet", "name": "Rose Bouquet", "value": 100000},
+      {"id": "heart_gift", "name": "Heart Gift", "value": 35000}
+    ],
+    "totalValue": 920000,
+    "timestamp": 1701234567890
+  }
+}
+```
 
 ---
 
@@ -284,11 +281,25 @@ All games use cryptographically secure RNG:
         - lost: number
         
 /jackpots
-  /{gameType}
+  /lucky_777_pro
     - currentAmount: number
     - lastWinner: string
     - lastWinAmount: number
     - lastWinDate: timestamp
+  /lucky_77_pro
+    - currentAmount: number
+    - lastWinner: string
+    - lastWinAmount: number
+    - lastWinDate: timestamp
+
+/giftWheelRecords
+  /{userId}
+    /{recordId}
+      - drawType: string
+      - drawCount: number
+      - items: array
+      - totalValue: number
+      - timestamp: timestamp
 ```
 
 ### Security Rules
@@ -315,9 +326,14 @@ service cloud.firestore {
       allow write: if false; // Server only
     }
     
+    match /giftWheelRecords/{userId}/{recordId} {
+      allow read: if request.auth.uid == userId;
+      allow write: if false; // Server only
+    }
+    
     function validateBet(data) {
-      return data.betAmount >= 500 
-        && data.betAmount <= 1000000
+      return data.betAmount >= 100 
+        && data.betAmount <= 500000
         && data.timestamp == request.time;
     }
   }
@@ -337,6 +353,7 @@ service cloud.firestore {
 | Win streak (3+) | 50 EXP bonus |
 | Hit jackpot | 500 EXP |
 | Daily first game | 100 EXP |
+| Lucky/Super Lucky bonus | 100 EXP |
 
 ### Coin Rewards Integration
 
@@ -350,19 +367,20 @@ service cloud.firestore {
 ## API Endpoints
 
 ```
+# Game Info
+GET /games
+GET /games/stats
+GET /games/jackpots
+GET /games/jackpots/{gameType}
+
 # Game Sessions
 POST /games/{gameType}/start
 POST /games/{gameType}/action
 POST /games/{gameType}/cashout
 GET /games/{gameType}/history
 
-# Stats
-GET /games/stats/me
-GET /games/stats/leaderboard
-
-# Jackpots
-GET /games/jackpots
-GET /games/jackpots/{gameType}
+# Gift Wheel Specific
+GET /games/gift-wheel/draw-records
 ```
 
 ---
@@ -375,19 +393,41 @@ GET /games/jackpots/{gameType}
 {
   "session": {
     "id": "session_abc123",
-    "gameType": "lucky_spin",
+    "gameType": "lucky_fruit",
     "userId": "user_123",
     "roomId": "room_456",
-    "betAmount": 10000,
+    "betAmount": 50000,
     "status": "completed",
     "result": {
-      "segment": "5x",
-      "multiplier": 5
+      "selectedFruit": "lemon",
+      "winningFruit": "super_lucky",
+      "won": true,
+      "specialBonus": "super_lucky",
+      "multiplier": 100
     },
-    "winAmount": 50000,
-    "expEarned": 25,
+    "winAmount": 5000000,
+    "expEarned": 100,
     "createdAt": "2025-11-28T10:00:00Z",
     "completedAt": "2025-11-28T10:00:05Z"
+  }
+}
+```
+
+### Gift Wheel Draw Record
+
+```json
+{
+  "record": {
+    "id": "record_xyz789",
+    "drawType": "advanced",
+    "drawCount": 10,
+    "items": [
+      {"id": "rose_bouquet", "name": "Rose Bouquet", "value": 100000},
+      {"id": "golden_butterfly", "name": "Golden Butterfly", "value": 50000},
+      {"id": "heart_gift", "name": "Heart Gift", "value": 35000}
+    ],
+    "totalValue": 920000,
+    "timestamp": "2025-11-28T10:00:00Z"
   }
 }
 ```
@@ -404,6 +444,8 @@ GET /games/jackpots/{gameType}
 | `game_loss` | gameType, lossAmount |
 | `game_cashout` | gameType, cashedAmount |
 | `jackpot_win` | gameType, jackpotAmount |
+| `gift_wheel_draw` | drawType, drawCount, totalValue |
+| `special_bonus` | gameType, bonusType, multiplier |
 
 ---
 

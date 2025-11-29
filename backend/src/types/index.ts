@@ -59,5 +59,5 @@ export type TransactionStatus = 'pending' | 'completed' | 'failed' | 'cancelled'
 export type VipTier = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
 
 // Game types
-export type GameType = 'lucky_spin' | 'dice' | 'card_flip' | 'treasure' | 'lucky_number' | 'coin_toss' | 'slot';
+export type GameType = 'lucky_777_pro' | 'lucky_77_pro' | 'greedy_baby' | 'lucky_fruit' | 'gift_wheel';
 export type GameStatus = 'active' | 'completed';
