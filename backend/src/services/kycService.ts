@@ -56,6 +56,10 @@ export const submitKyc = async (userId: string, submission: KycSubmission): Prom
 };
 
 export const getUploadUrl = async (userId: string, type: string): Promise<string> => {
-  // Generate signed upload URL for Firebase Storage
-  return `https://storage.auravoice.chat/kyc/${userId}/${type}_${Date.now()}.jpg`;
+  // Generate signed upload URL for AWS S3
+  // In production, use @aws-sdk/s3-request-presigner to generate presigned URLs
+  const bucket = process.env.S3_BUCKET || 'aura-voice-chat-files';
+  const region = process.env.AWS_REGION || 'us-east-1';
+  const key = `kyc/${userId}/${type}_${Date.now()}.jpg`;
+  return `https://${bucket}.s3.${region}.amazonaws.com/${key}`;
 };

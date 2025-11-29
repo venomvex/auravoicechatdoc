@@ -426,10 +426,12 @@ model EventParticipant {
 
 model Game {
   id                String   @id @default(uuid())
-  type              String   // lucky_spin, dice, card_flip, treasure, lucky_number, coin_toss, slot
+  type              String   // lucky_777_pro, lucky_77_pro, greedy_baby, lucky_fruit, gift_wheel
   name              String
-  minBet            BigInt   @map("min_bet")
-  maxBet            BigInt   @map("max_bet")
+  minBet            BigInt?  @map("min_bet")
+  maxBet            BigInt?  @map("max_bet")
+  spinCost          BigInt?  @map("spin_cost")
+  advancedSpinCost  BigInt?  @map("advanced_spin_cost")
   config            Json?
   
   isActive          Boolean  @default(true) @map("is_active")
@@ -452,6 +454,19 @@ model GameHistory {
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@map("game_history")
+}
+
+model GiftWheelRecord {
+  id                String   @id @default(uuid())
+  userId            String   @map("user_id")
+  drawType          String   @map("draw_type") // standard, advanced
+  drawCount         Int      @map("draw_count")
+  items             Json     // Array of won items
+  totalValue        BigInt   @map("total_value")
+  
+  createdAt         DateTime @default(now()) @map("created_at")
+  
+  @@map("gift_wheel_records")
 }
 
 model Jackpot {

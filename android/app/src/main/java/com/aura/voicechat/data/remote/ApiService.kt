@@ -112,4 +112,52 @@ interface ApiService {
     
     @POST("kyc/submit")
     suspend fun submitKyc(@Body request: SubmitKycRequest): Response<Unit>
+    
+    // ============================================
+    // Games - New Game Types
+    // ============================================
+    
+    // Get available games
+    @GET("games")
+    suspend fun getAvailableGames(): Response<GamesListResponse>
+    
+    // Get game stats
+    @GET("games/stats")
+    suspend fun getGameStats(): Response<GameStatsResponse>
+    
+    // Get jackpots
+    @GET("games/jackpots")
+    suspend fun getJackpots(): Response<JackpotsResponse>
+    
+    @GET("games/jackpots/{gameType}")
+    suspend fun getJackpot(@Path("gameType") gameType: String): Response<JackpotDto>
+    
+    // Start game session
+    @POST("games/{gameType}/start")
+    suspend fun startGame(
+        @Path("gameType") gameType: String,
+        @Body request: StartGameRequest
+    ): Response<GameSessionResponse>
+    
+    // Perform game action
+    @POST("games/{gameType}/action")
+    suspend fun gameAction(
+        @Path("gameType") gameType: String,
+        @Body request: GameActionRequest
+    ): Response<GameResultResponse>
+    
+    // Get game history
+    @GET("games/{gameType}/history")
+    suspend fun getGameHistory(
+        @Path("gameType") gameType: String,
+        @Query("page") page: Int,
+        @Query("limit") limit: Int
+    ): Response<GiftWheelRecordsResponse>
+    
+    // Get Gift Wheel draw records
+    @GET("games/gift-wheel/draw-records")
+    suspend fun getGiftWheelRecords(
+        @Query("page") page: Int,
+        @Query("limit") limit: Int
+    ): Response<GiftWheelRecordsResponse>
 }

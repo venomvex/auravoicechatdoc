@@ -6,6 +6,8 @@
 
 This guide covers building signed APK and AAB files for the Aura Voice Chat Android app.
 
+**Note: This app is 100% AWS-based. No Firebase is used.**
+
 ---
 
 ## Prerequisites
@@ -20,7 +22,7 @@ This guide covers building signed APK and AAB files for the Aura Voice Chat Andr
 
 ### Required Files
 
-1. `google-services.json` - Firebase configuration
+1. `awsconfiguration.json` - AWS configuration
 2. `keystore.jks` or `keystore.properties` - Release signing
 3. Environment variables or `.env` file for build config
 
@@ -35,18 +37,54 @@ git clone https://github.com/your-repo/aura-voice-chat.git
 cd aura-voice-chat/android
 ```
 
-### 1.2 Add Firebase Configuration
+### 1.2 Add AWS Configuration
 
-1. Download `google-services.json` from Firebase Console
-2. Place in `android/app/` directory
+Create `awsconfiguration.json` in `android/app/src/main/res/raw/`:
 
 ```
 android/
 ├── app/
-│   ├── google-services.json  ← Place here
 │   ├── src/
+│   │   └── main/
+│   │       └── res/
+│   │           └── raw/
+│   │               └── awsconfiguration.json  ← Place here
 │   └── build.gradle
 └── build.gradle
+```
+
+**awsconfiguration.json content:**
+```json
+{
+    "Version": "1.0",
+    "CredentialsProvider": {
+        "CognitoIdentity": {
+            "Default": {
+                "PoolId": "YOUR_IDENTITY_POOL_ID",
+                "Region": "us-east-1"
+            }
+        }
+    },
+    "CognitoUserPool": {
+        "Default": {
+            "PoolId": "YOUR_USER_POOL_ID",
+            "AppClientId": "YOUR_APP_CLIENT_ID",
+            "Region": "us-east-1"
+        }
+    },
+    "S3TransferUtility": {
+        "Default": {
+            "Bucket": "YOUR_S3_BUCKET",
+            "Region": "us-east-1"
+        }
+    },
+    "PinpointAnalytics": {
+        "Default": {
+            "AppId": "YOUR_PINPOINT_APP_ID",
+            "Region": "us-east-1"
+        }
+    }
+}
 ```
 
 ### 1.3 Configure Signing
@@ -202,7 +240,7 @@ bundletool validate --bundle=app-prod-release.aab
 
 The `proguard-rules.pro` file includes rules for:
 
-- Firebase SDK
+- AWS SDK
 - Retrofit/OkHttp
 - Gson serialization
 - Hilt/Dagger
@@ -408,8 +446,8 @@ Solution: Ensure ndk.abiFilters includes 'arm64-v8a'
 
 **4. Firebase configuration missing**
 ```
-Error: google-services.json not found
-Solution: Download from Firebase Console and place in app/
+Error: awsconfiguration.json not found
+Solution: Download from AWS Console and place in app/
 ```
 
 **5. Memory issues during build**

@@ -280,64 +280,67 @@ Sellers can convert excess coins to cash:
 
 ---
 
-## Firebase Integration
+## AWS Database Integration
 
-### Database Structure
+### Database Structure (PostgreSQL/RDS)
 
+```sql
+-- Reseller table
+CREATE TABLE resellers (
+  user_id UUID PRIMARY KEY REFERENCES users(id),
+  tier VARCHAR(20) DEFAULT 'bronze',
+  status VARCHAR(20) DEFAULT 'active',
+  joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  total_purchased BIGINT DEFAULT 0,
+  total_sold BIGINT DEFAULT 0,
+  total_profit DECIMAL(10,2) DEFAULT 0,
+  customer_count INT DEFAULT 0,
+  rating DECIMAL(3,2) DEFAULT 5.00,
+  inventory BIGINT DEFAULT 0
+);
+
+-- Reseller transactions table
+CREATE TABLE reseller_transactions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  seller_id UUID REFERENCES users(id),
+  buyer_id UUID REFERENCES users(id),
+  amount BIGINT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  status VARCHAR(20) DEFAULT 'completed'
+);
+
+-- Reseller purchases table
+CREATE TABLE reseller_purchases (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  seller_id UUID REFERENCES users(id),
+  package VARCHAR(50) NOT NULL,
+  coins_received BIGINT NOT NULL,
+  amount_paid DECIMAL(10,2) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 ```
-/resellers
-  /{userId}
-    - tier: "bronze" | "silver" | "gold" | "platinum" | "diamond"
-    - status: "active" | "suspended" | "banned"
-    - joinedAt: timestamp
-    - totalPurchased: number
-    - totalSold: number
-    - totalProfit: number
-    - customerCount: number
-    - rating: number
-    - inventory: number
-    
-/resellerTransactions
-  /{transactionId}
-    - sellerId: string
-    - buyerId: string
-    - amount: number
-    - timestamp: timestamp
-    - status: "completed" | "pending" | "failed"
-    
-/resellerPurchases
-  /{purchaseId}
-    - sellerId: string
-    - package: string
-    - coinsReceived: number
-    - amountPaid: number
-    - timestamp: timestamp
-```
 
-### Security Rules
+### Security (Row Level Security)
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /resellers/{userId} {
-      allow read: if request.auth.uid == userId || isPublicField();
-      allow write: if false; // Admin only
-    }
-    
-    match /resellerTransactions/{transactionId} {
-      allow read: if request.auth.uid == resource.data.sellerId 
-                  || request.auth.uid == resource.data.buyerId;
-      allow create: if isSeller(request.auth.uid) 
-                    && request.resource.data.sellerId == request.auth.uid;
-      allow update: if false; // Server only
-    }
-    
-    function isSeller(userId) {
-      return get(/databases/$(database)/documents/resellers/$(userId)).data.status == 'active';
-    }
-  }
-}
+```sql
+-- Enable RLS
+ALTER TABLE resellers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE reseller_transactions ENABLE ROW LEVEL SECURITY;
+
+-- Resellers can view their own data
+CREATE POLICY reseller_view ON resellers
+  FOR SELECT USING (user_id = current_user_id());
+
+-- Sellers can view their transactions
+CREATE POLICY transaction_view ON reseller_transactions
+  FOR SELECT USING (seller_id = current_user_id() OR buyer_id = current_user_id());
+
+-- Only active sellers can create transactions
+CREATE POLICY transaction_create ON reseller_transactions
+  FOR INSERT WITH CHECK (
+    seller_id = current_user_id() 
+    AND EXISTS (SELECT 1 FROM resellers WHERE user_id = seller_id AND status = 'active')
+  );
 ```
 
 ---

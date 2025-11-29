@@ -268,32 +268,43 @@ export const sendNotificationToUser = async (
   notification: PushNotification
 ): Promise<NotificationResult> => {
   try {
-    // Get user's FCM token from database
+    // Get user's device token from database (SNS endpoint ARN)
     const result = await query(
-      'SELECT fcm_token FROM users WHERE id = $1 AND fcm_token IS NOT NULL',
+      'SELECT sns_endpoint_arn, device_token FROM users WHERE id = $1 AND device_token IS NOT NULL',
       [userId]
     );
     
-    if (result.rows.length === 0 || !result.rows[0].fcm_token) {
+    if (result.rows.length === 0 || !result.rows[0].device_token) {
       return {
         success: false,
         error: 'User has no registered device token',
       };
     }
     
-    const fcmToken = result.rows[0].fcm_token;
+    const deviceToken = result.rows[0].device_token;
+    let endpointArn = result.rows[0].sns_endpoint_arn;
     
-    // Create endpoint if needed and send notification
-    const endpointResult = await createPlatformEndpoint(fcmToken, userId);
-    
-    if (!endpointResult.success || !endpointResult.endpointArn) {
-      return {
-        success: false,
-        error: endpointResult.error || 'Failed to create endpoint',
-      };
+    // Create endpoint if needed
+    if (!endpointArn) {
+      const endpointResult = await createPlatformEndpoint(deviceToken, userId);
+      
+      if (!endpointResult.success || !endpointResult.endpointArn) {
+        return {
+          success: false,
+          error: endpointResult.error || 'Failed to create endpoint',
+        };
+      }
+      
+      endpointArn = endpointResult.endpointArn;
+      
+      // Store the endpoint ARN for future use
+      await query(
+        'UPDATE users SET sns_endpoint_arn = $1 WHERE id = $2',
+        [endpointArn, userId]
+      );
     }
     
-    return sendPushNotification(endpointResult.endpointArn, notification);
+    return sendPushNotification(endpointArn, notification);
   } catch (error: any) {
     logger.error('Send notification to user failed', { error: error.message, userId });
     return {

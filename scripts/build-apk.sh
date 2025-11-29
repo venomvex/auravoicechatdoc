@@ -5,6 +5,7 @@
 # Developer: Hawkaye Visions LTD — Lahore, Pakistan
 #
 # This script automates building signed APK and AAB files
+# 100% AWS-based (No Firebase)
 #
 # Usage:
 #   ./build-apk.sh                    # Build prod release
@@ -29,6 +30,7 @@ echo -e "${PURPLE}"
 echo "╔══════════════════════════════════════════════════════════════════╗"
 echo "║                                                                  ║"
 echo "║     🎤 AURA VOICE CHAT - APK BUILD                               ║"
+echo "║         AWS-Based (No Firebase)                                  ║"
 echo "║                                                                  ║"
 echo "║     Developer: Hawkaye Visions LTD — Lahore, Pakistan           ║"
 echo "║                                                                  ║"
@@ -45,11 +47,39 @@ ANDROID_DIR="$(dirname "$0")/../android"
 # Navigate to android directory
 cd "$ANDROID_DIR"
 
-# Check for required files
-if [ ! -f "app/google-services.json" ]; then
-    echo "❌ Error: google-services.json not found in app/"
-    echo "   Please download it from Google Play Console or Firebase Console"
-    exit 1
+# Check for AWS configuration
+AWS_CONFIG="app/src/main/res/raw/awsconfiguration.json"
+if [ ! -f "$AWS_CONFIG" ]; then
+    echo "⚠️  Warning: awsconfiguration.json not found"
+    echo "   Creating default configuration..."
+    mkdir -p "app/src/main/res/raw"
+    cat > "$AWS_CONFIG" << 'EOF'
+{
+    "Version": "1.0",
+    "CredentialsProvider": {
+        "CognitoIdentity": {
+            "Default": {
+                "PoolId": "YOUR_IDENTITY_POOL_ID",
+                "Region": "us-east-1"
+            }
+        }
+    },
+    "CognitoUserPool": {
+        "Default": {
+            "PoolId": "YOUR_USER_POOL_ID",
+            "AppClientId": "YOUR_APP_CLIENT_ID",
+            "Region": "us-east-1"
+        }
+    },
+    "S3TransferUtility": {
+        "Default": {
+            "Bucket": "YOUR_S3_BUCKET",
+            "Region": "us-east-1"
+        }
+    }
+}
+EOF
+    echo "   Please update $AWS_CONFIG with your AWS values"
 fi
 
 # Check for keystore (release builds only)
@@ -142,8 +172,15 @@ echo "Build Type: $BUILD_TYPE"
 echo "Flavor: $FLAVOR"
 echo "Output: $OUTPUT_DIR"
 echo ""
+echo "AWS Services Used:"
+echo "  - AWS Cognito (Authentication)"
+echo "  - AWS S3 (Storage)"
+echo "  - AWS SNS (Push Notifications)"
+echo "  - AWS Pinpoint (Analytics)"
+echo ""
 echo "Next steps:"
-echo "  1. Test the APK on a device"
-echo "  2. Upload AAB to Play Console (for release)"
-echo "  3. Keep mapping.txt for crash reports"
+echo "  1. Update awsconfiguration.json with your AWS values"
+echo "  2. Test the APK on a device"
+echo "  3. Upload AAB to Play Console (for release)"
+echo "  4. Keep mapping.txt for crash reports"
 echo ""

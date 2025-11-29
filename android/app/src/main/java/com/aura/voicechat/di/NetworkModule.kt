@@ -3,9 +3,6 @@ package com.aura.voicechat.di
 import android.content.Context
 import com.aura.voicechat.BuildConfig
 import com.aura.voicechat.data.remote.ApiService
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.storage.FirebaseStorage
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,12 +12,22 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider
+import software.amazon.awssdk.regions.Region
+import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient
+import software.amazon.awssdk.services.s3.S3Client
+import software.amazon.awssdk.services.sns.SnsClient
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 /**
  * Network Module for Hilt DI
  * Developer: Hawkaye Visions LTD — Pakistan
+ * 
+ * AWS-based implementation (No Firebase)
+ * - Authentication: AWS Cognito
+ * - Storage: AWS S3
+ * - Push Notifications: AWS SNS
  */
 @Module
 @InstallIn(SingletonComponent::class)
@@ -63,19 +70,28 @@ object NetworkModule {
     
     @Provides
     @Singleton
-    fun provideFirebaseAuth(): FirebaseAuth {
-        return FirebaseAuth.getInstance()
+    fun provideCognitoClient(@ApplicationContext context: Context): CognitoIdentityProviderClient {
+        return CognitoIdentityProviderClient.builder()
+            .region(Region.of(BuildConfig.AWS_REGION))
+            .credentialsProvider(DefaultCredentialsProvider.create())
+            .build()
     }
     
     @Provides
     @Singleton
-    fun provideFirebaseFirestore(): FirebaseFirestore {
-        return FirebaseFirestore.getInstance()
+    fun provideS3Client(@ApplicationContext context: Context): S3Client {
+        return S3Client.builder()
+            .region(Region.of(BuildConfig.AWS_REGION))
+            .credentialsProvider(DefaultCredentialsProvider.create())
+            .build()
     }
     
     @Provides
     @Singleton
-    fun provideFirebaseStorage(): FirebaseStorage {
-        return FirebaseStorage.getInstance()
+    fun provideSnsClient(@ApplicationContext context: Context): SnsClient {
+        return SnsClient.builder()
+            .region(Region.of(BuildConfig.AWS_REGION))
+            .credentialsProvider(DefaultCredentialsProvider.create())
+            .build()
     }
 }

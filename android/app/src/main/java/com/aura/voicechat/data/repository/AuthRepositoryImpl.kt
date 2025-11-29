@@ -1,22 +1,34 @@
 package com.aura.voicechat.data.repository
 
+import android.content.Context
+import android.content.SharedPreferences
 import com.aura.voicechat.data.model.SendOtpRequest
 import com.aura.voicechat.data.model.VerifyOtpRequest
 import com.aura.voicechat.data.remote.ApiService
 import com.aura.voicechat.domain.repository.AuthRepository
-import com.google.firebase.auth.FirebaseAuth
+import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
  * Auth Repository Implementation
  * Developer: Hawkaye Visions LTD — Pakistan
+ * 
+ * AWS Cognito-based authentication (No Firebase)
  */
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
     private val apiService: ApiService,
-    private val firebaseAuth: FirebaseAuth
+    @ApplicationContext private val context: Context
 ) : AuthRepository {
+    
+    private val prefs: SharedPreferences = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
+    
+    companion object {
+        private const val KEY_USER_ID = "user_id"
+        private const val KEY_AUTH_TOKEN = "auth_token"
+        private const val KEY_REFRESH_TOKEN = "refresh_token"
+    }
     
     override suspend fun sendOtp(phoneNumber: String): Result<Unit> {
         return try {
@@ -35,7 +47,13 @@ class AuthRepositoryImpl @Inject constructor(
         return try {
             val response = apiService.verifyOtp(VerifyOtpRequest(phoneNumber, otp))
             if (response.isSuccessful && response.body()?.success == true) {
-                // Store token and user data
+                // Store token and user data from AWS Cognito response
+                response.body()?.let { body ->
+                    prefs.edit()
+                        .putString(KEY_AUTH_TOKEN, body.token)
+                        .putString(KEY_USER_ID, body.user.id)
+                        .apply()
+                }
                 Result.success(Unit)
             } else {
                 Result.failure(Exception("Invalid OTP"))
@@ -46,18 +64,25 @@ class AuthRepositoryImpl @Inject constructor(
     }
     
     override suspend fun signInWithGoogle(): Result<Unit> {
-        // Implementation with Firebase Auth
+        // AWS Cognito social sign-in with Google
+        // Implementation using AWS Amplify Auth or Cognito Identity Provider
         return Result.success(Unit)
     }
     
     override suspend fun signInWithFacebook(): Result<Unit> {
-        // Implementation with Firebase Auth
+        // AWS Cognito social sign-in with Facebook
+        // Implementation using AWS Amplify Auth or Cognito Identity Provider
         return Result.success(Unit)
     }
     
     override suspend fun signOut(): Result<Unit> {
         return try {
-            firebaseAuth.signOut()
+            // Clear local tokens
+            prefs.edit()
+                .remove(KEY_AUTH_TOKEN)
+                .remove(KEY_REFRESH_TOKEN)
+                .remove(KEY_USER_ID)
+                .apply()
             Result.success(Unit)
         } catch (e: Exception) {
             Result.failure(e)
@@ -65,10 +90,10 @@ class AuthRepositoryImpl @Inject constructor(
     }
     
     override suspend fun getCurrentUserId(): String? {
-        return firebaseAuth.currentUser?.uid
+        return prefs.getString(KEY_USER_ID, null)
     }
     
     override suspend fun isLoggedIn(): Boolean {
-        return firebaseAuth.currentUser != null
+        return prefs.getString(KEY_AUTH_TOKEN, null) != null
     }
 }

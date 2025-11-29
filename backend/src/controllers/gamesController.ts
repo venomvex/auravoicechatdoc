@@ -1,6 +1,13 @@
 /**
  * Games Controller
  * Developer: Hawkaye Visions LTD — Pakistan
+ * 
+ * Controllers for all game types:
+ * - Lucky 777 Pro (5-line slot machine)
+ * - Lucky 77 Pro (Single-line slot machine)
+ * - Greedy Baby (Food wheel selection game)
+ * - Lucky Fruit (3x3 grid fruit selection)
+ * - Gift Wheel System (Gift wheel with draw records)
  */
 
 import { Request, Response, NextFunction } from 'express';
@@ -144,6 +151,28 @@ export const getGameHistory = async (req: Request, res: Response, next: NextFunc
     });
 
     res.json(history);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get Gift Wheel draw records
+export const getGiftWheelRecords = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ error: { code: 'UNAUTHORIZED', message: 'User not authenticated' } });
+      return;
+    }
+    const { page = 1, limit = 20 } = req.query;
+
+    const records = await gamesService.getGiftWheelHistory(
+      userId,
+      Number(page),
+      Number(limit)
+    );
+
+    res.json(records);
   } catch (error) {
     next(error);
   }

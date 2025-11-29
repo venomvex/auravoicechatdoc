@@ -221,76 +221,86 @@ Same as regular earning system:
 
 ---
 
-## Firebase Integration
+## AWS Database Integration
 
-### Database Structure
+### Database Structure (PostgreSQL/RDS)
 
+```sql
+-- Guides table
+CREATE TABLE guides (
+  user_id UUID PRIMARY KEY REFERENCES users(id),
+  status VARCHAR(20) DEFAULT 'active',
+  level VARCHAR(20) DEFAULT 'starter',
+  joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  months_active INT DEFAULT 0,
+  sheets_completed INT DEFAULT 0
+);
+
+-- Guide targets table
+CREATE TABLE guide_targets (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id),
+  year_month VARCHAR(7) NOT NULL, -- '2025-11'
+  targets JSONB NOT NULL DEFAULT '[]',
+  earnings DECIMAL(10,2) DEFAULT 0,
+  status VARCHAR(20) DEFAULT 'in_progress',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE(user_id, year_month)
+);
+
+-- Guide daily tracking table
+CREATE TABLE guide_daily (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES users(id),
+  date DATE NOT NULL,
+  jar_completed BOOLEAN DEFAULT FALSE,
+  jar_points INT DEFAULT 0,
+  room_hours DECIMAL(5,2) DEFAULT 0,
+  coins_received BIGINT DEFAULT 0,
+  UNIQUE(user_id, date)
+);
+
+-- Guide earnings table
+CREATE TABLE guide_earnings (
+  user_id UUID PRIMARY KEY REFERENCES users(id),
+  pending_usd DECIMAL(10,2) DEFAULT 0,
+  available_usd DECIMAL(10,2) DEFAULT 0,
+  total_earned DECIMAL(10,2) DEFAULT 0,
+  total_withdrawn DECIMAL(10,2) DEFAULT 0,
+  total_converted DECIMAL(10,2) DEFAULT 0
+);
 ```
-/guides
-  /{userId}
-    - status: "active" | "suspended" | "revoked"
-    - level: "starter" | "rising" | "star" | "elite" | "legend"
-    - joinedAt: timestamp
-    - monthsActive: number
-    - sheetsCompleted: number
-    
-/guideTargets
-  /{userId}
-    /{yearMonth}
-      - targets: [
-          {id: 1, progress: 25, required: 25, completed: true}
-        ]
-      - earnings: number
-      - status: "in_progress" | "completed"
-      
-/guideDaily
-  /{userId}
-    /{date}
-      - jarCompleted: boolean
-      - jarPoints: number
-      - roomHours: number
-      - coinsReceived: number
-      
-/guideEarnings
-  /{userId}
-    - pendingUsd: number
-    - availableUsd: number
-    - totalEarned: number
-    - totalWithdrawn: number
-    - totalConverted: number
-```
 
-### Security Rules
+### Security (Row Level Security)
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /guides/{userId} {
-      allow read: if request.auth.uid == userId;
-      allow write: if false; // Admin only
-    }
-    
-    match /guideTargets/{userId}/{yearMonth} {
-      allow read: if request.auth.uid == userId && isGuide(userId);
-      allow write: if false; // Server only
-    }
-    
-    match /guideDaily/{userId}/{date} {
-      allow read: if request.auth.uid == userId && isGuide(userId);
-      allow write: if false; // Server only
-    }
-    
-    match /guideEarnings/{userId} {
-      allow read: if request.auth.uid == userId && isGuide(userId);
-      allow write: if false; // Server only
-    }
-    
-    function isGuide(userId) {
-      return get(/databases/$(database)/documents/guides/$(userId)).data.status == 'active';
-    }
-  }
-}
+```sql
+-- Enable RLS
+ALTER TABLE guides ENABLE ROW LEVEL SECURITY;
+ALTER TABLE guide_targets ENABLE ROW LEVEL SECURITY;
+ALTER TABLE guide_daily ENABLE ROW LEVEL SECURITY;
+ALTER TABLE guide_earnings ENABLE ROW LEVEL SECURITY;
+
+-- Guides can only view their own data
+CREATE POLICY guide_view ON guides
+  FOR SELECT USING (user_id = current_user_id());
+
+CREATE POLICY guide_targets_view ON guide_targets
+  FOR SELECT USING (
+    user_id = current_user_id() 
+    AND EXISTS (SELECT 1 FROM guides WHERE user_id = guide_targets.user_id AND status = 'active')
+  );
+
+CREATE POLICY guide_daily_view ON guide_daily
+  FOR SELECT USING (
+    user_id = current_user_id()
+    AND EXISTS (SELECT 1 FROM guides WHERE user_id = guide_daily.user_id AND status = 'active')
+  );
+
+CREATE POLICY guide_earnings_view ON guide_earnings
+  FOR SELECT USING (
+    user_id = current_user_id()
+    AND EXISTS (SELECT 1 FROM guides WHERE user_id = guide_earnings.user_id AND status = 'active')
+  );
 ```
 
 ---

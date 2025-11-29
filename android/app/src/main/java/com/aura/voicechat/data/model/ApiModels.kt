@@ -302,3 +302,198 @@ data class PaginationDto(
     @SerializedName("totalItems") val totalItems: Int,
     @SerializedName("totalPages") val totalPages: Int
 )
+
+// ============================================
+// Games - New Game Types
+// ============================================
+
+// Game info response
+data class GameInfoDto(
+    @SerializedName("type") val type: String,
+    @SerializedName("name") val name: String,
+    @SerializedName("minBet") val minBet: Long?,
+    @SerializedName("maxBet") val maxBet: Long?,
+    @SerializedName("betOptions") val betOptions: List<Long>?,
+    @SerializedName("spinCost") val spinCost: Long?,
+    @SerializedName("advancedSpinCost") val advancedSpinCost: Long?
+)
+
+data class GamesListResponse(
+    @SerializedName("games") val games: List<GameInfoDto>
+)
+
+// Game session
+data class StartGameRequest(
+    @SerializedName("betAmount") val betAmount: Long,
+    @SerializedName("roomId") val roomId: String? = null
+)
+
+data class GameSessionResponse(
+    @SerializedName("session") val session: GameSessionDto
+)
+
+data class GameSessionDto(
+    @SerializedName("sessionId") val sessionId: String,
+    @SerializedName("gameType") val gameType: String,
+    @SerializedName("betAmount") val betAmount: Long,
+    @SerializedName("data") val data: Any?
+)
+
+// Game action request/response
+data class GameActionRequest(
+    @SerializedName("sessionId") val sessionId: String,
+    @SerializedName("action") val action: String,
+    @SerializedName("data") val data: GameActionDataDto?
+)
+
+data class GameActionDataDto(
+    @SerializedName("selectedItem") val selectedItem: String? = null,
+    @SerializedName("selectedFruit") val selectedFruit: String? = null,
+    @SerializedName("drawType") val drawType: String? = null,
+    @SerializedName("drawCount") val drawCount: Int? = null
+)
+
+data class GameResultResponse(
+    @SerializedName("result") val result: GameResultDto
+)
+
+// Lucky 777 Pro result
+data class Lucky777ProResultDto(
+    @SerializedName("reels") val reels: List<List<String>>,
+    @SerializedName("middleRow") val middleRow: List<String>,
+    @SerializedName("winningSymbol") val winningSymbol: String?,
+    @SerializedName("matchCount") val matchCount: Int,
+    @SerializedName("isJackpot") val isJackpot: Boolean,
+    @SerializedName("winAmount") val winAmount: Long,
+    @SerializedName("jackpot") val jackpot: Long,
+    @SerializedName("expEarned") val expEarned: Int
+)
+
+// Lucky 77 Pro result
+data class Lucky77ProResultDto(
+    @SerializedName("reels") val reels: List<String>,
+    @SerializedName("multiplier") val multiplier: Int,
+    @SerializedName("isJackpot") val isJackpot: Boolean,
+    @SerializedName("winAmount") val winAmount: Long,
+    @SerializedName("jackpot") val jackpot: Long,
+    @SerializedName("expEarned") val expEarned: Int
+)
+
+// Greedy Baby result
+data class GreedyBabyResultDto(
+    @SerializedName("selectedItem") val selectedItem: String,
+    @SerializedName("winningItem") val winningItem: String,
+    @SerializedName("winningItemName") val winningItemName: String,
+    @SerializedName("won") val won: Boolean,
+    @SerializedName("multiplier") val multiplier: Int,
+    @SerializedName("winAmount") val winAmount: Long,
+    @SerializedName("todaysWin") val todaysWin: Long,
+    @SerializedName("expEarned") val expEarned: Int
+)
+
+// Lucky Fruit result
+data class LuckyFruitResultDto(
+    @SerializedName("selectedFruit") val selectedFruit: String,
+    @SerializedName("winningFruit") val winningFruit: String,
+    @SerializedName("winningFruitName") val winningFruitName: String,
+    @SerializedName("won") val won: Boolean,
+    @SerializedName("specialBonus") val specialBonus: String?,
+    @SerializedName("multiplier") val multiplier: Int,
+    @SerializedName("winAmount") val winAmount: Long,
+    @SerializedName("resultHistory") val resultHistory: List<FruitResultHistoryDto>,
+    @SerializedName("expEarned") val expEarned: Int
+)
+
+data class FruitResultHistoryDto(
+    @SerializedName("fruit") val fruit: String,
+    @SerializedName("timestamp") val timestamp: String
+)
+
+// Gift Wheel result
+data class GiftWheelResultDto(
+    @SerializedName("drawType") val drawType: String,
+    @SerializedName("drawCount") val drawCount: Int,
+    @SerializedName("wonItems") val wonItems: List<GiftWheelItemDto>,
+    @SerializedName("totalValue") val totalValue: Long,
+    @SerializedName("expEarned") val expEarned: Int
+)
+
+data class GiftWheelItemDto(
+    @SerializedName("id") val id: String,
+    @SerializedName("name") val name: String,
+    @SerializedName("value") val value: Long
+)
+
+// Gift Wheel draw records
+data class GiftWheelRecordsResponse(
+    @SerializedName("records") val records: List<GiftWheelRecordDto>,
+    @SerializedName("pagination") val pagination: PaginationDto
+)
+
+data class GiftWheelRecordDto(
+    @SerializedName("id") val id: String,
+    @SerializedName("drawType") val drawType: String,
+    @SerializedName("drawCount") val drawCount: Int,
+    @SerializedName("items") val items: List<GiftWheelItemDto>,
+    @SerializedName("totalValue") val totalValue: Long,
+    @SerializedName("timestamp") val timestamp: String
+)
+
+// Generic game result wrapper
+data class GameResultDto(
+    // Lucky 777 Pro fields
+    @SerializedName("reels") val reels: Any? = null,
+    @SerializedName("middleRow") val middleRow: List<String>? = null,
+    @SerializedName("winningSymbol") val winningSymbol: String? = null,
+    @SerializedName("matchCount") val matchCount: Int? = null,
+    
+    // Common fields
+    @SerializedName("isJackpot") val isJackpot: Boolean? = null,
+    @SerializedName("multiplier") val multiplier: Int? = null,
+    @SerializedName("winAmount") val winAmount: Long? = null,
+    @SerializedName("jackpot") val jackpot: Long? = null,
+    @SerializedName("expEarned") val expEarned: Int? = null,
+    
+    // Greedy Baby / Lucky Fruit fields
+    @SerializedName("selectedItem") val selectedItem: String? = null,
+    @SerializedName("winningItem") val winningItem: String? = null,
+    @SerializedName("winningItemName") val winningItemName: String? = null,
+    @SerializedName("selectedFruit") val selectedFruit: String? = null,
+    @SerializedName("winningFruit") val winningFruit: String? = null,
+    @SerializedName("winningFruitName") val winningFruitName: String? = null,
+    @SerializedName("won") val won: Boolean? = null,
+    @SerializedName("specialBonus") val specialBonus: String? = null,
+    @SerializedName("todaysWin") val todaysWin: Long? = null,
+    @SerializedName("resultHistory") val resultHistory: List<FruitResultHistoryDto>? = null,
+    
+    // Gift Wheel fields
+    @SerializedName("drawType") val drawType: String? = null,
+    @SerializedName("drawCount") val drawCount: Int? = null,
+    @SerializedName("wonItems") val wonItems: List<GiftWheelItemDto>? = null,
+    @SerializedName("totalValue") val totalValue: Long? = null
+)
+
+// Jackpots
+data class JackpotsResponse(
+    @SerializedName("jackpots") val jackpots: List<JackpotDto>
+)
+
+data class JackpotDto(
+    @SerializedName("game") val game: String,
+    @SerializedName("amount") val amount: Long,
+    @SerializedName("lastWinner") val lastWinner: String?,
+    @SerializedName("lastWinDate") val lastWinDate: String?
+)
+
+// Game stats
+data class GameStatsResponse(
+    @SerializedName("stats") val stats: GameStatsDto
+)
+
+data class GameStatsDto(
+    @SerializedName("totalPlayed") val totalPlayed: Int,
+    @SerializedName("totalWon") val totalWon: Long,
+    @SerializedName("totalLost") val totalLost: Long,
+    @SerializedName("biggestWin") val biggestWin: Long,
+    @SerializedName("favoriteGame") val favoriteGame: String?
+)
