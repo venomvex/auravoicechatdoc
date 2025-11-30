@@ -580,4 +580,101 @@ INSERT INTO store_items (id, name, description, category, price_coins, rarity, d
     ('mic_glow_1', 'Glowing Mic', 'Mic with glow effect', 'mic_skin', 40000, 'rare', 30)
 ON CONFLICT (id) DO NOTHING;
 
+-- ============================================================================
+-- GREEDY BABY GAME TABLES
+-- ============================================================================
+
+-- Game configuration storage
+CREATE TABLE IF NOT EXISTS game_configs (
+    game_type VARCHAR(50) PRIMARY KEY,
+    config_data JSONB NOT NULL DEFAULT '{}',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Greedy Baby pool tracking for house edge calculations
+CREATE TABLE IF NOT EXISTS greedy_baby_pool (
+    id INTEGER PRIMARY KEY DEFAULT 1 CHECK (id = 1), -- Single row table
+    total_bets BIGINT DEFAULT 0,
+    total_payouts BIGINT DEFAULT 0,
+    profit_loss BIGINT DEFAULT 0,
+    round_count BIGINT DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Initialize pool with default values
+INSERT INTO greedy_baby_pool (id, total_bets, total_payouts, profit_loss, round_count)
+VALUES (1, 0, 0, 0, 0)
+ON CONFLICT (id) DO NOTHING;
+
+-- Greedy Baby rankings (daily/weekly)
+CREATE TABLE IF NOT EXISTS greedy_baby_rankings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    ranking_type VARCHAR(10) NOT NULL CHECK (ranking_type IN ('daily', 'weekly')),
+    period_date DATE NOT NULL, -- For daily: today's date, For weekly: Monday of the week
+    total_winnings BIGINT DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, ranking_type, period_date)
+);
+
+CREATE INDEX idx_greedy_baby_rankings_type_date ON greedy_baby_rankings(ranking_type, period_date);
+CREATE INDEX idx_greedy_baby_rankings_winnings ON greedy_baby_rankings(total_winnings DESC);
+
+-- Greedy Baby round history
+CREATE TABLE IF NOT EXISTS greedy_baby_rounds (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    room_id UUID REFERENCES rooms(id) ON DELETE SET NULL,
+    winning_item VARCHAR(50) NOT NULL,
+    special_result VARCHAR(20) CHECK (special_result IN ('fruit_basket', 'full_pizza', NULL)),
+    total_bets BIGINT DEFAULT 0,
+    total_payouts BIGINT DEFAULT 0,
+    participant_count INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_greedy_baby_rounds_room ON greedy_baby_rounds(room_id);
+CREATE INDEX idx_greedy_baby_rounds_created ON greedy_baby_rounds(created_at DESC);
+
+-- Greedy Baby individual bets
+CREATE TABLE IF NOT EXISTS greedy_baby_bets (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    round_id UUID NOT NULL REFERENCES greedy_baby_rounds(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    item_id VARCHAR(50) NOT NULL,
+    chip_value BIGINT NOT NULL,
+    chip_count INTEGER NOT NULL DEFAULT 1,
+    total_bet BIGINT NOT NULL,
+    won BOOLEAN DEFAULT FALSE,
+    payout BIGINT DEFAULT 0,
+    multiplier INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_greedy_baby_bets_round ON greedy_baby_bets(round_id);
+CREATE INDEX idx_greedy_baby_bets_user ON greedy_baby_bets(user_id);
+
+-- Insert default Greedy Baby configuration
+INSERT INTO game_configs (game_type, config_data) VALUES
+    ('greedy_baby', '{
+        "houseEdge": 8,
+        "maxWinPerRound": 100000000,
+        "winRates": {
+            "apple": 17,
+            "lemon": 17,
+            "strawberry": 17,
+            "mango": 17,
+            "fish": 12,
+            "burger": 8,
+            "pizza": 5,
+            "chicken": 2
+        },
+        "fruitBasketTriggerRate": 3,
+        "fullPizzaTriggerRate": 2,
+        "poolRebalanceThreshold": 1000000
+    }')
+ON CONFLICT (game_type) DO NOTHING;
+
 COMMIT;

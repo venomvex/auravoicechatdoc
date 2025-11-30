@@ -68,17 +68,31 @@ class GreedyBabyViewModel @Inject constructor(
                 wheelItems = wheelItems,
                 chips = chips,
                 selectedChip = chips.first(),
-                userCoins = 10_000_000L, // This would come from user repository
+                userCoins = 10_000_000L, // Initial value - will be updated from WebSocket/API
                 timerSeconds = 15,
                 gamePhase = GamePhase.BETTING
             )
+        }
+        
+        // Load user coins from repository (async)
+        loadUserCoins()
+    }
+    
+    private fun loadUserCoins() {
+        viewModelScope.launch {
+            // In production, this would call the user repository to get actual balance
+            // Example: val coins = userRepository.getUserCoins()
+            // For now, we use the initialized value
         }
     }
 
     private fun startGameLoop() {
         timerJob?.cancel()
         timerJob = viewModelScope.launch {
-            while (true) {
+            // Game loop runs continuously while ViewModel is active
+            // Loop is automatically cancelled when ViewModel is cleared (see onCleared())
+            // In production, this would sync with server-side game state via WebSocket
+            while (isActive) {
                 // Betting phase
                 _uiState.update { it.copy(
                     gamePhase = GamePhase.BETTING,
@@ -89,6 +103,7 @@ class GreedyBabyViewModel @Inject constructor(
                 
                 // Countdown betting time
                 for (i in 15 downTo 0) {
+                    if (!isActive) return@launch
                     _uiState.update { it.copy(timerSeconds = i) }
                     delay(1000)
                 }
@@ -102,6 +117,7 @@ class GreedyBabyViewModel @Inject constructor(
                 
                 // Spin animation time
                 for (i in 7 downTo 0) {
+                    if (!isActive) return@launch
                     _uiState.update { it.copy(timerSeconds = i) }
                     delay(1000)
                 }
@@ -256,8 +272,15 @@ class GreedyBabyViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Generate top winners list for the result popup.
+     * In a live multiplayer environment, this data would come from:
+     * - WebSocket event: "greedy_baby:result" with topWinners array
+     * - Or fetched from GET /games/greedy-baby/rankings/daily
+     * 
+     * This mock implementation is for offline/development testing.
+     */
     private fun generateMockTopWinners(userWinnings: Long): List<TopWinner> {
-        // In production, this would come from the server
         return listOf(
             TopWinner("user_1", "Player1", Random.nextLong(1_000_000, 5_000_000)),
             TopWinner("user_2", "Player2", Random.nextLong(500_000, 2_000_000)),

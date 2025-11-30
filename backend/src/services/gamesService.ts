@@ -5,13 +5,14 @@
  * Complete implementation of all games:
  * - Lucky 777 Pro (5-line slot machine)
  * - Lucky 77 Pro (Single-line slot machine)
- * - Greedy Baby (Food wheel selection game)
+ * - Greedy Baby (Circular betting wheel game)
  * - Lucky Fruit (3x3 grid fruit selection)
  * - Gift Wheel System (Gift wheel with draw records)
  */
 
 import { v4 as uuidv4 } from 'uuid';
 import { logger } from '../utils/logger';
+import { query } from '../config/database.config';
 
 // Game types
 type GameType = 'lucky_777_pro' | 'lucky_77_pro' | 'greedy_baby' | 'lucky_fruit' | 'gift_wheel';
@@ -98,8 +99,9 @@ const DEFAULT_GREEDY_BABY_CONFIG: GreedyBabyConfig = {
   poolRebalanceThreshold: 1_000_000
 };
 
-// In-memory config (in production, store in database)
-let greedyBabyConfig: GreedyBabyConfig = { ...DEFAULT_GREEDY_BABY_CONFIG };
+// In-memory cache for config (loaded from database on startup)
+let greedyBabyConfigCache: GreedyBabyConfig = { ...DEFAULT_GREEDY_BABY_CONFIG };
+let configLoaded = false;
 
 // Greedy Baby round management
 interface GreedyBabyRound {
@@ -123,11 +125,10 @@ interface GreedyBabyBet {
   payout?: number;
 }
 
-// Active rounds per room
+// Active rounds per room (in-memory for real-time performance)
 const activeGreedyBabyRounds = new Map<string, GreedyBabyRound>();
-const greedyBabyRoundHistory: GreedyBabyRound[] = [];
 
-// Pool tracking for dynamic rate adjustment
+// Pool tracking cache (synced with database)
 interface GreedyBabyPool {
   totalBets: number;
   totalPayouts: number;
@@ -135,18 +136,48 @@ interface GreedyBabyPool {
   roundCount: number;
 }
 
-const greedyBabyPool: GreedyBabyPool = {
+let greedyBabyPoolCache: GreedyBabyPool = {
   totalBets: 0,
   totalPayouts: 0,
   profitLoss: 0,
   roundCount: 0
 };
 
-// Rankings storage
-const greedyBabyRankings = {
-  daily: new Map<string, number>(),   // userId -> winnings
-  weekly: new Map<string, number>()   // userId -> winnings
-};
+// Initialize Greedy Baby data from database
+async function initGreedyBabyData() {
+  try {
+    // Load config from database
+    const configResult = await query(
+      `SELECT config_data FROM game_configs WHERE game_type = 'greedy_baby' LIMIT 1`
+    );
+    if (configResult.rows.length > 0) {
+      greedyBabyConfigCache = { ...DEFAULT_GREEDY_BABY_CONFIG, ...configResult.rows[0].config_data };
+    }
+    
+    // Load pool stats from database
+    const poolResult = await query(
+      `SELECT total_bets, total_payouts, profit_loss, round_count 
+       FROM greedy_baby_pool WHERE id = 1 LIMIT 1`
+    );
+    if (poolResult.rows.length > 0) {
+      greedyBabyPoolCache = {
+        totalBets: Number(poolResult.rows[0].total_bets) || 0,
+        totalPayouts: Number(poolResult.rows[0].total_payouts) || 0,
+        profitLoss: Number(poolResult.rows[0].profit_loss) || 0,
+        roundCount: Number(poolResult.rows[0].round_count) || 0
+      };
+    }
+    
+    configLoaded = true;
+    logger.info('Greedy Baby data loaded from database');
+  } catch (error) {
+    logger.warn('Failed to load Greedy Baby data from database, using defaults', { error });
+    // Continue with defaults - tables may not exist yet
+  }
+}
+
+// Initialize on module load
+initGreedyBabyData().catch(err => logger.error('Init error', { err }));
 
 // Lucky Fruit items with multipliers (based on screenshot)
 const LUCKY_FRUIT_ITEMS = [
@@ -615,8 +646,8 @@ const playGreedyBaby = (session: GameSession, data: GreedyBabyBetData) => {
     }
     
     // Apply max win cap
-    if (payout > greedyBabyConfig.maxWinPerRound) {
-      payout = greedyBabyConfig.maxWinPerRound;
+    if (payout > greedyBabyConfigCache.maxWinPerRound) {
+      payout = greedyBabyConfigCache.maxWinPerRound;
     }
     
     totalPayout += payout;
@@ -631,22 +662,23 @@ const playGreedyBaby = (session: GameSession, data: GreedyBabyBetData) => {
     });
   }
   
-  // Update pool tracking
-  greedyBabyPool.totalBets += totalBet;
-  greedyBabyPool.totalPayouts += totalPayout;
-  greedyBabyPool.profitLoss = greedyBabyPool.totalBets - greedyBabyPool.totalPayouts;
-  greedyBabyPool.roundCount++;
+  // Update pool tracking (in-memory cache)
+  greedyBabyPoolCache.totalBets += totalBet;
+  greedyBabyPoolCache.totalPayouts += totalPayout;
+  greedyBabyPoolCache.profitLoss = greedyBabyPoolCache.totalBets - greedyBabyPoolCache.totalPayouts;
+  greedyBabyPoolCache.roundCount++;
   
-  // Update rankings
+  // Persist pool stats to database (async, don't block response)
+  updatePoolInDatabase(greedyBabyPoolCache).catch(err => 
+    logger.error('Failed to persist pool stats', { err })
+  );
+  
+  // Update rankings in database
   const userId = session.userId;
   if (totalPayout > 0) {
-    // Update daily rankings
-    const currentDaily = greedyBabyRankings.daily.get(userId) || 0;
-    greedyBabyRankings.daily.set(userId, currentDaily + totalPayout);
-    
-    // Update weekly rankings
-    const currentWeekly = greedyBabyRankings.weekly.get(userId) || 0;
-    greedyBabyRankings.weekly.set(userId, currentWeekly + totalPayout);
+    updateRankingsInDatabase(userId, totalPayout).catch(err =>
+      logger.error('Failed to update rankings', { err })
+    );
   }
   
   // Complete session
@@ -682,7 +714,7 @@ function determineGreedyBabyWinner(totalBet: number): {
   winningItem: typeof GREEDY_BABY_ITEMS[0]; 
   specialResult: 'fruit_basket' | 'full_pizza' | null 
 } {
-  const config = greedyBabyConfig;
+  const config = greedyBabyConfigCache;
   
   // Check for special results first
   let specialResult: 'fruit_basket' | 'full_pizza' | null = null;
@@ -698,7 +730,7 @@ function determineGreedyBabyWinner(totalBet: number): {
   let adjustedRates = { ...config.winRates };
   
   // If pool is losing money, slightly reduce high multiplier win rates
-  if (greedyBabyPool.profitLoss < -config.poolRebalanceThreshold) {
+  if (greedyBabyPoolCache.profitLoss < -config.poolRebalanceThreshold) {
     const reductionFactor = 0.9; // Reduce by 10%
     adjustedRates.chicken = Math.max(1, adjustedRates.chicken * reductionFactor);
     adjustedRates.pizza = Math.max(3, adjustedRates.pizza * reductionFactor);
@@ -714,7 +746,7 @@ function determineGreedyBabyWinner(totalBet: number): {
     adjustedRates.mango += extraProb / 4;
   }
   // If pool is winning too much, slightly increase high multiplier win rates
-  else if (greedyBabyPool.profitLoss > config.poolRebalanceThreshold * 2) {
+  else if (greedyBabyPoolCache.profitLoss > config.poolRebalanceThreshold * 2) {
     const increaseFactor = 1.1; // Increase by 10%
     adjustedRates.chicken = Math.min(4, adjustedRates.chicken * increaseFactor);
     adjustedRates.pizza = Math.min(8, adjustedRates.pizza * increaseFactor);
@@ -772,45 +804,125 @@ interface GreedyBabyBetResult {
   multiplier: number;
 }
 
-// Get Greedy Baby rankings
+// Get Greedy Baby rankings from database
 export const getGreedyBabyRankings = async (type: 'daily' | 'weekly', limit: number = 50) => {
-  const rankings = type === 'daily' ? greedyBabyRankings.daily : greedyBabyRankings.weekly;
-  
-  const sortedRankings = Array.from(rankings.entries())
-    .map(([userId, winnings]) => ({ userId, winnings }))
-    .sort((a, b) => b.winnings - a.winnings)
-    .slice(0, limit);
-  
-  return sortedRankings;
+  try {
+    const periodDate = type === 'daily' ? new Date().toISOString().split('T')[0] : getWeekStartDate();
+    
+    const result = await query(
+      `SELECT r.user_id, r.total_winnings, u.username, u.display_name, u.avatar_url
+       FROM greedy_baby_rankings r
+       LEFT JOIN users u ON r.user_id = u.id
+       WHERE r.ranking_type = $1 AND r.period_date = $2
+       ORDER BY r.total_winnings DESC
+       LIMIT $3`,
+      [type, periodDate, limit]
+    );
+    
+    return result.rows.map(row => ({
+      userId: row.user_id,
+      username: row.username || 'Anonymous',
+      displayName: row.display_name,
+      avatarUrl: row.avatar_url,
+      winnings: Number(row.total_winnings)
+    }));
+  } catch (error) {
+    logger.error('Failed to fetch rankings from database', { error });
+    // Return empty array on error
+    return [];
+  }
 };
 
 // Get Greedy Baby configuration (for owner panel)
 export const getGreedyBabyConfig = () => {
-  return { ...greedyBabyConfig };
+  return { ...greedyBabyConfigCache };
 };
 
 // Update Greedy Baby configuration (for owner panel)
-export const updateGreedyBabyConfig = (updates: Partial<GreedyBabyConfig>) => {
-  greedyBabyConfig = { ...greedyBabyConfig, ...updates };
-  logger.info('Greedy Baby config updated', { config: greedyBabyConfig });
-  return greedyBabyConfig;
+export const updateGreedyBabyConfig = async (updates: Partial<GreedyBabyConfig>) => {
+  greedyBabyConfigCache = { ...greedyBabyConfigCache, ...updates };
+  
+  // Persist to database
+  try {
+    await query(
+      `INSERT INTO game_configs (game_type, config_data, updated_at)
+       VALUES ('greedy_baby', $1, NOW())
+       ON CONFLICT (game_type) DO UPDATE SET config_data = $1, updated_at = NOW()`,
+      [JSON.stringify(greedyBabyConfigCache)]
+    );
+    logger.info('Greedy Baby config persisted to database', { config: greedyBabyConfigCache });
+  } catch (error) {
+    logger.error('Failed to persist Greedy Baby config', { error });
+    // Config is still updated in memory
+  }
+  
+  return greedyBabyConfigCache;
 };
 
 // Reset Greedy Baby rankings (for daily/weekly reset)
-export const resetGreedyBabyRankings = (type: 'daily' | 'weekly' | 'both') => {
-  if (type === 'daily' || type === 'both') {
-    greedyBabyRankings.daily.clear();
+export const resetGreedyBabyRankings = async (type: 'daily' | 'weekly' | 'both') => {
+  try {
+    if (type === 'daily' || type === 'both') {
+      await query(`DELETE FROM greedy_baby_rankings WHERE ranking_type = 'daily'`);
+    }
+    if (type === 'weekly' || type === 'both') {
+      await query(`DELETE FROM greedy_baby_rankings WHERE ranking_type = 'weekly'`);
+    }
+    logger.info('Greedy Baby rankings reset', { type });
+  } catch (error) {
+    logger.error('Failed to reset rankings in database', { error });
   }
-  if (type === 'weekly' || type === 'both') {
-    greedyBabyRankings.weekly.clear();
-  }
-  logger.info('Greedy Baby rankings reset', { type });
 };
 
 // Get Greedy Baby pool stats (for owner panel)
-export const getGreedyBabyPoolStats = () => {
-  return { ...greedyBabyPool };
+export const getGreedyBabyPoolStats = async () => {
+  // Return cached stats (most up-to-date)
+  return { ...greedyBabyPoolCache };
 };
+
+// Helper function to update pool in database
+async function updatePoolInDatabase(pool: GreedyBabyPool) {
+  await query(
+    `INSERT INTO greedy_baby_pool (id, total_bets, total_payouts, profit_loss, round_count, updated_at)
+     VALUES (1, $1, $2, $3, $4, NOW())
+     ON CONFLICT (id) DO UPDATE SET 
+       total_bets = $1, total_payouts = $2, profit_loss = $3, round_count = $4, updated_at = NOW()`,
+    [pool.totalBets, pool.totalPayouts, pool.profitLoss, pool.roundCount]
+  );
+}
+
+// Helper function to update rankings in database
+async function updateRankingsInDatabase(userId: string, winAmount: number) {
+  const today = new Date().toISOString().split('T')[0];
+  const weekStart = getWeekStartDate();
+  
+  // Update daily ranking
+  await query(
+    `INSERT INTO greedy_baby_rankings (user_id, ranking_type, period_date, total_winnings, updated_at)
+     VALUES ($1, 'daily', $2, $3, NOW())
+     ON CONFLICT (user_id, ranking_type, period_date) 
+     DO UPDATE SET total_winnings = greedy_baby_rankings.total_winnings + $3, updated_at = NOW()`,
+    [userId, today, winAmount]
+  );
+  
+  // Update weekly ranking
+  await query(
+    `INSERT INTO greedy_baby_rankings (user_id, ranking_type, period_date, total_winnings, updated_at)
+     VALUES ($1, 'weekly', $2, $3, NOW())
+     ON CONFLICT (user_id, ranking_type, period_date) 
+     DO UPDATE SET total_winnings = greedy_baby_rankings.total_winnings + $3, updated_at = NOW()`,
+    [userId, weekStart, winAmount]
+  );
+}
+
+// Get start of current week (Monday)
+function getWeekStartDate(): string {
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+  const monday = new Date(now.setDate(diff));
+  return monday.toISOString().split('T')[0];
+}
 
 // Lucky Fruit - 3x3 grid fruit selection
 const playLuckyFruit = (session: GameSession, selectedFruitId: string) => {

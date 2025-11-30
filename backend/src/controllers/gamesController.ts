@@ -198,10 +198,9 @@ export const getGreedyBabyRankings = async (req: Request, res: Response, next: N
   }
 };
 
-// Get Greedy Baby configuration (owner panel)
+// Get Greedy Baby configuration (owner panel - protected by requireOwner middleware)
 export const getGreedyBabyConfig = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    // TODO: Add owner authorization check
     const config = gamesService.getGreedyBabyConfig();
     res.json({ config });
   } catch (error) {
@@ -209,33 +208,30 @@ export const getGreedyBabyConfig = async (req: Request, res: Response, next: Nex
   }
 };
 
-// Update Greedy Baby configuration (owner panel)
+// Update Greedy Baby configuration (owner panel - protected by requireOwner middleware)
 export const updateGreedyBabyConfig = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    // TODO: Add owner authorization check
     const updates = req.body;
-    const config = gamesService.updateGreedyBabyConfig(updates);
+    const config = await gamesService.updateGreedyBabyConfig(updates);
     res.json({ config, message: 'Configuration updated successfully' });
   } catch (error) {
     next(error);
   }
 };
 
-// Get Greedy Baby pool statistics (owner panel)
+// Get Greedy Baby pool statistics (owner panel - protected by requireOwner middleware)
 export const getGreedyBabyPoolStats = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    // TODO: Add owner authorization check
-    const stats = gamesService.getGreedyBabyPoolStats();
+    const stats = await gamesService.getGreedyBabyPoolStats();
     res.json({ stats });
   } catch (error) {
     next(error);
   }
 };
 
-// Reset Greedy Baby rankings (owner panel - for scheduled tasks)
+// Reset Greedy Baby rankings (owner panel - protected by requireOwner middleware)
 export const resetGreedyBabyRankings = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    // TODO: Add owner authorization check
     const { type } = req.body;
     
     if (!type || !['daily', 'weekly', 'both'].includes(type)) {
@@ -243,7 +239,7 @@ export const resetGreedyBabyRankings = async (req: Request, res: Response, next:
       return;
     }
 
-    gamesService.resetGreedyBabyRankings(type);
+    await gamesService.resetGreedyBabyRankings(type);
     res.json({ message: `${type} rankings reset successfully` });
   } catch (error) {
     next(error);

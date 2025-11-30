@@ -11,7 +11,7 @@
  */
 
 import { Router } from 'express';
-import { authenticate } from '../middleware/auth';
+import { authenticate, requireOwner } from '../middleware/auth';
 import { generalLimiter } from '../middleware/rateLimiter';
 import * as gamesController from '../controllers/gamesController';
 
@@ -43,17 +43,17 @@ router.get('/:gameType/history', gamesController.getGameHistory);
 router.get('/gift-wheel/draw-records', gamesController.getGiftWheelRecords);
 
 // ================== GREEDY BABY SPECIFIC ENDPOINTS ==================
-// Rankings (daily/weekly)
+// Rankings (daily/weekly) - Public access (authenticated users)
 router.get('/greedy-baby/rankings/:type', gamesController.getGreedyBabyRankings);
 
-// Owner panel - Configuration
-router.get('/greedy-baby/config', gamesController.getGreedyBabyConfig);
-router.put('/greedy-baby/config', gamesController.updateGreedyBabyConfig);
+// Owner panel - Configuration (Owner only)
+router.get('/greedy-baby/config', requireOwner, gamesController.getGreedyBabyConfig);
+router.put('/greedy-baby/config', requireOwner, gamesController.updateGreedyBabyConfig);
 
-// Owner panel - Pool stats
-router.get('/greedy-baby/pool-stats', gamesController.getGreedyBabyPoolStats);
+// Owner panel - Pool stats (Owner only)
+router.get('/greedy-baby/pool-stats', requireOwner, gamesController.getGreedyBabyPoolStats);
 
-// Owner panel - Reset rankings
-router.post('/greedy-baby/rankings/reset', gamesController.resetGreedyBabyRankings);
+// Owner panel - Reset rankings (Owner only)
+router.post('/greedy-baby/rankings/reset', requireOwner, gamesController.resetGreedyBabyRankings);
 
 export default router;
