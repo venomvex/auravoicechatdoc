@@ -1,8 +1,10 @@
 package com.aura.voicechat.ui.games
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,134 +16,506 @@ import kotlin.random.Random
 
 /**
  * ViewModel for Greedy Baby Game
+ * Circular betting wheel game with live multiplayer betting, timer-based rounds
  * Developer: Hawkaye Visions LTD — Pakistan
  */
 @HiltViewModel
-class GreedyBabyViewModel @Inject constructor() : ViewModel() {
+class GreedyBabyViewModel @Inject constructor(
+    // TODO: Inject WebSocket service, repository, etc.
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GreedyBabyUiState())
     val uiState: StateFlow<GreedyBabyUiState> = _uiState.asStateFlow()
 
+    private var timerJob: Job? = null
+    private var roundNumber = 0
+
     init {
-        loadGameData()
+        initializeGame()
+        startGameLoop()
     }
 
-    private fun loadGameData() {
-        // Initialize available foods
-        val foods = listOf(
-            FoodItem("milk", "Milk", "🍼", 100, 10, 1.0f),
-            FoodItem("apple", "Apple", "🍎", 150, 15, 1.2f),
-            FoodItem("banana", "Banana", "🍌", 150, 15, 1.2f),
-            FoodItem("cookie", "Cookie", "🍪", 200, 20, 1.5f),
-            FoodItem("cake", "Cake", "🍰", 300, 25, 1.8f),
-            FoodItem("candy", "Candy", "🍬", 250, 18, 1.4f),
-            FoodItem("ice_cream", "Ice Cream", "🍦", 350, 30, 2.0f),
-            FoodItem("chocolate", "Chocolate", "🍫", 400, 35, 2.2f),
-            FoodItem("pizza", "Pizza", "🍕", 500, 40, 2.5f),
-            FoodItem("burger", "Burger", "🍔", 500, 40, 2.5f),
-            FoodItem("sushi", "Sushi", "🍣", 600, 45, 2.8f),
-            FoodItem("steak", "Steak", "🥩", 800, 50, 3.0f)
+    private fun initializeGame() {
+        // Initialize wheel items (8 items arranged clockwise from top)
+        val wheelItems = listOf(
+            WheelItem("apple", "Apple", "🍎", 5, Color(0xFFFFD700), true),
+            WheelItem("lemon", "Lemon", "🍋", 5, Color(0xFFFFD700), true),
+            WheelItem("strawberry", "Strawberry", "🍓", 5, Color(0xFFFFD700), true),
+            WheelItem("mango", "Mango", "🥭", 5, Color(0xFFFFD700), true),
+            WheelItem("fish", "Fish", "🐟", 10, Color(0xFFFFD700), false),
+            WheelItem("burger", "Burger", "🍔", 15, Color(0xFFFFD700), false),
+            WheelItem("pizza", "Pizza", "🍕", 25, Color(0xFFFFD700), false),
+            WheelItem("chicken", "Chicken", "🍗", 45, Color(0xFFFFD700), false)
+        )
+
+        // Initialize betting chips
+        val chips = listOf(
+            BettingChip(100L, "100", Color(0xFF4CAF50), Color(0xFF2E7D32)),
+            BettingChip(1_000L, "1K", Color(0xFF2196F3), Color(0xFF1565C0)),
+            BettingChip(5_000L, "5K", Color(0xFF9C27B0), Color(0xFF6A1B9A)),
+            BettingChip(10_000L, "10K", Color(0xFFFF9800), Color(0xFFE65100)),
+            BettingChip(50_000L, "50K", Color(0xFFE91E63), Color(0xFFC2185B)),
+            BettingChip(100_000L, "100K", Color(0xFF00BCD4), Color(0xFF00838F)),
+            BettingChip(1_000_000L, "1M", Color(0xFFFFD700), Color(0xFFFF8F00)),
+            BettingChip(2_000_000L, "2M", Color(0xFFFF5722), Color(0xFFBF360C)),
+            BettingChip(5_000_000L, "5M", Color(0xFF607D8B), Color(0xFF37474F)),
+            BettingChip(10_000_000L, "10M", Color(0xFF9E9E9E), Color(0xFF616161)),
+            BettingChip(50_000_000L, "50M", Color(0xFF795548), Color(0xFF4E342E))
         )
 
         _uiState.update { state ->
             state.copy(
-                availableFoods = foods,
-                selectedFood = foods.first(),
-                userCoins = 10000, // This would come from user repository
-                maxFeeds = 10
+                wheelItems = wheelItems,
+                chips = chips,
+                selectedChip = chips.first(),
+                userCoins = 10_000_000L, // Initial value - will be updated from WebSocket/API
+                timerSeconds = 15,
+                gamePhase = GamePhase.BETTING
             )
         }
+        
+        // Load user coins from repository (async)
+        loadUserCoins()
     }
-
-    fun selectFood(food: FoodItem) {
-        _uiState.update { state ->
-            state.copy(selectedFood = food)
-        }
-    }
-
-    fun feedBaby() {
-        val currentState = _uiState.value
-        val food = currentState.selectedFood ?: return
-
-        if (currentState.userCoins < food.cost) {
-            // Not enough coins
-            return
-        }
-
-        if (currentState.feedCount >= currentState.maxFeeds) {
-            // Max feeds reached
-            return
-        }
-
+    
+    private fun loadUserCoins() {
         viewModelScope.launch {
-            // Start feeding animation
-            _uiState.update { it.copy(isFeeding = true) }
+            // In production, this would call the user repository to get actual balance
+            // Example: val coins = userRepository.getUserCoins()
+            // For now, we use the initialized value
+        }
+    }
 
-            // Deduct coins
-            _uiState.update { state ->
-                state.copy(userCoins = state.userCoins - food.cost)
-            }
-
-            delay(1500) // Feeding animation time
-
-            // Calculate result
-            val isSuccessful = Random.nextFloat() < 0.7f // 70% success rate
-            val newHappiness = minOf(100, currentState.happinessLevel + food.happinessBonus)
-            
-            val reward = if (isSuccessful) {
-                val baseReward = (food.cost * food.rewardMultiplier).toInt()
-                val bonusMultiplier = 1.0f + (newHappiness / 100f) * 0.5f
-                val finalReward = (baseReward * bonusMultiplier).toInt()
+    private fun startGameLoop() {
+        timerJob?.cancel()
+        timerJob = viewModelScope.launch {
+            // Game loop runs continuously while ViewModel is active
+            // Loop is automatically cancelled when ViewModel is cleared (see onCleared())
+            // In production, this would sync with server-side game state via WebSocket
+            while (isActive) {
+                // Betting phase
+                _uiState.update { it.copy(
+                    gamePhase = GamePhase.BETTING,
+                    timerSeconds = 15,
+                    winningItem = null,
+                    isSpinning = false
+                )}
                 
-                GameReward(
-                    type = if (Random.nextFloat() < 0.2f) "Diamonds" else "Coins",
-                    amount = finalReward
-                )
-            } else null
-
-            _uiState.update { state ->
-                state.copy(
-                    isFeeding = false,
-                    feedCount = state.feedCount + 1,
-                    happinessLevel = newHappiness,
-                    isHappy = isSuccessful,
-                    isFull = newHappiness >= 100,
-                    reward = reward,
-                    showResult = true,
-                    userCoins = state.userCoins + (reward?.amount ?: 0)
-                )
+                // Countdown betting time
+                for (i in 15 downTo 0) {
+                    if (!isActive) return@launch
+                    _uiState.update { it.copy(timerSeconds = i) }
+                    delay(1000)
+                }
+                
+                // Show time phase (spinning)
+                _uiState.update { it.copy(
+                    gamePhase = GamePhase.SHOW_TIME,
+                    timerSeconds = 7,
+                    isSpinning = true
+                )}
+                
+                // Spin animation time
+                for (i in 7 downTo 0) {
+                    if (!isActive) return@launch
+                    _uiState.update { it.copy(timerSeconds = i) }
+                    delay(1000)
+                }
+                
+                // Determine winner
+                val winner = determineWinner()
+                val specialResult = determineSpecialResult()
+                
+                // Result phase
+                _uiState.update { it.copy(
+                    gamePhase = GamePhase.RESULT,
+                    winningItem = winner,
+                    isSpinning = false,
+                    timerSeconds = 5
+                )}
+                
+                // Calculate winnings
+                processRoundResults(winner, specialResult)
+                
+                // Show result popup
+                _uiState.update { it.copy(showResultPopup = true) }
+                
+                // Wait for result display
+                delay(5000)
+                
+                // Update result history
+                updateResultHistory(winner, specialResult)
+                
+                // Clear bets for next round
+                clearBets()
+                
+                roundNumber++
             }
         }
     }
 
-    fun dismissResult() {
+    private fun determineWinner(): WheelItem {
+        val currentState = _uiState.value
+        val items = currentState.wheelItems
+        
+        // Probability-based selection (house edge considered)
+        // Fruits (5x): 17% each = 68% total
+        // Fish (10x): 12%
+        // Burger (15x): 8%
+        // Pizza (25x): 5%
+        // Chicken (45x): 2%
+        // Note: Adjusted based on house edge configuration
+        
+        val probabilities = mapOf(
+            "apple" to 17,
+            "lemon" to 17,
+            "strawberry" to 17,
+            "mango" to 17,
+            "fish" to 12,
+            "burger" to 8,
+            "pizza" to 5,
+            "chicken" to 2
+        )
+        
+        val random = Random.nextInt(100)
+        var cumulative = 0
+        
+        for ((itemId, probability) in probabilities) {
+            cumulative += probability
+            if (random < cumulative) {
+                return items.find { it.id == itemId } ?: items.first()
+            }
+        }
+        
+        return items.first()
+    }
+
+    private fun determineSpecialResult(): SpecialResult? {
+        // 3% chance for Fruit Basket
+        // 2% chance for Full Pizza
+        val random = Random.nextInt(100)
+        return when {
+            random < 3 -> SpecialResult.FRUIT_BASKET
+            random < 5 -> SpecialResult.FULL_PIZZA
+            else -> null
+        }
+    }
+
+    private fun processRoundResults(winner: WheelItem, specialResult: SpecialResult?) {
+        val currentState = _uiState.value
+        var totalWinnings = 0L
+        val topWinners = mutableListOf<TopWinner>()
+        
+        // Process user's bets
+        currentState.betsOnItems.forEach { (itemId, bets) ->
+            bets.forEach { bet ->
+                val item = currentState.wheelItems.find { it.id == itemId }
+                if (item != null) {
+                    val won = when {
+                        specialResult == SpecialResult.FRUIT_BASKET && item.isFruit -> {
+                            // Check if user bet on all 4 fruits
+                            val fruitItems = currentState.wheelItems.filter { it.isFruit }
+                            fruitItems.all { fruitItem -> 
+                                currentState.betsOnItems[fruitItem.id]?.isNotEmpty() == true 
+                            }
+                        }
+                        specialResult == SpecialResult.FULL_PIZZA && !item.isFruit -> {
+                            // Check if user bet on all 4 non-fruits
+                            val nonFruitItems = currentState.wheelItems.filter { !it.isFruit }
+                            nonFruitItems.all { nonFruitItem -> 
+                                currentState.betsOnItems[nonFruitItem.id]?.isNotEmpty() == true 
+                            }
+                        }
+                        else -> itemId == winner.id
+                    }
+                    
+                    if (won) {
+                        totalWinnings += bet.totalBet * item.multiplier
+                    }
+                }
+            }
+        }
+        
+        // Update user coins
         _uiState.update { state ->
             state.copy(
-                showResult = false,
-                reward = null
+                userCoins = state.userCoins + totalWinnings,
+                roundWinnings = totalWinnings,
+                todaysWin = state.todaysWin + totalWinnings,
+                topWinners = generateMockTopWinners(totalWinnings) // In production, get from server
             )
         }
+        
+        // Add to winning records
+        currentState.betsOnItems.forEach { (itemId, bets) ->
+            val item = currentState.wheelItems.find { it.id == itemId } ?: return@forEach
+            val totalBet = bets.sumOf { it.totalBet }
+            val won = itemId == winner.id
+            val payout = if (won) totalBet * item.multiplier else 0L
+            
+            if (totalBet > 0) {
+                val record = WinningRecord(
+                    roundId = "round_$roundNumber",
+                    item = item,
+                    totalBet = totalBet,
+                    won = won,
+                    payout = payout,
+                    timestamp = System.currentTimeMillis()
+                )
+                
+                _uiState.update { state ->
+                    state.copy(
+                        winningRecords = listOf(record) + state.winningRecords.take(99)
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Generate top winners list for the result popup.
+     * In a live multiplayer environment, this data would come from:
+     * - WebSocket event: "greedy_baby:result" with topWinners array
+     * - Or fetched from GET /games/greedy-baby/rankings/daily
+     * 
+     * This mock implementation is for offline/development testing.
+     */
+    private fun generateMockTopWinners(userWinnings: Long): List<TopWinner> {
+        return listOf(
+            TopWinner("user_1", "Player1", Random.nextLong(1_000_000, 5_000_000)),
+            TopWinner("user_2", "Player2", Random.nextLong(500_000, 2_000_000)),
+            TopWinner("user_3", "Player3", Random.nextLong(100_000, 1_000_000))
+        ).sortedByDescending { it.winnings }
+    }
+
+    private fun updateResultHistory(winner: WheelItem, specialResult: SpecialResult?) {
+        val result = GameResult(
+            roundId = "round_$roundNumber",
+            winningItem = winner,
+            specialResult = specialResult,
+            timestamp = System.currentTimeMillis()
+        )
+        
+        _uiState.update { state ->
+            state.copy(
+                resultHistory = listOf(result) + state.resultHistory.take(9)
+            )
+        }
+    }
+
+    private fun clearBets() {
+        _uiState.update { state ->
+            state.copy(
+                betsOnItems = emptyMap(),
+                showResultPopup = false
+            )
+        }
+    }
+
+    fun selectChip(chip: BettingChip) {
+        _uiState.update { state ->
+            state.copy(selectedChip = chip)
+        }
+    }
+
+    fun onItemClicked(item: WheelItem) {
+        val currentState = _uiState.value
+        
+        // Only allow betting during betting phase
+        if (currentState.gamePhase != GamePhase.BETTING) return
+        
+        // Check if user has enough coins
+        val selectedChip = currentState.selectedChip ?: return
+        if (currentState.userCoins < selectedChip.value) return
+        
+        // Place bet
+        val existingBets = currentState.betsOnItems[item.id] ?: emptyList()
+        val newBet = PlacedBet(
+            itemId = item.id,
+            chipValue = selectedChip.value,
+            chipCount = 1,
+            totalBet = selectedChip.value
+        )
+        
+        // Combine with existing bets of same chip value
+        val updatedBets = existingBets.toMutableList()
+        val existingBetIndex = updatedBets.indexOfFirst { it.chipValue == selectedChip.value }
+        if (existingBetIndex >= 0) {
+            val existing = updatedBets[existingBetIndex]
+            updatedBets[existingBetIndex] = existing.copy(
+                chipCount = existing.chipCount + 1,
+                totalBet = existing.totalBet + selectedChip.value
+            )
+        } else {
+            updatedBets.add(newBet)
+        }
+        
+        _uiState.update { state ->
+            state.copy(
+                betsOnItems = state.betsOnItems + (item.id to updatedBets),
+                userCoins = state.userCoins - selectedChip.value,
+                selectedItem = item
+            )
+        }
+    }
+
+    fun toggleSound() {
+        _uiState.update { state ->
+            state.copy(isSoundEnabled = !state.isSoundEnabled)
+        }
+    }
+
+    fun showHelp() {
+        _uiState.update { state ->
+            state.copy(showHelpDialog = true)
+        }
+    }
+
+    fun dismissHelp() {
+        _uiState.update { state ->
+            state.copy(showHelpDialog = false)
+        }
+    }
+
+    fun showRankings() {
+        _uiState.update { state ->
+            state.copy(showRankingsDialog = true)
+        }
+    }
+
+    fun dismissRankings() {
+        _uiState.update { state ->
+            state.copy(showRankingsDialog = false)
+        }
+    }
+
+    fun showWinningRecords() {
+        _uiState.update { state ->
+            state.copy(showWinningRecordsDialog = true)
+        }
+    }
+
+    fun dismissWinningRecords() {
+        _uiState.update { state ->
+            state.copy(showWinningRecordsDialog = false)
+        }
+    }
+
+    fun dismissResultPopup() {
+        _uiState.update { state ->
+            state.copy(showResultPopup = false)
+        }
+    }
+
+    fun toggleFruitBasket() {
+        val currentState = _uiState.value
+        if (currentState.gamePhase != GamePhase.BETTING) return
+        
+        val selectedChip = currentState.selectedChip ?: return
+        val fruitItems = currentState.wheelItems.filter { it.isFruit }
+        val totalCost = selectedChip.value * fruitItems.size
+        
+        if (currentState.userCoins < totalCost) return
+        
+        // Toggle - if all fruits already have bets with this chip, remove them; otherwise add
+        val allFruitsHaveBets = fruitItems.all { fruit ->
+            currentState.betsOnItems[fruit.id]?.any { it.chipValue == selectedChip.value } == true
+        }
+        
+        if (allFruitsHaveBets) {
+            _uiState.update { state ->
+                state.copy(fruitBasketActive = false)
+            }
+        } else {
+            // Place bet on all fruits
+            fruitItems.forEach { fruit ->
+                onItemClicked(fruit)
+            }
+            _uiState.update { state ->
+                state.copy(fruitBasketActive = true)
+            }
+        }
+    }
+
+    fun toggleFullPizza() {
+        val currentState = _uiState.value
+        if (currentState.gamePhase != GamePhase.BETTING) return
+        
+        val selectedChip = currentState.selectedChip ?: return
+        val nonFruitItems = currentState.wheelItems.filter { !it.isFruit }
+        val totalCost = selectedChip.value * nonFruitItems.size
+        
+        if (currentState.userCoins < totalCost) return
+        
+        // Toggle - if all non-fruits already have bets with this chip, remove them; otherwise add
+        val allNonFruitsHaveBets = nonFruitItems.all { item ->
+            currentState.betsOnItems[item.id]?.any { it.chipValue == selectedChip.value } == true
+        }
+        
+        if (allNonFruitsHaveBets) {
+            _uiState.update { state ->
+                state.copy(fullPizzaActive = false)
+            }
+        } else {
+            // Place bet on all non-fruits
+            nonFruitItems.forEach { item ->
+                onItemClicked(item)
+            }
+            _uiState.update { state ->
+                state.copy(fullPizzaActive = true)
+            }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        timerJob?.cancel()
     }
 }
 
 data class GreedyBabyUiState(
     val isLoading: Boolean = false,
-    val userCoins: Int = 0,
-    val feedCount: Int = 0,
-    val maxFeeds: Int = 10,
-    val happinessLevel: Int = 50,
-    val isHappy: Boolean = true,
-    val isFull: Boolean = false,
-    val isFeeding: Boolean = false,
-    val availableFoods: List<FoodItem> = emptyList(),
-    val selectedFood: FoodItem? = null,
-    val reward: GameReward? = null,
-    val showResult: Boolean = false,
+    val userCoins: Long = 0L,
+    val isSoundEnabled: Boolean = true,
+    
+    // Game state
+    val wheelItems: List<WheelItem> = emptyList(),
+    val chips: List<BettingChip> = emptyList(),
+    val selectedChip: BettingChip? = null,
+    val selectedItem: WheelItem? = null,
+    
+    // Betting state
+    val betsOnItems: Map<String, List<PlacedBet>> = emptyMap(),
+    val otherPlayersBets: Map<String, List<PlacedBet>> = emptyMap(),
+    
+    // Timer and phase
+    val timerSeconds: Int = 15,
+    val gamePhase: GamePhase = GamePhase.BETTING,
+    val isSpinning: Boolean = false,
+    val winningItem: WheelItem? = null,
+    
+    // Combo features
+    val fruitBasketActive: Boolean = false,
+    val fullPizzaActive: Boolean = false,
+    
+    // Results
+    val todaysWin: Long = 0L,
+    val roundWinnings: Long = 0L,
+    val resultHistory: List<GameResult> = emptyList(),
+    val topWinners: List<TopWinner> = emptyList(),
+    
+    // Rankings
+    val dailyRankings: List<RankingEntry> = emptyList(),
+    val weeklyRankings: List<RankingEntry> = emptyList(),
+    
+    // Winning records
+    val winningRecords: List<WinningRecord> = emptyList(),
+    
+    // Dialog states
+    val showResultPopup: Boolean = false,
+    val showHelpDialog: Boolean = false,
+    val showRankingsDialog: Boolean = false,
+    val showWinningRecordsDialog: Boolean = false,
+    
     val error: String? = null
-) {
-    val canFeed: Boolean
-        get() = selectedFood != null &&
-                userCoins >= (selectedFood?.cost ?: 0) &&
-                feedCount < maxFeeds &&
-                !isFull
-}
+)

@@ -90,43 +90,72 @@ Aura Voice Chat features five interactive games that users can play in rooms. Ga
 
 ---
 
-### 3. Greedy Baby (Food Wheel Selection)
+### 3. Greedy Baby (Circular Betting Wheel)
 
 **Mechanics:**
-- Colorful food-themed wheel with 9 items
-- Select an item and bet on the outcome
-- Timer counts down during bet period
-- Elephant mascot spins the wheel
+- **Live multiplayer betting game** (NOT single-player feeding game)
+- Circular wheel with 8 food items arranged clockwise
+- Timer-based rounds: Betting (15s) → Show Time (7s) → Result (5s)
+- Elephant mascot (🐘) in center with countdown timer
+- Real-time multiplayer - see other players' bets live
 
-| Food Item | Multiplier | Probability |
-|-----------|------------|-------------|
-| Chicken | 45x | 2% |
-| Pizza | 25x | 5% |
-| Burger | 25x | 5% |
-| Orange | 15x | 8% |
-| Fish | 10x | 12% |
-| Apple | 5x | 20% |
-| Lemon | 5x | 20% |
-| Strawberry | 5x | 20% |
-| Fruit Bowl | 5x | 8% |
+| Food Item | Emoji | Multiplier | Base Win Rate | Category |
+|-----------|-------|------------|---------------|----------|
+| Apple | 🍎 | 5x | 17% | Fruit |
+| Lemon | 🍋 | 5x | 17% | Fruit |
+| Strawberry | 🍓 | 5x | 17% | Fruit |
+| Mango | 🥭 | 5x | 17% | Fruit |
+| Fish | 🐟 | 10x | 12% | Non-Fruit |
+| Burger | 🍔 | 15x | 8% | Non-Fruit |
+| Pizza | 🍕 | 25x | 5% | Non-Fruit |
+| Chicken | 🍗 | 45x | 2% | Non-Fruit |
 
-**Bet Options:** 100, 1K, 5K, 10K, 50K, 100K coins
+**Special Combos:**
+- 🧺 **Fruit Basket** (3%): Bet on all 4 fruits to win when triggered
+- 🍕 **Full Pizza** (2%): Bet on all 4 non-fruits to win when triggered
+
+**Chip Values:** 100, 1K, 5K, 10K, 50K, 100K, 1M, 2M, 5M, 10M, 50M coins
+
+**Win/Loss Algorithm:**
+- Configurable house edge (default 8%)
+- Dynamic rate adjustment based on pool status
+- Pattern prevention and variance control
+- See [Greedy Baby Documentation](./greedy-baby.md) for full algorithm details
 
 **AWS Database Structure:**
 ```json
 {
-  "games/greedy_baby/{sessionId}": {
-    "userId": "user_123",
-    "betAmount": 10000,
-    "selectedItem": "chicken",
-    "winningItem": "pizza",
-    "won": false,
-    "winAmount": 0,
-    "todaysWin": 0,
-    "timestamp": 1701234567890
+  "games/greedy_baby/{roundId}": {
+    "roundId": "uuid",
+    "roomId": "room_123",
+    "startTime": "2025-11-30T10:00:00Z",
+    "endTime": "2025-11-30T10:00:27Z",
+    "result": "apple",
+    "specialResult": null,
+    "totalBets": 5000000,
+    "totalPayouts": 4200000,
+    "bets": [
+      {
+        "userId": "user_123",
+        "itemId": "apple",
+        "chipValue": 100000,
+        "chipCount": 5,
+        "totalBet": 500000,
+        "won": true,
+        "payout": 2500000
+      }
+    ]
   }
 }
 ```
+
+**Owner Panel Configuration:**
+- House Edge %, Max Win per Round
+- Individual item win rates
+- Special result trigger rates
+- Pool rebalance threshold
+
+See [Complete Greedy Baby Documentation](./greedy-baby.md) for detailed information.
 
 ---
 

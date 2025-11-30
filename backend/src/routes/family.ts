@@ -1,24 +1,31 @@
 /**
  * Family Routes
  * Developer: Hawkaye Visions LTD — Pakistan
+ * 
+ * Family system with rankings and contributions
  */
 
 import { Router } from 'express';
-import { authenticate } from '../middleware/auth';
+import { authenticate, optionalAuth } from '../middleware/auth';
 import { generalLimiter } from '../middleware/rateLimiter';
 import * as familyController from '../controllers/familyController';
 
 const router = Router();
 
-// Apply rate limiting before authentication for security
+// Apply rate limiting
 router.use(generalLimiter);
+
+// ==================== FAMILY RANKINGS (Public) ====================
+router.get('/rankings', optionalAuth, familyController.getFamilyRankings);
+
+// ==================== AUTHENTICATED ROUTES ====================
 router.use(authenticate);
 
 // Family CRUD
 router.post('/create', familyController.createFamily);
 router.get('/my', familyController.getMyFamily);
 router.get('/search', familyController.searchFamilies);
-router.get('/ranking', familyController.getFamilyRanking);
+router.get('/ranking', familyController.getFamilyRanking); // Legacy endpoint
 router.get('/:familyId', familyController.getFamily);
 router.put('/:familyId', familyController.updateFamily);
 router.delete('/:familyId', familyController.disbandFamily);
@@ -35,5 +42,9 @@ router.post('/:familyId/transfer', familyController.transferOwnership);
 // Members
 router.get('/:familyId/members', familyController.getMembers);
 router.get('/:familyId/activity', familyController.getActivity);
+
+// Contributions
+router.get('/:familyId/contributions', familyController.getFamilyMemberContributions);
+router.post('/:familyId/contributions', familyController.recordFamilyContribution);
 
 export default router;

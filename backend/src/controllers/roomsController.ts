@@ -128,3 +128,66 @@ export const exitVideo = async (req: AuthRequest, res: Response, next: NextFunct
     next(error);
   }
 };
+
+// ==================== ROOM RANKINGS ====================
+
+// Get room rankings
+export const getRoomRankings = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { type = 'daily' } = req.query;
+    const { page = 1, limit = 50 } = req.query;
+    const offset = (Number(page) - 1) * Number(limit);
+    
+    const rankings = await roomsService.getRoomRankings(
+      type as 'daily' | 'weekly' | 'monthly',
+      Number(limit),
+      offset
+    );
+    
+    res.json({ rankings });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get room contribution leaderboard
+export const getRoomContributions = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { roomId } = req.params;
+    const { type = 'daily' } = req.query;
+    const { page = 1, limit = 50 } = req.query;
+    const offset = (Number(page) - 1) * Number(limit);
+    
+    const contributions = await roomsService.getRoomContributions(
+      roomId,
+      type as 'daily' | 'weekly' | 'monthly',
+      Number(limit),
+      offset
+    );
+    
+    res.json({ contributions });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Record contribution (internal use, called when gifts are sent)
+export const recordContribution = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    const userId = req.userId!;
+    const { roomId } = req.params;
+    const { giftValue, chatCount, timeSpent } = req.body;
+    
+    await roomsService.recordContribution(
+      roomId,
+      userId,
+      giftValue || 0,
+      chatCount || 0,
+      timeSpent || 0
+    );
+    
+    res.json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+};

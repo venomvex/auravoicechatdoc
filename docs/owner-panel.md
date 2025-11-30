@@ -223,7 +223,7 @@ Automatically hold payouts when:
 |---------|--------|-------------|
 | Games | On/Off | All games enabled |
 | Lucky 777 | On/Off | Slot machine game |
-| Greedy Baby | On/Off | Wheel game |
+| Greedy Baby | On/Off | Circular betting wheel game |
 | CP System | On/Off | Couple partnerships |
 | Family System | On/Off | Family feature |
 | Earning System | On/Off | User earnings |
@@ -239,6 +239,117 @@ Automatically hold payouts when:
 | DAILY_REWARDS | Login bonuses |
 | VIP_SYSTEM | VIP features |
 | EVENTS | Event system |
+
+---
+
+## Greedy Baby Configuration
+
+### Game Overview
+
+Greedy Baby is a **live multiplayer betting game** with a circular wheel containing 8 food items. The game features configurable win rates and a dynamic house edge system.
+
+### Win Rate Configuration
+
+| Setting | Description | Default | Range |
+|---------|-------------|---------|-------|
+| Apple Win Rate | Probability of Apple winning | 17% | 10-25% |
+| Lemon Win Rate | Probability of Lemon winning | 17% | 10-25% |
+| Strawberry Win Rate | Probability of Strawberry winning | 17% | 10-25% |
+| Mango Win Rate | Probability of Mango winning | 17% | 10-25% |
+| Fish Win Rate | Probability of Fish winning | 12% | 5-20% |
+| Burger Win Rate | Probability of Burger winning | 8% | 3-15% |
+| Pizza Win Rate | Probability of Pizza winning | 5% | 1-10% |
+| Chicken Win Rate | Probability of Chicken winning | 2% | 0.5-5% |
+
+**Note:** Total probabilities should sum to ~95% (remaining for special results)
+
+### House Edge Settings
+
+| Setting | Description | Default | Range |
+|---------|-------------|---------|-------|
+| House Edge % | Platform profit margin | 8% | 0-20% |
+| Max Win per Round | Maximum payout cap | 100,000,000 | 1M-1B |
+| Pool Rebalance Threshold | When to adjust rates dynamically | 1,000,000 | 100K-10M |
+
+### Special Result Configuration
+
+| Setting | Description | Default | Range |
+|---------|-------------|---------|-------|
+| Fruit Basket Trigger Rate | When all 4 fruits win | 3% | 0-10% |
+| Full Pizza Trigger Rate | When all 4 non-fruits win | 2% | 0-10% |
+
+### Pool Management
+
+The system tracks overall profit/loss and dynamically adjusts win rates:
+
+| Pool Status | Action |
+|-------------|--------|
+| Losing money (below threshold) | Reduce high multiplier rates, increase fruit rates |
+| Winning too much (above 2x threshold) | Increase high multiplier rates, reduce fruit rates |
+| Normal range | Use configured base rates |
+
+### API Endpoints (Owner Only)
+
+```
+# Get current configuration
+GET /games/greedy-baby/config
+
+# Update configuration
+PUT /games/greedy-baby/config
+Body: {
+  houseEdge: 8,
+  maxWinPerRound: 100000000,
+  winRates: {
+    apple: 17,
+    lemon: 17,
+    strawberry: 17,
+    mango: 17,
+    fish: 12,
+    burger: 8,
+    pizza: 5,
+    chicken: 2
+  },
+  fruitBasketTriggerRate: 3,
+  fullPizzaTriggerRate: 2,
+  poolRebalanceThreshold: 1000000
+}
+
+# Get pool statistics
+GET /games/greedy-baby/pool-stats
+Response: {
+  totalBets: number,
+  totalPayouts: number,
+  profitLoss: number,
+  roundCount: number
+}
+
+# Reset rankings
+POST /games/greedy-baby/rankings/reset
+Body: { type: "daily" | "weekly" | "both" }
+```
+
+### Tuning Recommendations
+
+**Conservative (Higher House Edge):**
+- House Edge: 10-15%
+- Chicken: 1-1.5%
+- Pizza: 3-4%
+- Burger: 5-6%
+- Fruits: 18-20% each
+
+**Player-Friendly (Lower House Edge):**
+- House Edge: 5-8%
+- Chicken: 2-3%
+- Pizza: 5-7%
+- Burger: 8-10%
+- Fruits: 15-17% each
+
+**Promotional Events:**
+- Temporarily increase special result rates
+- Lower house edge
+- Increase high multiplier win rates
+
+See [Complete Greedy Baby Documentation](./greedy-baby.md) for detailed algorithm explanation.
 
 ---
 

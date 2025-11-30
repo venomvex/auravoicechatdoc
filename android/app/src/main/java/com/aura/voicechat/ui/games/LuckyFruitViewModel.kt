@@ -14,6 +14,12 @@ import kotlin.random.Random
 /**
  * Lucky Fruit ViewModel
  * Developer: Hawkaye Visions LTD — Pakistan
+ * 
+ * Betting game with:
+ * - 8 fruits with different multipliers
+ * - Lucky and Super Lucky special bets
+ * - Timer-based betting rounds
+ * - Real-time chip betting
  */
 @HiltViewModel
 class LuckyFruitViewModel @Inject constructor() : ViewModel() {
@@ -21,145 +27,174 @@ class LuckyFruitViewModel @Inject constructor() : ViewModel() {
     private val _uiState = MutableStateFlow(LuckyFruitUiState())
     val uiState: StateFlow<LuckyFruitUiState> = _uiState.asStateFlow()
     
-    private val fruits = listOf(
-        "🍇" to 5,
-        "🍊" to 8,
-        "🍋" to 10,
-        "🍒" to 15,
-        "⭐" to 25
+    // Fruit items with weights (lower = rarer)
+    private val fruitWeights = mapOf(
+        "orange" to 20,      // x5, common
+        "lemon" to 20,       // x5, common
+        "grape" to 18,       // x5, common
+        "cherry" to 18,      // x5, common
+        "apple" to 12,       // x10
+        "watermelon" to 7,   // x15
+        "mango" to 4,        // x25
+        "strawberry" to 1    // x45, rarest
     )
     
     init {
-        generateNewGrid()
+        loadGameData()
     }
     
-    private fun generateNewGrid() {
-        val tiles = mutableListOf<FruitTile>()
-        repeat(25) { index ->
-            val (fruit, value) = fruits.random()
-            tiles.add(FruitTile(index, fruit, value))
-        }
-        
+    private fun loadGameData() {
         _uiState.value = LuckyFruitUiState(
             balance = 500000,
-            currentBet = 1000,
-            tiles = tiles
+            selectedChip = 5000,
+            todaysWin = 0,
+            recentResults = listOf("orange", "cherry", "grape", "watermelon", "mango", "lemon", "apple", "grape")
         )
     }
     
-    fun setBet(bet: Long) {
-        if (!_uiState.value.isPlaying) {
-            _uiState.value = _uiState.value.copy(currentBet = bet)
+    fun selectChip(value: Long) {
+        if (!_uiState.value.isSpinning) {
+            _uiState.value = _uiState.value.copy(selectedChip = value)
         }
     }
     
-    fun newGame() {
-        if (_uiState.value.isPlaying) return
-        if (_uiState.value.balance < _uiState.value.currentBet) return
+    fun placeBet(itemId: String) {
+        val state = _uiState.value
+        if (state.isSpinning) return
+        if (state.balance < state.selectedChip) return
+        
+        val currentBets = state.bets.toMutableMap()
+        val currentAmount = currentBets[itemId] ?: 0
+        currentBets[itemId] = currentAmount + state.selectedChip
+        
+        _uiState.value = state.copy(
+            bets = currentBets,
+            balance = state.balance - state.selectedChip
+        )
+        
+        // Auto-spin after placing bet (with delay for more bets)
+        startSpinCountdown()
+    }
+    
+    fun placeLuckyBet() {
+        // Lucky = bet on all 5x fruits
+        val state = _uiState.value
+        if (state.isSpinning) return
+        
+        val betPerFruit = state.selectedChip / 4
+        if (state.balance < state.selectedChip) return
+        
+        val currentBets = state.bets.toMutableMap()
+        listOf("orange", "lemon", "grape", "cherry").forEach { fruitId ->
+            val currentAmount = currentBets[fruitId] ?: 0
+            currentBets[fruitId] = currentAmount + betPerFruit
+        }
+        
+        _uiState.value = state.copy(
+            bets = currentBets,
+            balance = state.balance - state.selectedChip
+        )
+        
+        startSpinCountdown()
+    }
+    
+    fun placeSuperLuckyBet() {
+        // Super Lucky = bet on all high-value fruits (x10+)
+        val state = _uiState.value
+        if (state.isSpinning) return
+        
+        val betPerFruit = state.selectedChip / 4
+        if (state.balance < state.selectedChip) return
+        
+        val currentBets = state.bets.toMutableMap()
+        listOf("apple", "watermelon", "mango", "strawberry").forEach { fruitId ->
+            val currentAmount = currentBets[fruitId] ?: 0
+            currentBets[fruitId] = currentAmount + betPerFruit
+        }
+        
+        _uiState.value = state.copy(
+            bets = currentBets,
+            balance = state.balance - state.selectedChip
+        )
+        
+        startSpinCountdown()
+    }
+    
+    private var spinCountdownJob: kotlinx.coroutines.Job? = null
+    
+    private fun startSpinCountdown() {
+        // Cancel existing countdown
+        spinCountdownJob?.cancel()
+        
+        // Start new countdown (5 seconds to place more bets)
+        spinCountdownJob = viewModelScope.launch {
+            delay(5000)
+            spin()
+        }
+    }
+    
+    private fun spin() {
+        val state = _uiState.value
+        if (state.isSpinning) return
+        if (state.bets.isEmpty()) return
         
         viewModelScope.launch {
-            // Deduct bet and reset
-            val newTiles = mutableListOf<FruitTile>()
-            repeat(25) { index ->
-                val (fruit, value) = fruits.random()
-                newTiles.add(FruitTile(index, fruit, value))
-            }
+            _uiState.value = state.copy(isSpinning = true, winningItem = null)
             
-            _uiState.value = _uiState.value.copy(
-                isPlaying = true,
-                balance = _uiState.value.balance - _uiState.value.currentBet,
-                tiles = newTiles,
-                selectedTiles = emptyList(),
-                matchedTiles = emptySet(),
-                lastWin = 0,
-                comboCount = 0,
-                currentMultiplier = 1
-            )
-        }
-    }
-    
-    fun selectTile(index: Int) {
-        val state = _uiState.value
-        if (!state.isPlaying) return
-        if (index in state.matchedTiles) return
-        if (index in state.selectedTiles) return
-        
-        viewModelScope.launch {
-            val newSelected = state.selectedTiles + index
-            val revealedTiles = state.tiles.mapIndexed { i, tile ->
-                if (i == index) tile.copy(isRevealed = true) else tile
-            }
+            // Spin animation time
+            delay(2000)
+            
+            // Determine winner using weighted random
+            val winner = getWeightedRandomFruit()
+            
+            // Calculate winnings
+            val betOnWinner = state.bets[winner] ?: 0
+            val multiplier = LUCKY_FRUIT_ITEMS.find { it.id == winner }?.multiplier ?: 0
+            val winAmount = betOnWinner * multiplier
+            
+            val newTodaysWin = state.todaysWin + winAmount
+            val newResults = listOf(winner) + state.recentResults.take(9)
             
             _uiState.value = state.copy(
-                tiles = revealedTiles,
-                selectedTiles = newSelected
-            )
-            
-            // Check for match when 3 are selected
-            if (newSelected.size == 3) {
-                delay(300)
-                checkMatch(newSelected)
-            }
-        }
-    }
-    
-    private fun checkMatch(selected: List<Int>) {
-        val state = _uiState.value
-        val selectedFruits = selected.map { state.tiles[it].fruit }
-        
-        if (selectedFruits.distinct().size == 1) {
-            // Match!
-            val matchedFruit = selectedFruits.first()
-            val value = fruits.first { it.first == matchedFruit }.second
-            val winAmount = state.currentBet * value * state.currentMultiplier
-            val newCombo = state.comboCount + 1
-            val newMultiplier = minOf(state.currentMultiplier + 1, 5)
-            
-            _uiState.value = state.copy(
-                balance = state.balance + winAmount,
-                matchedTiles = state.matchedTiles + selected.toSet(),
-                selectedTiles = emptyList(),
+                isSpinning = false,
+                winningItem = winner,
                 lastWin = winAmount,
-                comboCount = newCombo,
-                currentMultiplier = newMultiplier
+                todaysWin = newTodaysWin,
+                balance = state.balance + winAmount,
+                bets = emptyMap(), // Clear bets
+                recentResults = newResults
             )
             
-            // Check if game is over (all matched or no more moves)
-            viewModelScope.launch {
-                delay(500)
-                if (_uiState.value.matchedTiles.size >= 24) {
-                    // Game over - bonus!
-                    _uiState.value = _uiState.value.copy(isPlaying = false)
-                }
-            }
-        } else {
-            // No match - reset selection
-            viewModelScope.launch {
-                delay(500)
-                val hiddenTiles = state.tiles.mapIndexed { i, tile ->
-                    if (i in selected && i !in state.matchedTiles) tile.copy(isRevealed = false)
-                    else tile
-                }
-                _uiState.value = state.copy(
-                    tiles = hiddenTiles,
-                    selectedTiles = emptyList(),
-                    currentMultiplier = 1,
-                    comboCount = 0
-                )
-            }
+            // Reset winning highlight after delay
+            delay(3000)
+            _uiState.value = _uiState.value.copy(winningItem = null)
         }
+    }
+    
+    private fun getWeightedRandomFruit(): String {
+        val totalWeight = fruitWeights.values.sum()
+        var random = Random.nextInt(totalWeight)
+        
+        for ((fruit, weight) in fruitWeights) {
+            random -= weight
+            if (random < 0) return fruit
+        }
+        return fruitWeights.keys.first()
+    }
+    
+    fun showRankings() {
+        // Navigate to rankings
     }
 }
 
 data class LuckyFruitUiState(
     val isLoading: Boolean = false,
-    val isPlaying: Boolean = false,
+    val isSpinning: Boolean = false,
     val balance: Long = 0,
-    val currentBet: Long = 1000,
-    val tiles: List<FruitTile> = emptyList(),
-    val selectedTiles: List<Int> = emptyList(),
-    val matchedTiles: Set<Int> = emptySet(),
+    val selectedChip: Long = 5000,
+    val bets: Map<String, Long> = emptyMap(),
+    val winningItem: String? = null,
     val lastWin: Long = 0,
-    val comboCount: Int = 0,
-    val currentMultiplier: Int = 1
+    val todaysWin: Long = 0,
+    val recentResults: List<String> = emptyList()
 )

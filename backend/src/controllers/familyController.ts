@@ -482,3 +482,182 @@ export const getActivity = async (req: Request, res: Response, next: NextFunctio
     next(error);
   }
 };
+
+// ==================== FAMILY RANKINGS ====================
+
+// Get family rankings
+export const getFamilyRankings = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { type = 'weekly' } = req.query;
+    const { page = 1, limit = 50 } = req.query;
+    const offset = (Number(page) - 1) * Number(limit);
+    
+    const periodDate = getPeriodDate(type as string);
+    
+    const result = await query(
+      `SELECT fr.*, f.name as family_name, f.avatar_url, f.description,
+              COUNT(fm.id) as member_count
+       FROM family_rankings fr
+       JOIN families f ON fr.family_id = f.id
+       LEFT JOIN family_members fm ON f.id = fm.family_id
+       WHERE fr.ranking_type = $1 AND fr.period_date = $2
+       GROUP BY fr.id, f.id
+       ORDER BY fr.total_contribution DESC, fr.activity_score DESC
+       LIMIT $3 OFFSET $4`,
+      [type, periodDate, limit, offset]
+    );
+    
+    res.json({
+      rankings: result.rows.map((row, index) => ({
+        familyId: row.family_id,
+        familyName: row.family_name,
+        avatarUrl: row.avatar_url,
+        description: row.description,
+        memberCount: parseInt(row.member_count),
+        totalContribution: Number(row.total_contribution),
+        activityScore: Number(row.activity_score),
+        rank: offset + index + 1
+      }))
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get family member contributions
+export const getFamilyMemberContributions = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { familyId } = req.params;
+    const { type = 'weekly' } = req.query;
+    const { page = 1, limit = 50 } = req.query;
+    const offset = (Number(page) - 1) * Number(limit);
+    
+    const result = await query(
+      `SELECT fm.user_id, fm.contribution, fm.role, 
+              u.username, u.display_name, u.avatar_url, u.level, u.vip_tier
+       FROM family_members fm
+       JOIN users u ON fm.user_id = u.id
+       WHERE fm.family_id = $1
+       ORDER BY fm.contribution DESC, fm.joined_at ASC
+       LIMIT $2 OFFSET $3`,
+      [familyId, limit, offset]
+    );
+    
+    res.json({
+      contributions: result.rows.map((row, index) => ({
+        userId: row.user_id,
+        username: row.username,
+        displayName: row.display_name || row.username,
+        avatarUrl: row.avatar_url,
+        level: row.level,
+        vipTier: row.vip_tier,
+        role: row.role,
+        contribution: Number(row.contribution),
+        rank: offset + index + 1
+      }))
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Record family contribution (internal, called when gifts are sent)
+export const recordFamilyContribution = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const userId = req.user?.id;
+    const { familyId } = req.params;
+    const { amount, type: contributionType } = req.body;
+    
+    // Update member contribution
+    await query(
+      `UPDATE family_members SET contribution = contribution + $1, updated_at = NOW()
+       WHERE family_id = $2 AND user_id = $3`,
+      [amount, familyId, userId]
+    );
+    
+    // Update family total contribution
+    await query(
+      `UPDATE families SET total_contribution = total_contribution + $1, updated_at = NOW()
+       WHERE id = $2`,
+      [amount, familyId]
+    );
+    
+    // Update family rankings
+    await updateFamilyRanking(familyId, amount);
+    
+    // Record activity
+    await query(
+      `INSERT INTO family_activity (family_id, user_id, activity_type, description, data, created_at)
+       VALUES ($1, $2, 'contribution', $3, $4, NOW())`,
+      [familyId, userId, `Contributed ${amount.toLocaleString()}`, JSON.stringify({ amount, type: contributionType })]
+    );
+    
+    res.json({ success: true });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Helper function to update family ranking
+async function updateFamilyRanking(familyId: string, contributionAmount: number): Promise<void> {
+  const today = new Date().toISOString().split('T')[0];
+  const weekStart = getWeekStart();
+  const monthStart = getMonthStart();
+  
+  // Update daily
+  await query(
+    `INSERT INTO family_rankings (family_id, ranking_type, period_date, total_contribution, activity_score)
+     VALUES ($1, 'daily', $2, $3, $3)
+     ON CONFLICT (family_id, ranking_type, period_date) DO UPDATE SET
+       total_contribution = family_rankings.total_contribution + $3,
+       activity_score = family_rankings.activity_score + $3`,
+    [familyId, today, contributionAmount]
+  );
+  
+  // Update weekly
+  await query(
+    `INSERT INTO family_rankings (family_id, ranking_type, period_date, total_contribution, activity_score)
+     VALUES ($1, 'weekly', $2, $3, $3)
+     ON CONFLICT (family_id, ranking_type, period_date) DO UPDATE SET
+       total_contribution = family_rankings.total_contribution + $3,
+       activity_score = family_rankings.activity_score + $3`,
+    [familyId, weekStart, contributionAmount]
+  );
+  
+  // Update monthly
+  await query(
+    `INSERT INTO family_rankings (family_id, ranking_type, period_date, total_contribution, activity_score)
+     VALUES ($1, 'monthly', $2, $3, $3)
+     ON CONFLICT (family_id, ranking_type, period_date) DO UPDATE SET
+       total_contribution = family_rankings.total_contribution + $3,
+       activity_score = family_rankings.activity_score + $3`,
+    [familyId, monthStart, contributionAmount]
+  );
+}
+
+// Helper functions
+function getPeriodDate(type: string): string {
+  switch (type) {
+    case 'daily':
+      return new Date().toISOString().split('T')[0];
+    case 'weekly':
+      return getWeekStart();
+    case 'monthly':
+      return getMonthStart();
+    default:
+      return getWeekStart();
+  }
+}
+
+function getWeekStart(): string {
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const diff = now.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+  const monday = new Date(now.setDate(diff));
+  return monday.toISOString().split('T')[0];
+}
+
+function getMonthStart(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+}
