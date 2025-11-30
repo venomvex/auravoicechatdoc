@@ -107,10 +107,11 @@
 
 ### Auth Service Degradation
 
-1. Check OTP provider status (Firebase, Twilio)
-2. Verify quota/rate limits not exceeded
-3. Check for credential expiry
-4. Switch to fallback provider if configured
+1. Check AWS Cognito service status
+2. Verify OTP delivery via AWS SNS
+3. Check quota/rate limits not exceeded
+4. Check for credential expiry
+5. Monitor CloudWatch metrics for errors
 
 ### Room Service Issues
 

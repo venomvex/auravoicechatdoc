@@ -461,6 +461,6 @@ Configure webhooks for events:
 ## Related Documentation
 
 - [Configuration](../configuration.md)
-- [Firebase Setup](./firebase-setup.md)
+- [AWS Setup](./aws-setup.md)
 - [Operations](../operations.md)
 - [Security](../security.md)

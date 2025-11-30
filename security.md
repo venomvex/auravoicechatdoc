@@ -3,17 +3,18 @@
 ## Authentication & Authorization
 
 ### Authentication Methods
-| Method   | Provider      | Notes                        |
-|----------|---------------|------------------------------|
-| Google   | Google OAuth  | Primary social login         |
-| Facebook | Facebook SDK  | Secondary social login       |
-| Mobile   | OTP (4 digits)| Firebase primary, Twilio fallback |
+| Method   | Provider          | Notes                        |
+|----------|-------------------|------------------------------|
+| Google   | Google OAuth      | Primary social login         |
+| Facebook | Facebook SDK      | Secondary social login       |
+| Mobile   | OTP (4 digits)    | AWS Cognito + SNS            |
 
 ### OTP Security
 - 4-digit code
 - 30s resend cooldown
 - Max 5 attempts per day
 - Temporary lock after limit exceeded
+- Delivered via AWS SNS
 
 ### Session Management
 - JWT tokens with expiry

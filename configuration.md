@@ -2,17 +2,19 @@
 
 ## Environment Variables
 
-| Name                | Default    | Required | Description                    |
-|---------------------|------------|----------|--------------------------------|
-| API_BASE_URL        | —          | Yes      | Backend API endpoint           |
-| FIREBASE_PROJECT_ID | —          | Yes      | Firebase project identifier    |
-| FIREBASE_API_KEY    | —          | Yes      | Firebase API key               |
-| ANALYTICS_ENABLED   | true       | No       | Enable analytics collection    |
-| DEBUG_MODE          | false      | No       | Enable debug logging           |
-| LOG_LEVEL           | INFO       | No       | Logging level (DEBUG/INFO/WARN/ERROR) |
-| CACHE_TTL_SECONDS   | 300        | No       | Default cache time-to-live     |
-| MAX_RETRY_ATTEMPTS  | 3          | No       | API retry attempts             |
-| TIMEOUT_MS          | 30000      | No       | Request timeout in milliseconds|
+| Name                     | Default    | Required | Description                         |
+|--------------------------|------------|----------|-------------------------------------|
+| API_BASE_URL             | —          | Yes      | Backend API endpoint                |
+| AWS_REGION               | us-east-1  | Yes      | AWS region for services             |
+| AWS_COGNITO_USER_POOL_ID | —          | Yes      | AWS Cognito User Pool ID            |
+| AWS_COGNITO_CLIENT_ID    | —          | Yes      | AWS Cognito App Client ID           |
+| AWS_S3_BUCKET            | —          | Yes      | AWS S3 bucket name for storage      |
+| ANALYTICS_ENABLED        | true       | No       | Enable analytics collection         |
+| DEBUG_MODE               | false      | No       | Enable debug logging                |
+| LOG_LEVEL                | INFO       | No       | Logging level (DEBUG/INFO/WARN/ERROR) |
+| CACHE_TTL_SECONDS        | 300        | No       | Default cache time-to-live          |
+| MAX_RETRY_ATTEMPTS       | 3          | No       | API retry attempts                  |
+| TIMEOUT_MS               | 30000      | No       | Request timeout in milliseconds     |
 
 ---
 
@@ -25,9 +27,15 @@ api:
   timeout: 30000
   retries: 3
 
-firebase:
-  projectId: aura-voice-chat
-  # API key injected at build time
+aws:
+  region: us-east-1
+  cognito:
+    userPoolId: us-east-1_XXXXXXXXX
+    clientId: XXXXXXXXXXXXXXXXXXXXXXXXXX
+  s3:
+    bucket: aura-voice-chat-assets
+  pinpoint:
+    appId: XXXXXXXXXXXXXXXXXXXXXXXXXX
 
 analytics:
   enabled: true
@@ -62,7 +70,7 @@ logging:
 | MAINTENANCE_MODE        | false   | Blocks all features except notice   |
 
 ### Flag Management
-- Controlled via Firebase Remote Config
+- Controlled via AWS AppConfig
 - Changes take effect on next app launch
 - Critical flags require forced refresh
 
@@ -96,8 +104,9 @@ android {
 # Keep models for JSON parsing
 -keep class com.aura.voicechat.models.** { *; }
 
-# Firebase
--keep class com.google.firebase.** { *; }
+# AWS Amplify
+-keep class com.amplifyframework.** { *; }
+-dontwarn com.amplifyframework.**
 ```
 
 ---
@@ -106,14 +115,19 @@ android {
 
 ### Local Development (.env)
 ```
-FIREBASE_API_KEY=your_key_here
+AWS_ACCESS_KEY_ID=your_access_key
+AWS_SECRET_ACCESS_KEY=your_secret_key
 GOOGLE_OAUTH_CLIENT_ID=your_client_id
 FACEBOOK_APP_ID=your_app_id
 ```
 
 ### CI/CD (GitHub Secrets)
 ```
-FIREBASE_API_KEY_RELEASE
+AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY
+AWS_REGION
+AWS_COGNITO_USER_POOL_ID
+AWS_COGNITO_CLIENT_ID
 GOOGLE_OAUTH_CLIENT_ID_RELEASE
 KEYSTORE_PASSWORD
 KEY_ALIAS

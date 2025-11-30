@@ -30,23 +30,27 @@
 }
 
 # ========================
-# Firebase
+# AWS Amplify
 # ========================
 
--keep class com.google.firebase.** { *; }
--keep class com.google.android.gms.** { *; }
--dontwarn com.google.firebase.**
--dontwarn com.google.android.gms.**
+-keep class com.amplifyframework.** { *; }
+-dontwarn com.amplifyframework.**
 
-# Firebase Auth
--keep class com.google.firebase.auth.** { *; }
+-keep class com.amazonaws.** { *; }
+-dontwarn com.amazonaws.**
 
-# Firebase Crashlytics
--keep public class * extends java.lang.Exception
--keep class com.google.firebase.crashlytics.** { *; }
+# AWS SDK Kotlin
+-keep class aws.sdk.kotlin.** { *; }
+-dontwarn aws.sdk.kotlin.**
 
-# Firebase Firestore
--keep class com.google.firebase.firestore.** { *; }
+# Cognito
+-keep class com.amazonaws.mobileconnectors.cognitoidentityprovider.** { *; }
+
+# S3
+-keep class com.amazonaws.services.s3.** { *; }
+
+# Pinpoint
+-keep class com.amazonaws.mobileconnectors.pinpoint.** { *; }
 
 # ========================
 # Retrofit
@@ -174,11 +178,11 @@
 -keep class com.airbnb.lottie.** { *; }
 
 # ========================
-# Coil
+# Coil 3.x
 # ========================
 
--keep class io.coil.** { *; }
--dontwarn io.coil.**
+-keep class coil3.** { *; }
+-dontwarn coil3.**
 
 # ========================
 # Facebook SDK
@@ -186,6 +190,13 @@
 
 -keep class com.facebook.** { *; }
 -dontwarn com.facebook.**
+
+# ========================
+# Google Play Services
+# ========================
+
+-keep class com.google.android.gms.** { *; }
+-dontwarn com.google.android.gms.**
 
 # ========================
 # Security Crypto

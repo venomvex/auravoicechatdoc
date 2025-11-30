@@ -37,11 +37,13 @@ Aura Voice Chat is a mobile-first social voice and video chat application that e
 |-----------|------------|
 | **Android App** | Kotlin, Jetpack Compose, MVVM, Agora SDK |
 | **Backend** | Node.js, Express, TypeScript, Prisma |
-| **Database** | PostgreSQL/MySQL + Redis Cache |
-| **Real-time** | Firebase Firestore + Realtime Database |
-| **Authentication** | Firebase Auth (Phone, Google, Facebook) |
-| **Cloud Functions** | Firebase Cloud Functions |
-| **Analytics** | Firebase Analytics + Crashlytics |
+| **Database** | PostgreSQL (AWS RDS) + Redis (ElastiCache) |
+| **Real-time** | WebSocket (Socket.io) |
+| **Authentication** | AWS Cognito (Phone, Google, Facebook) |
+| **Cloud Functions** | AWS Lambda |
+| **Analytics** | AWS Pinpoint + CloudWatch |
+| **Storage** | AWS S3 |
+| **Push Notifications** | AWS Pinpoint |
 
 ### Theme & Branding
 
@@ -591,65 +593,90 @@ POST /games/{gameType}/cashout
 
 ---
 
-## Firebase Integration
+## AWS Integration
 
-### Complete Firebase Setup
+### Complete AWS Setup
 
-See [docs/firebase-setup.md](docs/firebase-setup.md) for detailed setup.
+See [docs/aws-setup.md](docs/aws-setup.md) for detailed setup.
 
 **Quick Start:**
 
 ```bash
 # Run automated setup
-./scripts/setup-firebase.sh
+./scripts/aws-setup.sh
 ```
 
 **Manual Steps:**
-1. Create Firebase project
-2. Enable Authentication (Phone, Google, Facebook)
-3. Configure Firestore & rules
-4. Set up Cloud Storage
-5. Deploy Cloud Functions
-6. Configure Remote Config
+1. Create AWS account and configure IAM
+2. Set up Cognito User Pool (Phone, Google, Facebook)
+3. Configure S3 bucket for storage
+4. Set up RDS PostgreSQL database
+5. Configure Pinpoint for analytics and push notifications
+6. Set up CloudWatch for monitoring
 
-### Database Structure
+### Database Structure (PostgreSQL)
 
+```sql
+-- users table
+CREATE TABLE users (
+    id UUID PRIMARY KEY,
+    phone VARCHAR(20),
+    email VARCHAR(255),
+    name VARCHAR(100),
+    avatar_url TEXT,
+    level INTEGER DEFAULT 1,
+    vip_tier INTEGER DEFAULT 0,
+    coins BIGINT DEFAULT 0,
+    diamonds BIGINT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- rooms table
+CREATE TABLE rooms (
+    id UUID PRIMARY KEY,
+    name VARCHAR(100),
+    owner_id UUID REFERENCES users(id),
+    type VARCHAR(20),
+    capacity INTEGER DEFAULT 8,
+    is_active BOOLEAN DEFAULT true
+);
+
+-- gifts table
+CREATE TABLE gifts (
+    id UUID PRIMARY KEY,
+    name VARCHAR(100),
+    price INTEGER,
+    animation_url TEXT,
+    category VARCHAR(50)
+);
+
+-- families table
+CREATE TABLE families (
+    id UUID PRIMARY KEY,
+    name VARCHAR(100),
+    owner_id UUID REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- cp_partnerships table
+CREATE TABLE cp_partnerships (
+    id UUID PRIMARY KEY,
+    partner1_id UUID REFERENCES users(id),
+    partner2_id UUID REFERENCES users(id),
+    level INTEGER DEFAULT 1,
+    exp BIGINT DEFAULT 0
+);
 ```
-/users/{userId}
-  - profile: { name, avatar, level, vipTier }
-  - wallet: { coins, diamonds }
-  - level: { currentLevel, totalExp }
-  - settings: { privacy, notifications }
 
-/rooms/{roomId}
-  - metadata: { name, owner, type, capacity }
-  - seats: { ... }
-  - settings: { visibility, permissions }
+### Security (IAM Policies)
 
-/gifts/{giftId}
-  - catalog entry
+AWS services are secured via IAM roles and policies:
+- Cognito handles authentication
+- S3 bucket policies restrict access
+- RDS is in private subnet
+- Lambda functions use least-privilege IAM roles
 
-/families/{familyId}
-  - metadata, members
-
-/cp/{cpId}
-  - partner1, partner2, level, exp
-
-/resellers/{userId}
-  - tier, inventory, sales stats
-
-/events/{eventId}
-  - config, participants, leaderboard
-
-/games/{gameType}/{sessionId}
-  - userId, betAmount, result, winAmount
-```
-
-### Security Rules
-
-See [firebase/firestore.rules](firebase/firestore.rules)
-
-### Remote Config Parameters
+### AppConfig Parameters (Feature Flags)
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
@@ -851,13 +878,13 @@ A: 5-7 days depending on transaction type.
 A: Android 9 (API 28)
 
 **Q: How is real-time handled?**
-A: Firebase Realtime Database for presence, Firestore for data.
+A: WebSocket (Socket.io) for real-time communication, AWS RDS for data.
 
 **Q: What SDK is used for voice/video?**
 A: Agora SDK
 
 **Q: What backend technologies are used?**
-A: Node.js, Express, TypeScript, Prisma, PostgreSQL/MySQL, Redis
+A: Node.js, Express, TypeScript, Prisma, PostgreSQL (AWS RDS), Redis (ElastiCache)
 
 ### Admin Questions
 
@@ -906,14 +933,14 @@ A: Cinema-like mode for watching YouTube videos together
 git clone https://github.com/venomvex/auravoicechatdoc.git
 cd auravoicechatdoc
 
-# Setup Firebase
-./scripts/setup-firebase.sh
+# Setup AWS Infrastructure
+./scripts/aws-setup.sh
 
 # Setup Backend
 cd backend
 npm install
 cp .env.example .env
-# Edit .env with your configuration
+# Edit .env with your AWS configuration
 npm run dev
 ```
 
@@ -922,8 +949,8 @@ npm run dev
 ```bash
 cd android
 
-# Add google-services.json from Firebase
-# Place in android/app/
+# Configure AWS Amplify
+# Place amplifyconfiguration.json and awsconfiguration.json in android/app/src/main/res/raw/
 
 # Build debug
 ./gradlew assembleDebug

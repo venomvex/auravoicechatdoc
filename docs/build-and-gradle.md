@@ -58,9 +58,9 @@ zipStorePath=wrapper/dists
 // build.gradle (Project: aura-voice-chat)
 buildscript {
     ext {
-        kotlin_version = '1.9.21'
-        compose_version = '1.5.6'
-        hilt_version = '2.48.1'
+        kotlin_version = '2.1.0'
+        compose_version = '1.7.6'
+        hilt_version = '2.54'
     }
     
     repositories {
@@ -70,18 +70,16 @@ buildscript {
     }
     
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.2.0'
+        classpath 'com.android.tools.build:gradle:8.7.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.google.gms:google-services:4.4.0'
-        classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.9'
         classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_version"
     }
 }
 
 plugins {
-    id 'com.android.application' version '8.2.0' apply false
-    id 'com.android.library' version '8.2.0' apply false
-    id 'org.jetbrains.kotlin.android' version '1.9.21' apply false
+    id 'com.android.application' version '8.7.3' apply false
+    id 'com.android.library' version '8.7.3' apply false
+    id 'org.jetbrains.kotlin.android' version '2.1.0' apply false
 }
 
 task clean(type: Delete) {
@@ -98,9 +96,7 @@ task clean(type: Delete) {
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'kotlin-kapt'
-    id 'com.google.gms.google-services'
-    id 'com.google.firebase.crashlytics'
+    id 'com.google.devtools.ksp'
     id 'dagger.hilt.android.plugin'
 }
 
@@ -254,20 +250,17 @@ dependencies {
 }
 ```
 
-### Firebase
+### AWS Amplify
 
 ```groovy
 dependencies {
-    // Firebase BOM
-    implementation platform('com.google.firebase:firebase-bom:32.7.0')
-    implementation 'com.google.firebase:firebase-auth-ktx'
-    implementation 'com.google.firebase:firebase-firestore-ktx'
-    implementation 'com.google.firebase:firebase-database-ktx'
-    implementation 'com.google.firebase:firebase-analytics-ktx'
-    implementation 'com.google.firebase:firebase-crashlytics-ktx'
-    implementation 'com.google.firebase:firebase-config-ktx'
-    implementation 'com.google.firebase:firebase-messaging-ktx'
-    implementation 'com.google.firebase:firebase-perf-ktx'
+    // AWS Amplify BOM
+    implementation platform('com.amplifyframework:amplify-bom:2.24.0')
+    implementation 'com.amplifyframework:core'
+    implementation 'com.amplifyframework:aws-auth-cognito'
+    implementation 'com.amplifyframework:aws-storage-s3'
+    implementation 'com.amplifyframework:aws-api'
+    implementation 'com.amplifyframework:aws-push-notifications-pinpoint'
 }
 ```
 
@@ -352,9 +345,11 @@ dependencies {
 -keep class com.aura.voicechat.data.model.** { *; }
 -keep class com.aura.voicechat.domain.model.** { *; }
 
-# Firebase
--keep class com.google.firebase.** { *; }
--keep class com.google.android.gms.** { *; }
+# AWS Amplify
+-keep class com.amplifyframework.** { *; }
+-dontwarn com.amplifyframework.**
+-keep class com.amazonaws.** { *; }
+-dontwarn com.amazonaws.**
 
 # Retrofit
 -keepattributes Signature
@@ -382,7 +377,7 @@ dependencies {
 # WebRTC
 -keep class org.webrtc.** { *; }
 
-# Crashlytics
+# CloudWatch (Crash Reporting)
 -keepattributes SourceFile,LineNumberTable
 -keep public class * extends java.lang.Exception
 ```
@@ -420,10 +415,12 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     
-    - name: Decode google-services.json
-      env:
-        GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
-      run: echo $GOOGLE_SERVICES_JSON | base64 -d > app/google-services.json
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ secrets.AWS_REGION }}
     
     - name: Build Debug APK
       run: ./gradlew assembleDevDebug
@@ -525,14 +522,15 @@ end
 3. Check `gradle-wrapper.properties` version
 4. Verify JDK 17 is configured
 
-### Issue: Firebase Configuration Error
+### Issue: AWS Configuration Error
 
-**Symptoms:** "Default FirebaseApp is not initialized"
+**Symptoms:** "Amplify is not configured" or similar AWS errors
 
 **Solutions:**
-1. Verify `google-services.json` in correct location
-2. Check `google-services` plugin applied
-3. Ensure package name matches Firebase config
+1. Verify `amplifyconfiguration.json` in correct location (res/raw/)
+2. Verify `awsconfiguration.json` in correct location (res/raw/)
+3. Ensure Amplify.configure() is called in Application class
+4. Check AWS region and credentials are correct
 
 ### Issue: Build Variant Not Found
 
@@ -557,7 +555,7 @@ end
 **Symptoms:** Duplicate class errors
 
 **Solutions:**
-1. Use BOM for Firebase/Compose
+1. Use BOM for AWS Amplify/Compose
 2. Check for transitive dependency conflicts
 3. Use `./gradlew dependencies` to analyze
 
@@ -594,7 +592,7 @@ buildCache {
 
 ## Related Documentation
 
-- [Firebase Setup](./firebase-setup.md)
+- [AWS Setup](./aws-setup.md)
 - [Configuration](../configuration.md)
 - [Deployment](../deployment.md)
 - [Troubleshooting](../troubleshooting.md)
