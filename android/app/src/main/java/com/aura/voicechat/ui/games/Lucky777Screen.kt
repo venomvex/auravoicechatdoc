@@ -661,11 +661,4 @@ data class Lucky777Winner(
     val winAmount: Long
 )
 
-private fun formatNumber(number: Long): String {
-    return when {
-        number >= 1_000_000_000 -> String.format("%.0fB", number / 1_000_000_000.0)
-        number >= 1_000_000 -> String.format("%.0fM", number / 1_000_000.0)
-        number >= 1_000 -> String.format("%.0fK", number / 1_000.0)
-        else -> number.toString()
-    }
-}
+

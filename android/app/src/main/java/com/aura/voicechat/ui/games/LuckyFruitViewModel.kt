@@ -196,13 +196,5 @@ data class LuckyFruitUiState(
     val winningItem: String? = null,
     val lastWin: Long = 0,
     val todaysWin: Long = 0,
-    val recentResults: List<String> = emptyList(),
-    // Legacy fields for compatibility
-    val isPlaying: Boolean = false,
-    val currentBet: Long = 1000,
-    val tiles: List<FruitTile> = emptyList(),
-    val selectedTiles: List<Int> = emptyList(),
-    val matchedTiles: Set<Int> = emptySet(),
-    val comboCount: Int = 0,
-    val currentMultiplier: Int = 1
+    val recentResults: List<String> = emptyList()
 )

@@ -157,7 +157,7 @@ private fun LuckyFruitHeader(
             Text("🪙", fontSize = 16.sp)
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = formatLuckyFruitNumber(coins),
+                text = formatNumber(coins),
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp
@@ -435,7 +435,7 @@ private fun FruitBetCell(
                     .padding(horizontal = 4.dp, vertical = 2.dp)
             ) {
                 Text(
-                    text = formatLuckyFruitNumber(betAmount),
+                    text = formatNumber(betAmount),
                     color = Color.White,
                     fontSize = 8.sp,
                     fontWeight = FontWeight.Bold
@@ -495,7 +495,7 @@ private fun LuckyFruitTodaysWin(todaysWin: Long) {
             fontSize = 12.sp
         )
         Text(
-            text = formatLuckyFruitNumber(todaysWin),
+            text = formatNumber(todaysWin),
             color = if (todaysWin > 0) Color(0xFF00FF00) else Color.White,
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp
@@ -643,12 +643,3 @@ data class FruitTile(
     val value: Int,
     val isRevealed: Boolean = false
 )
-
-private fun formatLuckyFruitNumber(number: Long): String {
-    return when {
-        number >= 1_000_000_000 -> String.format("%.0fB", number / 1_000_000_000.0)
-        number >= 1_000_000 -> String.format("%.0fM", number / 1_000_000.0)
-        number >= 1_000 -> String.format("%.0fK", number / 1_000.0)
-        else -> number.toString()
-    }
-}
