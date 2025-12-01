@@ -408,80 +408,32 @@ class AuthRepositoryImpl @Inject constructor(
     }
     
     /**
-     * Fallback: Try backend Google sign-in if Amplify fails.
-     * This is used when Amplify is not configured or the Activity context is not available.
+     * Fallback: Return the original error when Amplify sign-in fails.
+     * 
+     * Note: In a production implementation, you would integrate with Google Sign-In SDK
+     * to get a valid ID token and then call the backend. For now, we simply return
+     * the original error as the backend requires valid tokens.
      */
     private suspend fun tryBackendGoogleSignIn(originalError: Exception): Result<Unit> {
-        return try {
-            Log.d(TAG, "Trying backend Google sign-in fallback")
-            // Note: In a real implementation, you would get the actual Google ID token
-            // from Google Sign-In SDK and pass it here
-            val response = apiService.signInWithGoogle(
-                GoogleSignInRequest(
-                    idToken = "",  // This would be the real ID token
-                    email = null,
-                    displayName = null
-                )
-            )
-            
-            if (response.isSuccessful && response.body()?.success == true) {
-                response.body()?.let { body ->
-                    saveAuthData(
-                        userId = body.user.id,
-                        userName = body.user.name,
-                        authToken = body.token,
-                        refreshToken = body.refreshToken,
-                        provider = "google"
-                    )
-                }
-                Result.success(Unit)
-            } else {
-                // Backend endpoint may not exist yet, return original error
-                Log.w(TAG, "Backend Google sign-in failed, returning original error")
-                Result.failure(originalError)
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "Backend Google sign-in fallback failed", e)
-            Result.failure(originalError)
-        }
+        // The backend requires a valid Google ID token for verification.
+        // Without the Google Sign-In SDK integration to get a real token,
+        // we cannot make a valid backend request.
+        Log.w(TAG, "Google Sign-In requires proper SDK integration. Returning original error.")
+        return Result.failure(originalError)
     }
     
     /**
-     * Fallback: Try backend Facebook sign-in if Amplify fails.
+     * Fallback: Return the original error when Amplify sign-in fails.
+     * 
+     * Note: In a production implementation, you would integrate with Facebook Login SDK
+     * to get a valid access token and then call the backend. For now, we simply return
+     * the original error as the backend requires valid tokens.
      */
     private suspend fun tryBackendFacebookSignIn(originalError: Exception): Result<Unit> {
-        return try {
-            Log.d(TAG, "Trying backend Facebook sign-in fallback")
-            // Note: In a real implementation, you would get the actual Facebook access token
-            // from Facebook Login SDK and pass it here
-            val response = apiService.signInWithFacebook(
-                FacebookSignInRequest(
-                    accessToken = "",  // This would be the real access token
-                    userId = null,
-                    email = null,
-                    displayName = null
-                )
-            )
-            
-            if (response.isSuccessful && response.body()?.success == true) {
-                response.body()?.let { body ->
-                    saveAuthData(
-                        userId = body.user.id,
-                        userName = body.user.name,
-                        authToken = body.token,
-                        refreshToken = body.refreshToken,
-                        provider = "facebook"
-                    )
-                }
-                Result.success(Unit)
-            } else {
-                // Backend endpoint may not exist yet, return original error
-                Log.w(TAG, "Backend Facebook sign-in failed, returning original error")
-                Result.failure(originalError)
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "Backend Facebook sign-in fallback failed", e)
-            Result.failure(originalError)
-        }
+        // The backend requires a valid Facebook access token for verification.
+        // Without the Facebook Login SDK integration to get a real token,
+        // we cannot make a valid backend request.
+        Log.w(TAG, "Facebook Sign-In requires proper SDK integration. Returning original error.")
+        return Result.failure(originalError)
     }
 }

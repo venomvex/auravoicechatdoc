@@ -256,6 +256,9 @@ export const verifyOtp = async (phone: string, otp: string): Promise<VerifyResul
 /**
  * Sign in with social provider (Google or Facebook).
  * Creates a new user if not exists, or returns existing user.
+ * 
+ * IMPORTANT: Token verification is required in production!
+ * The token parameter should be verified with the provider's API before proceeding.
  */
 export const signInWithSocial = async (
   provider: 'google' | 'facebook',
@@ -278,12 +281,27 @@ export const signInWithSocial = async (
       };
     }
     
-    // In production, verify the token with the provider's API:
-    // - Google: https://oauth2.googleapis.com/tokeninfo?id_token=...
-    // - Facebook: https://graph.facebook.com/debug_token?input_token=...
+    // Validate token is present
+    if (!token || token.trim() === '') {
+      logger.error('Social sign-in attempted without valid token');
+      return {
+        success: false,
+        userId: '',
+        userName: '',
+        userLevel: 0,
+        userVipTier: 0,
+        isNewUser: false
+      };
+    }
     
-    // For now, we'll trust the token and use the provided data
-    // In a real implementation, you would validate the token and extract user info
+    // TODO: In production, verify the token with the provider's API:
+    // - Google: https://oauth2.googleapis.com/tokeninfo?id_token=...
+    //   Use: const googleTicket = await googleClient.verifyIdToken({idToken: token, audience: CLIENT_ID});
+    // - Facebook: https://graph.facebook.com/debug_token?input_token=...
+    //   Use: const fbResponse = await fetch(`https://graph.facebook.com/me?access_token=${token}`);
+    // 
+    // For development purposes, we're allowing the token through after basic validation.
+    // In production, ALWAYS verify the token with the provider before proceeding!
     
     logger.info(`Social sign-in attempt with ${provider}`, { email, hasToken: !!token });
     
