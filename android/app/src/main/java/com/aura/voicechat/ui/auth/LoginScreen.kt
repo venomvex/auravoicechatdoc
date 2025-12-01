@@ -27,6 +27,9 @@ import com.aura.voicechat.ui.theme.Purple80
 /**
  * Login Screen with Google, Facebook, and Phone (OTP) login
  * Developer: Hawkaye Visions LTD — Pakistan
+ * 
+ * Performs a backend health check on first load to verify connectivity
+ * to the EC2 backend server.
  */
 @Composable
 fun LoginScreen(
@@ -36,6 +39,11 @@ fun LoginScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var phoneNumber by remember { mutableStateOf("") }
+    
+    // Ping backend on first load to verify connectivity
+    LaunchedEffect(Unit) {
+        viewModel.pingBackend()
+    }
     
     Box(
         modifier = Modifier

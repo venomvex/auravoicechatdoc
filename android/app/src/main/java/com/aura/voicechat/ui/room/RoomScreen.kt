@@ -30,6 +30,22 @@ import com.aura.voicechat.ui.theme.*
 /**
  * Voice/Video Room Screen with 8/16 seat layouts
  * Developer: Hawkaye Visions LTD — Pakistan
+ * 
+ * This screen displays the main voice/video room UI with:
+ * - Room owner card at the top
+ * - Seat grid for participants (8 or 16 seats)
+ * - Chat preview section
+ * - Bottom bar with mic, gift, chat, and more actions
+ * - Gift bottom sheet for sending gifts
+ * 
+ * TODO: Future enhancements:
+ * - Implement real-time WebRTC voice/video
+ * - Add room settings menu
+ * - Add events slider
+ * - Add games slider
+ * - Integrate with Socket.io for real-time updates
+ * - Add animations for gift sending
+ * - Add full chat panel with message history
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

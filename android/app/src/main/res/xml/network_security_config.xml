@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Network Security Configuration -->
+<!-- 
+  Network Security Configuration
+  Developer: Hawkaye Visions LTD — Pakistan
+  
+  TODO: For production, remove cleartext permissions and use HTTPS only.
+-->
 <network-security-config>
     <base-config cleartextTrafficPermitted="false">
         <trust-anchors>
@@ -11,5 +16,13 @@
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">10.0.2.2</domain>
         <domain includeSubdomains="true">localhost</domain>
+    </domain-config>
+    
+    <!-- 
+      Allow cleartext for EC2 backend (temporary, for development only)
+      TODO: For production, set up HTTPS with a proper domain name and certificate.
+    -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">43.204.130.237</domain>
     </domain-config>
 </network-security-config>

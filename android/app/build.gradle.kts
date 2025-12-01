@@ -35,7 +35,8 @@ android {
         multiDexEnabled = true
 
         // Build config fields
-        buildConfigField("String", "API_BASE_URL", "\"https://api.auravoice.chat\"")
+        // TODO: For production, update to domain with HTTPS (e.g., https://api.auravoice.chat)
+        buildConfigField("String", "API_BASE_URL", "\"http://43.204.130.237\"")
         buildConfigField("String", "AGORA_APP_ID", "\"YOUR_AGORA_APP_ID\"")
         buildConfigField("String", "AWS_REGION", "\"ap-south-1\"")
     }
@@ -71,7 +72,8 @@ android {
             isDebuggable = true
             isMinifyEnabled = false
             buildConfigField("boolean", "DEBUG_MODE", "true")
-            buildConfigField("String", "API_BASE_URL", "\"https://api-dev.auravoice.chat\"")
+            // TODO: For production, update to domain with HTTPS (e.g., https://api-dev.auravoice.chat)
+            buildConfigField("String", "API_BASE_URL", "\"http://43.204.130.237\"")
         }
         release {
             isDebuggable = false
@@ -83,7 +85,8 @@ android {
             )
             signingConfig = signingConfigs.getByName("release")
             buildConfigField("boolean", "DEBUG_MODE", "false")
-            buildConfigField("String", "API_BASE_URL", "\"https://api.auravoice.chat\"")
+            // TODO: For production, update to domain with HTTPS (e.g., https://api.auravoice.chat)
+            buildConfigField("String", "API_BASE_URL", "\"http://43.204.130.237\"")
         }
     }
 
@@ -94,19 +97,22 @@ android {
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-dev"
             buildConfigField("String", "ENVIRONMENT", "\"development\"")
-            buildConfigField("String", "API_BASE_URL", "\"https://api-dev.auravoice.chat\"")
+            // TODO: For production, update to domain with HTTPS (e.g., https://api-dev.auravoice.chat)
+            buildConfigField("String", "API_BASE_URL", "\"http://43.204.130.237\"")
         }
         create("staging") {
             dimension = "environment"
             applicationIdSuffix = ".staging"
             versionNameSuffix = "-staging"
             buildConfigField("String", "ENVIRONMENT", "\"staging\"")
-            buildConfigField("String", "API_BASE_URL", "\"https://api-staging.auravoice.chat\"")
+            // TODO: For production, update to domain with HTTPS (e.g., https://api-staging.auravoice.chat)
+            buildConfigField("String", "API_BASE_URL", "\"http://43.204.130.237\"")
         }
         create("prod") {
             dimension = "environment"
             buildConfigField("String", "ENVIRONMENT", "\"production\"")
-            buildConfigField("String", "API_BASE_URL", "\"https://api.auravoice.chat\"")
+            // TODO: For production, update to domain with HTTPS (e.g., https://api.auravoice.chat)
+            buildConfigField("String", "API_BASE_URL", "\"http://43.204.130.237\"")
         }
     }
 

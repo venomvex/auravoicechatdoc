@@ -3,6 +3,7 @@ package com.aura.voicechat.di
 import android.content.Context
 import com.aura.voicechat.BuildConfig
 import com.aura.voicechat.data.remote.ApiService
+import com.aura.voicechat.data.remote.HealthApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,6 +29,11 @@ import javax.inject.Singleton
  * - Authentication: AWS Cognito
  * - Storage: AWS S3
  * - Push Notifications: AWS SNS
+ * 
+ * Backend URL is configured via BuildConfig.API_BASE_URL
+ * Currently pointing to EC2 instance at http://43.204.130.237
+ * 
+ * TODO: For production, update to use HTTPS with a proper domain name.
  */
 @Module
 @InstallIn(SingletonComponent::class)
@@ -66,6 +72,16 @@ object NetworkModule {
     @Singleton
     fun provideApiService(retrofit: Retrofit): ApiService {
         return retrofit.create(ApiService::class.java)
+    }
+    
+    /**
+     * Provides HealthApi for backend connectivity checks.
+     * Used by LoginViewModel to verify backend is reachable.
+     */
+    @Provides
+    @Singleton
+    fun provideHealthApi(retrofit: Retrofit): HealthApi {
+        return retrofit.create(HealthApi::class.java)
     }
     
     @Provides
