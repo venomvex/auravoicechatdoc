@@ -1,7 +1,9 @@
 package com.aura.voicechat.ui.vip
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aura.voicechat.data.remote.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -10,11 +12,17 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * VIP System ViewModel
+ * VIP System ViewModel (Live API Connected)
  * Developer: Hawkaye Visions LTD — Pakistan
  */
 @HiltViewModel
-class VipViewModel @Inject constructor() : ViewModel() {
+class VipViewModel @Inject constructor(
+    private val apiService: ApiService
+) : ViewModel() {
+    
+    companion object {
+        private const val TAG = "VipViewModel"
+    }
     
     private val _uiState = MutableStateFlow(VipUiState())
     val uiState: StateFlow<VipUiState> = _uiState.asStateFlow()
@@ -25,18 +33,52 @@ class VipViewModel @Inject constructor() : ViewModel() {
     
     private fun loadVipData() {
         viewModelScope.launch {
-            _uiState.value = VipUiState(
-                currentTier = 3,
-                daysRemaining = 25,
-                totalDiamondsSpent = 2500000,
-                nextTierProgress = 0.65f,
-                allTiers = (1..10).toList(),
-                purchasePackages = listOf(
-                    VipPackage("pkg_week", "Weekly VIP", "7 days of VIP benefits", 4.99, 6.99, 50000, 7),
-                    VipPackage("pkg_month", "Monthly VIP", "30 days of VIP benefits", 14.99, 24.99, 250000, 30, isBestValue = true),
-                    VipPackage("pkg_season", "Seasonal VIP", "90 days of VIP benefits", 39.99, 59.99, 800000, 90)
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            try {
+                // Load VIP status
+                val statusResponse = apiService.getVipStatus()
+                if (statusResponse.isSuccessful && statusResponse.body() != null) {
+                    val data = statusResponse.body()!!
+                    _uiState.value = _uiState.value.copy(
+                        currentTier = data.tier,
+                        daysRemaining = data.daysRemaining,
+                        totalDiamondsSpent = data.totalSpent,
+                        nextTierProgress = data.progress,
+                        allTiers = (1..10).toList()
+                    )
+                    Log.d(TAG, "Loaded VIP status: tier=${data.tier}")
+                }
+                
+                // Load VIP packages
+                val packagesResponse = apiService.getVipPackages()
+                if (packagesResponse.isSuccessful && packagesResponse.body() != null) {
+                    val packages = packagesResponse.body()!!.packages.map { pkg ->
+                        VipPackage(
+                            id = pkg.id,
+                            name = pkg.name,
+                            description = pkg.description,
+                            price = pkg.price,
+                            originalPrice = pkg.originalPrice,
+                            bonusDiamonds = pkg.bonusDiamonds,
+                            days = pkg.days,
+                            isBestValue = pkg.isBestValue
+                        )
+                    }
+                    _uiState.value = _uiState.value.copy(
+                        purchasePackages = packages,
+                        isLoading = false
+                    )
+                    Log.d(TAG, "Loaded ${packages.size} VIP packages")
+                } else {
+                    _uiState.value = _uiState.value.copy(isLoading = false)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error loading VIP data", e)
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = e.message
                 )
-            )
+            }
         }
     }
     
@@ -71,17 +113,59 @@ class VipViewModel @Inject constructor() : ViewModel() {
     
     fun purchaseVip(pkg: VipPackage) {
         viewModelScope.launch {
-            // In production, this would initiate payment flow
+            try {
+                _uiState.value = _uiState.value.copy(isPurchasing = true)
+                val response = apiService.purchaseVip(
+                    com.aura.voicechat.data.model.PurchaseVipRequest(packageId = pkg.id)
+                )
+                if (response.isSuccessful && response.body() != null) {
+                    val result = response.body()!!
+                    _uiState.value = _uiState.value.copy(
+                        isPurchasing = false,
+                        currentTier = result.newTier,
+                        daysRemaining = result.daysRemaining,
+                        message = "VIP ${pkg.name} activated!"
+                    )
+                    loadVipData() // Refresh
+                    Log.d(TAG, "VIP purchased successfully")
+                } else {
+                    _uiState.value = _uiState.value.copy(
+                        isPurchasing = false,
+                        error = "Failed to purchase VIP"
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error purchasing VIP", e)
+                _uiState.value = _uiState.value.copy(
+                    isPurchasing = false,
+                    error = e.message
+                )
+            }
         }
+    }
+    
+    fun refresh() {
+        loadVipData()
+    }
+    
+    fun dismissMessage() {
+        _uiState.value = _uiState.value.copy(message = null)
+    }
+    
+    fun dismissError() {
+        _uiState.value = _uiState.value.copy(error = null)
     }
 }
 
 data class VipUiState(
     val isLoading: Boolean = false,
+    val isPurchasing: Boolean = false,
     val currentTier: Int = 0,
     val daysRemaining: Int = 0,
     val totalDiamondsSpent: Long = 0,
     val nextTierProgress: Float = 0f,
     val allTiers: List<Int> = emptyList(),
-    val purchasePackages: List<VipPackage> = emptyList()
+    val purchasePackages: List<VipPackage> = emptyList(),
+    val message: String? = null,
+    val error: String? = null
 )

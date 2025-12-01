@@ -39,11 +39,17 @@ interface ApiService {
     suspend fun claimDailyReward(): Response<ClaimRewardResponse>
     
     // VIP
+    @GET("api/v1/vip/status")
+    suspend fun getVipStatus(): Response<VipStatusResponse>
+    
     @GET("api/v1/vip/tier")
     suspend fun getVipTier(): Response<VipTierResponse>
     
+    @GET("api/v1/vip/packages")
+    suspend fun getVipPackages(): Response<VipPackagesResponse>
+    
     @POST("api/v1/vip/purchase")
-    suspend fun purchaseVip(@Body request: PurchaseVipRequest): Response<Unit>
+    suspend fun purchaseVip(@Body request: PurchaseVipRequest): Response<PurchaseVipResponse>
     
     // Medals
     @GET("api/v1/profile/medals")

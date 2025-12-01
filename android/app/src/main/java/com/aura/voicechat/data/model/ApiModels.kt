@@ -72,10 +72,11 @@ data class SocialSignInResponse(
 data class DailyRewardStatusResponse(
     @SerializedName("currentDay") val currentDay: Int,
     @SerializedName("claimable") val claimable: Boolean,
+    @SerializedName("canClaim") val canClaim: Boolean,
     @SerializedName("cycle") val cycle: List<DayRewardDto>,
     @SerializedName("streak") val streak: Int,
     @SerializedName("nextResetUtc") val nextResetUtc: String,
-    @SerializedName("vipTier") val vipTier: String,
+    @SerializedName("vipTier") val vipTier: Int,
     @SerializedName("vipMultiplier") val vipMultiplier: Double
 )
 
@@ -104,8 +105,37 @@ data class VipTierResponse(
 )
 
 data class PurchaseVipRequest(
-    @SerializedName("tier") val tier: String,
-    @SerializedName("duration") val duration: String
+    @SerializedName("packageId") val packageId: String
+)
+
+data class PurchaseVipResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("newTier") val newTier: Int,
+    @SerializedName("daysRemaining") val daysRemaining: Int,
+    @SerializedName("message") val message: String?
+)
+
+data class VipStatusResponse(
+    @SerializedName("tier") val tier: Int,
+    @SerializedName("daysRemaining") val daysRemaining: Int,
+    @SerializedName("totalSpent") val totalSpent: Long,
+    @SerializedName("progress") val progress: Float,
+    @SerializedName("expiry") val expiry: String?
+)
+
+data class VipPackagesResponse(
+    @SerializedName("packages") val packages: List<VipPackageDto>
+)
+
+data class VipPackageDto(
+    @SerializedName("id") val id: String,
+    @SerializedName("name") val name: String,
+    @SerializedName("description") val description: String,
+    @SerializedName("price") val price: Double,
+    @SerializedName("originalPrice") val originalPrice: Double,
+    @SerializedName("bonusDiamonds") val bonusDiamonds: Long,
+    @SerializedName("days") val days: Int,
+    @SerializedName("isBestValue") val isBestValue: Boolean
 )
 
 // Medals
