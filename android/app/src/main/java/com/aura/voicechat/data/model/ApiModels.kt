@@ -1351,6 +1351,11 @@ data class SendRoomMessageRequest(
     @SerializedName("type") val type: String = "text"
 )
 
+data class SendRoomImageRequest(
+    @SerializedName("imageUrl") val imageUrl: String,
+    @SerializedName("type") val type: String = "image"
+)
+
 // Seat Management
 data class SeatActionRequest(
     @SerializedName("seatPosition") val seatPosition: Int,
@@ -1872,4 +1877,77 @@ data class GuideApplicationDto(
     @SerializedName("userLevel") val userLevel: Int,
     @SerializedName("status") val status: String,
     @SerializedName("appliedAt") val appliedAt: String
+)
+
+// ============================================
+// Content Moderation Models
+// ============================================
+
+data class CheckContentRequest(
+    @SerializedName("content") val content: String,
+    @SerializedName("context") val context: String = "chat" // chat, bio, room_name, room_announcement
+)
+
+data class CheckImageRequest(
+    @SerializedName("imageUrl") val imageUrl: String,
+    @SerializedName("context") val context: String = "chat" // profile, room_cover, chat
+)
+
+data class ModerationResult(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("isViolation") val isViolation: Boolean,
+    @SerializedName("action") val action: String?, // warn, ban_5min, ban_10min, ban_permanent
+    @SerializedName("message") val message: String?,
+    @SerializedName("banExpiry") val banExpiry: String?
+)
+
+data class BanStatusResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("isBanned") val isBanned: Boolean,
+    @SerializedName("banType") val banType: String?,
+    @SerializedName("banReason") val banReason: String?,
+    @SerializedName("banExpiry") val banExpiry: String?
+)
+
+data class ViolationsResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("violations") val violations: List<ViolationDto>,
+    @SerializedName("total") val total: Int,
+    @SerializedName("page") val page: Int,
+    @SerializedName("totalPages") val totalPages: Int
+)
+
+data class ViolationDto(
+    @SerializedName("id") val id: String,
+    @SerializedName("user_id") val userId: String,
+    @SerializedName("user_name") val userName: String?,
+    @SerializedName("user_avatar") val userAvatar: String?,
+    @SerializedName("violation_type") val violationType: String,
+    @SerializedName("severity") val severity: String,
+    @SerializedName("content") val content: String?,
+    @SerializedName("image_url") val imageUrl: String?,
+    @SerializedName("action_taken") val actionTaken: String,
+    @SerializedName("ban_expiry") val banExpiry: String?,
+    @SerializedName("created_at") val createdAt: String
+)
+
+data class ImageReviewsResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("reviews") val reviews: List<ImageReviewDto>,
+    @SerializedName("total") val total: Int
+)
+
+data class ImageReviewDto(
+    @SerializedName("id") val id: String,
+    @SerializedName("user_id") val userId: String,
+    @SerializedName("user_name") val userName: String?,
+    @SerializedName("user_avatar") val userAvatar: String?,
+    @SerializedName("image_url") val imageUrl: String,
+    @SerializedName("context") val context: String,
+    @SerializedName("status") val status: String,
+    @SerializedName("created_at") val createdAt: String
+)
+
+data class ReviewImageRequest(
+    @SerializedName("approved") val approved: Boolean
 )

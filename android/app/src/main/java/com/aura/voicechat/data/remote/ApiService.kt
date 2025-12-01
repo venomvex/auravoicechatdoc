@@ -517,6 +517,13 @@ interface ApiService {
         @Body request: SendRoomMessageRequest
     ): Response<RoomMessageDto>
     
+    // Send room image
+    @POST("api/v1/rooms/{roomId}/messages/image")
+    suspend fun sendRoomImage(
+        @Path("roomId") roomId: String,
+        @Body request: SendRoomImageRequest
+    ): Response<RoomMessageDto>
+    
     // Clear chat (owner/admin only)
     @POST("api/v1/rooms/{roomId}/messages/clear")
     suspend fun clearRoomChat(
@@ -880,4 +887,46 @@ interface ApiService {
     // Reject guide (admin)
     @POST("api/v1/admin/guides/{userId}/reject")
     suspend fun rejectGuide(@Path("userId") userId: String): Response<Unit>
+    
+    // ============================================
+    // Content Moderation
+    // ============================================
+    
+    // Check text content for violations (before sending)
+    @POST("api/v1/moderation/check-content")
+    suspend fun checkContent(@Body request: CheckContentRequest): Response<ModerationResult>
+    
+    // Check image for violations (before uploading)
+    @POST("api/v1/moderation/check-image")
+    suspend fun checkImage(@Body request: CheckImageRequest): Response<ModerationResult>
+    
+    // Get current user's ban status
+    @GET("api/v1/moderation/ban-status")
+    suspend fun getBanStatus(): Response<BanStatusResponse>
+    
+    // Get violations (admin)
+    @GET("api/v1/moderation/violations")
+    suspend fun getViolations(
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 20,
+        @Query("status") status: String? = null
+    ): Response<ViolationsResponse>
+    
+    // Get pending image reviews (admin)
+    @GET("api/v1/moderation/image-reviews")
+    suspend fun getPendingImageReviews(
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 20
+    ): Response<ImageReviewsResponse>
+    
+    // Review an image (admin)
+    @POST("api/v1/moderation/image-reviews/{reviewId}")
+    suspend fun reviewImage(
+        @Path("reviewId") reviewId: String,
+        @Body request: ReviewImageRequest
+    ): Response<Unit>
+    
+    // Unban a user (admin)
+    @POST("api/v1/moderation/unban/{userId}")
+    suspend fun unbanUser(@Path("userId") userId: String): Response<Unit>
 }

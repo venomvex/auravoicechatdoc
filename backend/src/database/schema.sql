@@ -1199,6 +1199,108 @@ CREATE TABLE IF NOT EXISTS user_pending_earnings (
 CREATE INDEX idx_user_pending_earnings_user ON user_pending_earnings(user_id);
 CREATE INDEX idx_user_pending_earnings_clearance ON user_pending_earnings(clearance_at);
 
+-- ============================================================================
+-- CONTENT MODERATION SYSTEM
+-- ============================================================================
+
+-- User violations/warnings
+CREATE TABLE IF NOT EXISTS user_violations (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    violation_type VARCHAR(50) NOT NULL CHECK (violation_type IN ('abusive_language', 'vulgar_image', 'spam', 'harassment', 'scam', 'impersonation', 'other')),
+    severity VARCHAR(20) NOT NULL CHECK (severity IN ('low', 'medium', 'high', 'critical')),
+    content TEXT,
+    image_url TEXT,
+    room_id UUID REFERENCES rooms(id) ON DELETE SET NULL,
+    action_taken VARCHAR(50) NOT NULL CHECK (action_taken IN ('warn', 'ban_5min', 'ban_10min', 'ban_1hour', 'ban_24hour', 'ban_permanent', 'mute', 'kick')),
+    ban_expiry TIMESTAMP WITH TIME ZONE,
+    reported_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    reviewed_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    reviewed_at TIMESTAMP WITH TIME ZONE,
+    notes TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_user_violations_user ON user_violations(user_id);
+CREATE INDEX idx_user_violations_type ON user_violations(violation_type);
+CREATE INDEX idx_user_violations_created ON user_violations(created_at DESC);
+CREATE INDEX idx_user_violations_severity ON user_violations(severity);
+
+-- Image review queue for manual moderation
+CREATE TABLE IF NOT EXISTS image_review_queue (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    image_url TEXT NOT NULL,
+    context VARCHAR(50) NOT NULL CHECK (context IN ('profile', 'room_cover', 'chat', 'gift', 'other')),
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    reviewed_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    reviewed_at TIMESTAMP WITH TIME ZONE,
+    rejection_reason TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, image_url)
+);
+
+CREATE INDEX idx_image_review_status ON image_review_queue(status);
+CREATE INDEX idx_image_review_created ON image_review_queue(created_at);
+
+-- Admin notifications for violations
+CREATE TABLE IF NOT EXISTS admin_notifications (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    type VARCHAR(50) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    message TEXT NOT NULL,
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    room_id UUID REFERENCES rooms(id) ON DELETE SET NULL,
+    severity VARCHAR(20) DEFAULT 'medium' CHECK (severity IN ('low', 'medium', 'high', 'critical')),
+    is_read BOOLEAN DEFAULT FALSE,
+    read_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    read_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_admin_notifications_read ON admin_notifications(is_read);
+CREATE INDEX idx_admin_notifications_created ON admin_notifications(created_at DESC);
+CREATE INDEX idx_admin_notifications_severity ON admin_notifications(severity);
+
+-- Banned words list (customizable)
+CREATE TABLE IF NOT EXISTS banned_words (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    word VARCHAR(100) NOT NULL UNIQUE,
+    category VARCHAR(50) DEFAULT 'profanity' CHECK (category IN ('profanity', 'slur', 'spam', 'scam', 'other')),
+    language VARCHAR(10) DEFAULT 'en',
+    severity VARCHAR(20) DEFAULT 'medium',
+    is_active BOOLEAN DEFAULT TRUE,
+    added_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_banned_words_active ON banned_words(is_active);
+CREATE INDEX idx_banned_words_category ON banned_words(category);
+
+-- User ban history
+CREATE TABLE IF NOT EXISTS ban_history (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    ban_type VARCHAR(50) NOT NULL,
+    reason TEXT NOT NULL,
+    banned_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    ban_start TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    ban_end TIMESTAMP WITH TIME ZONE,
+    is_permanent BOOLEAN DEFAULT FALSE,
+    is_active BOOLEAN DEFAULT TRUE,
+    unbanned_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    unbanned_at TIMESTAMP WITH TIME ZONE,
+    unban_reason TEXT
+);
+
+CREATE INDEX idx_ban_history_user ON ban_history(user_id);
+CREATE INDEX idx_ban_history_active ON ban_history(is_active);
+
+-- Add ban columns to users table if not exists
+ALTER TABLE users ADD COLUMN IF NOT EXISTS ban_reason TEXT;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS ban_expiry TIMESTAMP WITH TIME ZONE;
+ALTER TABLE users ADD COLUMN IF NOT EXISTS ban_type VARCHAR(50);
+
 -- Insert receiver-based earning targets
 INSERT INTO earning_targets (name, description, type, target_type, target_amount, reward_coins, period, tier, clearance_days) VALUES
     ('Gift Receiver I', 'Receive gifts worth 10,000 diamonds', 'gift', 'receive', 10000, 5000, 'weekly', 1, 5),

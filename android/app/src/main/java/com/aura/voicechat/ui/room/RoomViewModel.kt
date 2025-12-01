@@ -1,9 +1,11 @@
 package com.aura.voicechat.ui.room
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.aura.voicechat.data.model.*
 import com.aura.voicechat.data.remote.ApiService
+import com.aura.voicechat.data.repository.ModerationRepository
 import com.aura.voicechat.domain.model.Room
 import com.aura.voicechat.domain.model.RoomMode
 import com.aura.voicechat.domain.model.RoomType
@@ -24,7 +26,7 @@ import javax.inject.Inject
  * - Room settings
  * - Room jar
  * - Room rankings (daily/weekly/monthly)
- * - Live chat messages
+ * - Live chat messages with content moderation
  * - Seat management (lock/unlock/kick/invite/mute/unmute/drag)
  * - Video player (YouTube)
  * - Games slider
@@ -35,8 +37,13 @@ import javax.inject.Inject
 @HiltViewModel
 class RoomViewModel @Inject constructor(
     private val roomRepository: RoomRepository,
-    private val apiService: ApiService
+    private val apiService: ApiService,
+    private val moderationRepository: ModerationRepository
 ) : ViewModel() {
+    
+    companion object {
+        private const val TAG = "RoomViewModel"
+    }
     
     private val _uiState = MutableStateFlow(RoomUiState())
     val uiState: StateFlow<RoomUiState> = _uiState.asStateFlow()
@@ -246,18 +253,108 @@ class RoomViewModel @Inject constructor(
     fun sendMessage(content: String) {
         viewModelScope.launch {
             val roomId = currentRoomId ?: return@launch
-            try {
-                val response = apiService.sendRoomMessage(roomId, SendRoomMessageRequest(content))
-                if (response.isSuccessful && response.body() != null) {
-                    // Add message to list
-                    val newMessage = response.body()!!
-                    _uiState.value = _uiState.value.copy(
-                        messages = _uiState.value.messages + newMessage
-                    )
+            
+            // Check for content violations before sending
+            val moderationResult = moderationRepository.checkContent(content, "chat")
+            moderationResult.fold(
+                onSuccess = { result ->
+                    if (result.isViolation) {
+                        // Content violates policy
+                        Log.w(TAG, "Message blocked due to violation: ${result.action}")
+                        _uiState.value = _uiState.value.copy(
+                            error = result.message ?: "Your message contains inappropriate content.",
+                            isBanned = result.action != "warn",
+                            banMessage = if (result.action != "warn") result.message else null,
+                            banExpiry = result.banExpiry
+                        )
+                        return@launch
+                    }
+                    
+                    // Content is clean, send it
+                    try {
+                        val response = apiService.sendRoomMessage(roomId, SendRoomMessageRequest(content))
+                        if (response.isSuccessful && response.body() != null) {
+                            // Add message to list
+                            val newMessage = response.body()!!
+                            _uiState.value = _uiState.value.copy(
+                                messages = _uiState.value.messages + newMessage
+                            )
+                        }
+                    } catch (e: Exception) {
+                        _uiState.value = _uiState.value.copy(error = e.message)
+                    }
+                },
+                onFailure = { e ->
+                    // Moderation check failed, try to send anyway
+                    try {
+                        val response = apiService.sendRoomMessage(roomId, SendRoomMessageRequest(content))
+                        if (response.isSuccessful && response.body() != null) {
+                            val newMessage = response.body()!!
+                            _uiState.value = _uiState.value.copy(
+                                messages = _uiState.value.messages + newMessage
+                            )
+                        }
+                    } catch (ex: Exception) {
+                        _uiState.value = _uiState.value.copy(error = ex.message)
+                    }
                 }
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = e.message)
-            }
+            )
+        }
+    }
+    
+    /**
+     * Send image in chat with moderation check
+     */
+    fun sendImage(imageUrl: String) {
+        viewModelScope.launch {
+            val roomId = currentRoomId ?: return@launch
+            
+            // Check for image violations before sending
+            val moderationResult = moderationRepository.checkImage(imageUrl, "chat")
+            moderationResult.fold(
+                onSuccess = { result ->
+                    if (result.isViolation) {
+                        Log.w(TAG, "Image blocked due to violation: ${result.action}")
+                        _uiState.value = _uiState.value.copy(
+                            error = result.message ?: "This image violates our content policy.",
+                            isBanned = result.action != "warn",
+                            banMessage = if (result.action != "warn") result.message else null,
+                            banExpiry = result.banExpiry
+                        )
+                        return@launch
+                    }
+                    
+                    // Image is clean, send it
+                    try {
+                        val response = apiService.sendRoomImage(roomId, SendRoomImageRequest(imageUrl))
+                        if (response.isSuccessful && response.body() != null) {
+                            val newMessage = response.body()!!
+                            _uiState.value = _uiState.value.copy(
+                                messages = _uiState.value.messages + newMessage
+                            )
+                        }
+                    } catch (e: Exception) {
+                        _uiState.value = _uiState.value.copy(error = e.message)
+                    }
+                },
+                onFailure = { e ->
+                    _uiState.value = _uiState.value.copy(error = "Failed to verify image")
+                }
+            )
+        }
+    }
+    
+    /**
+     * Check user's ban status
+     */
+    fun checkBanStatus() {
+        viewModelScope.launch {
+            val banStatus = moderationRepository.getBanStatus()
+            _uiState.value = _uiState.value.copy(
+                isBanned = banStatus.isBanned,
+                banMessage = if (banStatus.isBanned) banStatus.banReason else null,
+                banExpiry = banStatus.banExpiry
+            )
         }
     }
     
@@ -715,5 +812,10 @@ data class RoomUiState(
     
     // UI State
     val showMoreMenu: Boolean = false,
-    val showSeatActionSheet: Boolean = false
+    val showSeatActionSheet: Boolean = false,
+    
+    // Ban status (from moderation)
+    val isBanned: Boolean = false,
+    val banMessage: String? = null,
+    val banExpiry: String? = null
 )

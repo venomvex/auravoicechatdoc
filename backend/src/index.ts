@@ -36,6 +36,7 @@ import messagesRoutes from './routes/messages';
 import notificationsRoutes from './routes/notifications';
 import guideRoutes from './routes/guide';
 import giftsRoutes from './routes/gifts';
+import moderationRoutes from './routes/moderation';
 
 const app = express();
 
@@ -90,6 +91,7 @@ app.use('/api/v1/messages', messagesRoutes);
 app.use('/api/v1/notifications', notificationsRoutes);
 app.use('/api/v1/guide', guideRoutes);
 app.use('/api/v1/gifts', giftsRoutes);
+app.use('/api/v1/moderation', moderationRoutes);
 
 // 404 handler
 app.use(notFoundHandler);
