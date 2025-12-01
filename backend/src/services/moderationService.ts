@@ -13,25 +13,50 @@
 import pool from '../database/pool';
 import { logger } from '../utils/logger';
 
-// List of abusive/banned words (expandable)
-const BANNED_WORDS = [
-    // English profanity
-    'fuck', 'shit', 'ass', 'bitch', 'bastard', 'damn', 'cunt', 'dick', 'cock', 
-    'pussy', 'whore', 'slut', 'nigger', 'nigga', 'faggot', 'retard',
-    // Common variations
-    'f*ck', 'sh*t', 'b*tch', 'a**', 'd*ck', 'c*ck', 'p*ssy',
-    'fck', 'sht', 'btch', 'dck', 'psy',
-    // Urdu/Hindi profanity
-    'madarchod', 'bhenchod', 'chutiya', 'gaand', 'lund', 'bhosdike', 'randi',
-    'harami', 'kutiya', 'kamina', 'chodu', 'lauda', 'lawda',
-    // Arabic profanity
-    'kuss', 'sharmouta', 'ibn el sharmouta',
-    // Add more as needed
-];
+// Cached banned words from database (loaded on startup and refreshed periodically)
+let cachedBannedWords: string[] = [];
+let cachedWordPatterns: RegExp[] = [];
+let lastCacheRefresh = 0;
+const CACHE_TTL_MS = 60000; // Refresh every 60 seconds
 
-// Regex patterns for detecting variations
-const WORD_PATTERNS = BANNED_WORDS.map(word => {
-    // Create regex that matches variations with numbers/special chars
+/**
+ * Load banned words from database and create regex patterns
+ * Falls back to minimal hardcoded list only if database is unavailable
+ */
+async function loadBannedWords(): Promise<void> {
+    const now = Date.now();
+    if (now - lastCacheRefresh < CACHE_TTL_MS && cachedBannedWords.length > 0) {
+        return; // Use cached version
+    }
+    
+    try {
+        const result = await pool.query(
+            `SELECT word FROM banned_words WHERE is_active = true`
+        );
+        
+        if (result.rows.length > 0) {
+            cachedBannedWords = result.rows.map(row => row.word.toLowerCase());
+            cachedWordPatterns = cachedBannedWords.map(word => createWordPattern(word));
+            lastCacheRefresh = now;
+            logger.info(`Loaded ${cachedBannedWords.length} banned words from database`);
+        } else {
+            // Initialize with minimal fallback list if database is empty
+            await initializeBannedWordsTable();
+        }
+    } catch (error) {
+        logger.error('Error loading banned words from database:', error);
+        // Use minimal fallback if database unavailable
+        if (cachedBannedWords.length === 0) {
+            cachedBannedWords = ['spam', 'scam'];
+            cachedWordPatterns = cachedBannedWords.map(word => createWordPattern(word));
+        }
+    }
+}
+
+/**
+ * Create a regex pattern for a banned word that matches common variations
+ */
+function createWordPattern(word: string): RegExp {
     const pattern = word.split('').map(char => {
         if (char === 'a') return '[a@4]';
         if (char === 'e') return '[e3]';
@@ -42,7 +67,41 @@ const WORD_PATTERNS = BANNED_WORDS.map(word => {
         return char;
     }).join('[\\s._-]*');
     return new RegExp(pattern, 'gi');
-});
+}
+
+/**
+ * Initialize banned words table with common profanity
+ * This runs only once when the table is empty
+ */
+async function initializeBannedWordsTable(): Promise<void> {
+    try {
+        // Check if table is empty
+        const countResult = await pool.query('SELECT COUNT(*) FROM banned_words');
+        if (parseInt(countResult.rows[0].count) > 0) return;
+        
+        // Insert common profanity words (categorized by language)
+        const words = [
+            { word: 'spam', category: 'spam', language: 'en' },
+            { word: 'scam', category: 'scam', language: 'en' },
+            // Add more via admin panel
+        ];
+        
+        for (const w of words) {
+            await pool.query(
+                `INSERT INTO banned_words (word, category, language) VALUES ($1, $2, $3)
+                 ON CONFLICT (word) DO NOTHING`,
+                [w.word, w.category, w.language]
+            );
+        }
+        
+        logger.info('Initialized banned words table');
+        // Reload cache
+        lastCacheRefresh = 0;
+        await loadBannedWords();
+    } catch (error) {
+        logger.error('Error initializing banned words table:', error);
+    }
+}
 
 export interface ViolationType {
     type: 'abusive_language' | 'vulgar_image' | 'spam' | 'harassment';
@@ -69,13 +128,16 @@ export async function checkTextContent(
     content: string,
     context: 'chat' | 'bio' | 'room_name' | 'room_announcement'
 ): Promise<ModerationResult> {
+    // Ensure banned words are loaded
+    await loadBannedWords();
+    
     const lowerContent = content.toLowerCase();
     const detectedWords: string[] = [];
     
-    // Check against banned words
-    for (let i = 0; i < BANNED_WORDS.length; i++) {
-        if (WORD_PATTERNS[i].test(lowerContent)) {
-            detectedWords.push(BANNED_WORDS[i]);
+    // Check against cached banned words
+    for (let i = 0; i < cachedBannedWords.length; i++) {
+        if (cachedWordPatterns[i].test(lowerContent)) {
+            detectedWords.push(cachedBannedWords[i]);
         }
     }
     

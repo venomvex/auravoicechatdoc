@@ -285,18 +285,11 @@ class RoomViewModel @Inject constructor(
                     }
                 },
                 onFailure = { e ->
-                    // Moderation check failed, try to send anyway
-                    try {
-                        val response = apiService.sendRoomMessage(roomId, SendRoomMessageRequest(content))
-                        if (response.isSuccessful && response.body() != null) {
-                            val newMessage = response.body()!!
-                            _uiState.value = _uiState.value.copy(
-                                messages = _uiState.value.messages + newMessage
-                            )
-                        }
-                    } catch (ex: Exception) {
-                        _uiState.value = _uiState.value.copy(error = ex.message)
-                    }
+                    // Moderation check failed - log for audit and block message for safety
+                    Log.w(TAG, "MODERATION_BYPASS: Content moderation check failed, blocking message for safety. Error: ${e.message}")
+                    _uiState.value = _uiState.value.copy(
+                        error = "Unable to verify message. Please try again."
+                    )
                 }
             )
         }
@@ -338,7 +331,9 @@ class RoomViewModel @Inject constructor(
                     }
                 },
                 onFailure = { e ->
-                    _uiState.value = _uiState.value.copy(error = "Failed to verify image")
+                    // Image moderation check failed - log for audit and block for safety
+                    Log.w(TAG, "MODERATION_BYPASS: Image moderation check failed, blocking for safety. Error: ${e.message}")
+                    _uiState.value = _uiState.value.copy(error = "Unable to verify image. Please try again.")
                 }
             )
         }
