@@ -297,4 +297,59 @@ interface ApiService {
         @Query("page") page: Int = 1,
         @Query("limit") limit: Int = 20
     ): Response<SystemMessagesResponse>
+    
+    // ============================================
+    // Earnings System
+    // ============================================
+    
+    // Get earning targets (receiver-based targets)
+    @GET("api/v1/earnings/targets")
+    suspend fun getEarningTargets(): Response<EarningTargetsResponse>
+    
+    // Get active targets
+    @GET("api/v1/earnings/targets/active")
+    suspend fun getActiveTargets(): Response<EarningTargetsResponse>
+    
+    // Get target progress
+    @GET("api/v1/earnings/targets/{targetId}/progress")
+    suspend fun getTargetProgress(
+        @Path("targetId") targetId: String
+    ): Response<TargetProgressResponse>
+    
+    // Activate a target
+    @POST("api/v1/earnings/targets/{targetId}/activate")
+    suspend fun activateTarget(
+        @Path("targetId") targetId: String
+    ): Response<Unit>
+    
+    // Get earning wallet
+    @GET("api/v1/earnings/wallet")
+    suspend fun getEarningWallet(): Response<EarningWalletResponse>
+    
+    // Get earning history
+    @GET("api/v1/earnings/history")
+    suspend fun getEarningHistory(
+        @Query("page") page: Int = 1,
+        @Query("limit") limit: Int = 20
+    ): Response<EarningHistoryResponse>
+    
+    // Get pending earnings
+    @GET("api/v1/earnings/pending")
+    suspend fun getPendingEarnings(): Response<PendingEarningsResponse>
+    
+    // Request withdrawal
+    @POST("api/v1/earnings/withdraw")
+    suspend fun requestEarningWithdrawal(@Body request: WithdrawEarningsRequest): Response<WithdrawEarningsResponse>
+    
+    // Get withdrawal methods
+    @GET("api/v1/earnings/withdraw/methods")
+    suspend fun getEarningWithdrawalMethods(): Response<WithdrawalMethodsResponse>
+    
+    // Get payment methods
+    @GET("api/v1/earnings/payment-methods")
+    suspend fun getPaymentMethods(): Response<PaymentMethodsResponse>
+    
+    // Add payment method
+    @POST("api/v1/earnings/payment-methods")
+    suspend fun addPaymentMethod(@Body request: AddPaymentMethodRequest): Response<PaymentMethodResponse>
 }

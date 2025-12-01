@@ -203,6 +203,8 @@ data class HomeUiState(
     val isNewUser: Boolean = true,
     val myRooms: List<RoomCard> = emptyList(),
     val popularRooms: List<RoomCard> = emptyList(),
+    val recentRooms: List<RoomCard> = emptyList(),
+    val followingRooms: List<RoomCard> = emptyList(),
     val banners: List<String> = emptyList(),
     val error: String? = null
 )

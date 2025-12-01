@@ -804,3 +804,124 @@ data class SystemMessageDto(
     @SerializedName("createdAt") val createdAt: String,
     @SerializedName("priority") val priority: String?
 )
+
+// ============================================
+// Earnings System Models
+// ============================================
+
+data class EarningTargetsResponse(
+    @SerializedName("targets") val targets: List<EarningTargetDto>,
+    @SerializedName("activeTarget") val activeTarget: EarningTargetDto?
+)
+
+data class EarningTargetDto(
+    @SerializedName("id") val id: String,
+    @SerializedName("name") val name: String,
+    @SerializedName("description") val description: String,
+    @SerializedName("type") val type: String, // "receiver" - user receiving diamonds
+    @SerializedName("targetAmount") val targetAmount: Long, // Diamonds to receive
+    @SerializedName("rewardAmount") val rewardAmount: Long, // Coins/cash reward
+    @SerializedName("rewardType") val rewardType: String, // "cash" or "coins"
+    @SerializedName("duration") val duration: String, // "weekly", "monthly"
+    @SerializedName("isActive") val isActive: Boolean,
+    @SerializedName("progress") val progress: Long?,
+    @SerializedName("startDate") val startDate: String?,
+    @SerializedName("endDate") val endDate: String?
+)
+
+data class TargetProgressResponse(
+    @SerializedName("targetId") val targetId: String,
+    @SerializedName("progress") val progress: Long,
+    @SerializedName("target") val target: Long,
+    @SerializedName("percentComplete") val percentComplete: Float,
+    @SerializedName("daysRemaining") val daysRemaining: Int,
+    @SerializedName("estimatedReward") val estimatedReward: Long
+)
+
+data class EarningWalletResponse(
+    @SerializedName("availableBalance") val availableBalance: Long,
+    @SerializedName("pendingBalance") val pendingBalance: Long,
+    @SerializedName("totalEarned") val totalEarned: Long,
+    @SerializedName("totalWithdrawn") val totalWithdrawn: Long,
+    @SerializedName("currency") val currency: String
+)
+
+data class EarningHistoryResponse(
+    @SerializedName("earnings") val earnings: List<EarningRecordDto>,
+    @SerializedName("pagination") val pagination: PaginationDto
+)
+
+data class EarningRecordDto(
+    @SerializedName("id") val id: String,
+    @SerializedName("type") val type: String,
+    @SerializedName("amount") val amount: Long,
+    @SerializedName("description") val description: String,
+    @SerializedName("fromUserId") val fromUserId: String?,
+    @SerializedName("fromUserName") val fromUserName: String?,
+    @SerializedName("createdAt") val createdAt: String,
+    @SerializedName("status") val status: String
+)
+
+data class PendingEarningsResponse(
+    @SerializedName("pendingEarnings") val pendingEarnings: List<PendingEarningDto>,
+    @SerializedName("totalPending") val totalPending: Long
+)
+
+data class PendingEarningDto(
+    @SerializedName("id") val id: String,
+    @SerializedName("amount") val amount: Long,
+    @SerializedName("source") val source: String,
+    @SerializedName("expectedDate") val expectedDate: String
+)
+
+data class WithdrawEarningsRequest(
+    @SerializedName("amount") val amount: Long,
+    @SerializedName("methodId") val methodId: String
+)
+
+data class WithdrawEarningsResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("withdrawalId") val withdrawalId: String,
+    @SerializedName("amount") val amount: Long,
+    @SerializedName("estimatedArrival") val estimatedArrival: String
+)
+
+data class WithdrawalMethodsResponse(
+    @SerializedName("methods") val methods: List<WithdrawalMethodDto>
+)
+
+data class WithdrawalMethodDto(
+    @SerializedName("id") val id: String,
+    @SerializedName("name") val name: String,
+    @SerializedName("type") val type: String,
+    @SerializedName("minAmount") val minAmount: Long,
+    @SerializedName("maxAmount") val maxAmount: Long,
+    @SerializedName("fee") val fee: Float,
+    @SerializedName("isAvailable") val isAvailable: Boolean
+)
+
+data class PaymentMethodsResponse(
+    @SerializedName("methods") val methods: List<PaymentMethodDto>
+)
+
+data class PaymentMethodDto(
+    @SerializedName("id") val id: String,
+    @SerializedName("type") val type: String,
+    @SerializedName("name") val name: String,
+    @SerializedName("accountNumber") val accountNumber: String,
+    @SerializedName("isDefault") val isDefault: Boolean,
+    @SerializedName("isVerified") val isVerified: Boolean
+)
+
+data class AddPaymentMethodRequest(
+    @SerializedName("type") val type: String,
+    @SerializedName("name") val name: String,
+    @SerializedName("accountNumber") val accountNumber: String,
+    @SerializedName("bankName") val bankName: String?,
+    @SerializedName("isDefault") val isDefault: Boolean
+)
+
+data class PaymentMethodResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("method") val method: PaymentMethodDto?
+)

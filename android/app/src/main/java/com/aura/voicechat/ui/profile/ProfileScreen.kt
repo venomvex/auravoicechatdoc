@@ -240,6 +240,32 @@ fun ProfileScreen(
                     modifier = Modifier.padding(horizontal = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
+                    // Earnings Section (prominent at top)
+                    EarningsCard(
+                        earnings = uiState.earnings,
+                        activeTarget = uiState.activeTarget,
+                        onNavigateToEarnings = { /* Navigate to earnings */ }
+                    )
+                    
+                    Spacer(modifier = Modifier.height(8.dp))
+                    
+                    // Guide System (for female users)
+                    if (uiState.user?.gender == "female" && !uiState.isGuideApplied) {
+                        GuideApplicationCard(
+                            onApply = { /* Apply for guide */ }
+                        )
+                    }
+                    
+                    // If user is a guide, show guide stats
+                    if (uiState.isGuide) {
+                        ProfileMenuItem(
+                            icon = Icons.Default.Stars,
+                            title = "Guide Dashboard",
+                            subtitle = "View your guide stats and earnings",
+                            onClick = { }
+                        )
+                    }
+                    
                     ProfileMenuItem(
                         icon = Icons.Default.CardGiftcard,
                         title = "Daily Rewards",
@@ -285,6 +311,221 @@ fun ProfileScreen(
             
             Spacer(modifier = Modifier.height(32.dp))
         }
+    }
+}
+
+@Composable
+private fun EarningsCard(
+    earnings: EarningsData?,
+    activeTarget: TargetData?,
+    onNavigateToEarnings: () -> Unit
+) {
+    Card(
+        onClick = onNavigateToEarnings,
+        colors = CardDefaults.cardColors(
+            containerColor = AccentMagenta.copy(alpha = 0.15f)
+        ),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.TrendingUp,
+                        contentDescription = null,
+                        tint = AccentMagenta,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Earnings",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = TextPrimary
+                    )
+                }
+                Icon(
+                    Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = TextTertiary
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            // Earnings summary
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                EarningStatItem(
+                    value = formatCurrency(earnings?.availableBalance ?: 0),
+                    label = "Available",
+                    color = SuccessGreen
+                )
+                EarningStatItem(
+                    value = formatCurrency(earnings?.pendingBalance ?: 0),
+                    label = "Pending",
+                    color = VipGold
+                )
+                EarningStatItem(
+                    value = formatCurrency(earnings?.totalEarned ?: 0),
+                    label = "Total Earned",
+                    color = AccentMagenta
+                )
+            }
+            
+            // Active target progress
+            if (activeTarget != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                Text(
+                    text = "Weekly Target: ${activeTarget.name}",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = TextSecondary
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                LinearProgressIndicator(
+                    progress = { (activeTarget.progress.toFloat() / activeTarget.target).coerceIn(0f, 1f) },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(8.dp)
+                        .clip(RoundedCornerShape(4.dp)),
+                    color = AccentMagenta,
+                    trackColor = DarkSurface
+                )
+                
+                Spacer(modifier = Modifier.height(4.dp))
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "${formatNumber(activeTarget.progress)}/${formatNumber(activeTarget.target)} diamonds received",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = TextTertiary
+                    )
+                    Text(
+                        text = "${activeTarget.daysRemaining} days left",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = AccentCyan
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun EarningStatItem(
+    value: String,
+    label: String,
+    color: Color
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            text = value,
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = color
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = TextSecondary
+        )
+    }
+}
+
+@Composable
+private fun GuideApplicationCard(
+    onApply: () -> Unit
+) {
+    Card(
+        onClick = onApply,
+        colors = CardDefaults.cardColors(
+            containerColor = VipGold.copy(alpha = 0.15f)
+        ),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(48.dp)
+                    .background(VipGold.copy(alpha = 0.2f), CircleShape),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.Stars,
+                    contentDescription = null,
+                    tint = VipGold,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+            
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "Become a Guide",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
+                )
+                Text(
+                    text = "Earn extra income by being a voice guide",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextSecondary
+                )
+            }
+            
+            Button(
+                onClick = onApply,
+                colors = ButtonDefaults.buttonColors(containerColor = VipGold),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                Text("Apply", color = DarkCanvas)
+            }
+        }
+    }
+}
+
+// Data classes for earnings
+data class EarningsData(
+    val availableBalance: Long = 0,
+    val pendingBalance: Long = 0,
+    val totalEarned: Long = 0
+)
+
+data class TargetData(
+    val id: String = "",
+    val name: String = "",
+    val progress: Long = 0,
+    val target: Long = 0,
+    val daysRemaining: Int = 0
+)
+
+private fun formatCurrency(amount: Long): String {
+    return when {
+        amount >= 1_000_000 -> String.format("$%.1fM", amount / 1_000_000.0)
+        amount >= 1_000 -> String.format("$%.1fK", amount / 1_000.0)
+        else -> "$$amount"
     }
 }
 

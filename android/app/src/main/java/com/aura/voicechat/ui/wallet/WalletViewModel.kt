@@ -1,7 +1,10 @@
 package com.aura.voicechat.ui.wallet
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aura.voicechat.data.model.ExchangeRequest
+import com.aura.voicechat.data.remote.ApiService
 import com.aura.voicechat.domain.model.Currency
 import com.aura.voicechat.domain.model.Transaction
 import com.aura.voicechat.domain.model.TransactionType
@@ -16,11 +19,18 @@ import javax.inject.Inject
 /**
  * Wallet ViewModel
  * Developer: Hawkaye Visions LTD — Pakistan
+ * 
+ * Fetches wallet balances and transactions from the backend API.
  */
 @HiltViewModel
 class WalletViewModel @Inject constructor(
-    private val walletRepository: WalletRepository
+    private val walletRepository: WalletRepository,
+    private val apiService: ApiService
 ) : ViewModel() {
+    
+    companion object {
+        private const val TAG = "WalletViewModel"
+    }
     
     private val _uiState = MutableStateFlow(WalletUiState())
     val uiState: StateFlow<WalletUiState> = _uiState.asStateFlow()
@@ -32,14 +42,30 @@ class WalletViewModel @Inject constructor(
     
     private fun loadWallet() {
         viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
             try {
-                // Mock wallet data
-                _uiState.value = _uiState.value.copy(
-                    coins = 1_500_000,
-                    diamonds = 250_000
-                )
+                val response = apiService.getWalletBalances()
+                if (response.isSuccessful) {
+                    val data = response.body()
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        coins = data?.coins ?: 0,
+                        diamonds = data?.diamonds ?: 0
+                    )
+                    Log.d(TAG, "Loaded wallet: coins=${data?.coins}, diamonds=${data?.diamonds}")
+                } else {
+                    Log.e(TAG, "Failed to load wallet: ${response.code()}")
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = "Failed to load wallet balances"
+                    )
+                }
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = e.message)
+                Log.e(TAG, "Error loading wallet", e)
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = e.message
+                )
             }
         }
     }
@@ -47,87 +73,57 @@ class WalletViewModel @Inject constructor(
     private fun loadTransactions() {
         viewModelScope.launch {
             try {
-                // Mock transactions
-                val transactions = listOf(
-                    Transaction(
-                        id = "tx_1",
-                        type = TransactionType.DAILY_REWARD,
-                        amount = 30_000,
-                        currency = Currency.COINS,
-                        description = "Daily Login Reward (Day 6)",
-                        timestamp = System.currentTimeMillis() - 3600_000,
-                        relatedUserId = null,
-                        relatedUserName = null
-                    ),
-                    Transaction(
-                        id = "tx_2",
-                        type = TransactionType.GIFT_SENT,
-                        amount = 50_000,
-                        currency = Currency.COINS,
-                        description = "Sent Rose to Sarah",
-                        timestamp = System.currentTimeMillis() - 7200_000,
-                        relatedUserId = "user_sarah",
-                        relatedUserName = "Sarah"
-                    ),
-                    Transaction(
-                        id = "tx_3",
-                        type = TransactionType.GIFT_RECEIVED,
-                        amount = 100_000,
-                        currency = Currency.DIAMONDS,
-                        description = "Received Crown from Mike",
-                        timestamp = System.currentTimeMillis() - 86400_000,
-                        relatedUserId = "user_mike",
-                        relatedUserName = "Mike"
-                    ),
-                    Transaction(
-                        id = "tx_4",
-                        type = TransactionType.EXCHANGE,
-                        amount = 30_000,
-                        currency = Currency.COINS,
-                        description = "Exchanged 100K Diamonds",
-                        timestamp = System.currentTimeMillis() - 172800_000,
-                        relatedUserId = null,
-                        relatedUserName = null
-                    )
-                )
-                
-                _uiState.value = _uiState.value.copy(transactions = transactions)
+                // TODO: Add transactions endpoint to ApiService when backend implements it
+                // For now, transactions will be empty until backend provides the data
+                _uiState.value = _uiState.value.copy(transactions = emptyList())
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = e.message)
+                Log.e(TAG, "Error loading transactions", e)
             }
         }
     }
     
     fun exchangeDiamondsToCoins(diamonds: Long) {
         viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
             try {
-                val coinsReceived = (diamonds * 0.30).toLong()
-                
-                _uiState.value = _uiState.value.copy(
-                    diamonds = _uiState.value.diamonds - diamonds,
-                    coins = _uiState.value.coins + coinsReceived,
-                    message = "Successfully exchanged $diamonds diamonds for $coinsReceived coins!"
+                val response = apiService.exchangeDiamondsToCoins(
+                    ExchangeRequest(diamonds = diamonds)
                 )
                 
-                // Add transaction to history
-                val newTransaction = Transaction(
-                    id = "tx_${System.currentTimeMillis()}",
-                    type = TransactionType.EXCHANGE,
-                    amount = coinsReceived,
-                    currency = Currency.COINS,
-                    description = "Exchanged ${diamonds / 1000}K Diamonds",
-                    timestamp = System.currentTimeMillis(),
-                    relatedUserId = null,
-                    relatedUserName = null
-                )
-                
-                _uiState.value = _uiState.value.copy(
-                    transactions = listOf(newTransaction) + _uiState.value.transactions
-                )
+                if (response.isSuccessful) {
+                    val data = response.body()
+                    val coinsReceived = data?.coinsReceived ?: (diamonds * 0.30).toLong()
+                    
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        diamonds = data?.newBalance?.diamonds ?: (_uiState.value.diamonds - diamonds),
+                        coins = data?.newBalance?.coins ?: (_uiState.value.coins + coinsReceived),
+                        message = "Successfully exchanged $diamonds diamonds for $coinsReceived coins!"
+                    )
+                    
+                    // Reload wallet to get fresh data
+                    loadWallet()
+                    Log.d(TAG, "Exchange successful: $diamonds diamonds -> $coinsReceived coins")
+                } else {
+                    Log.e(TAG, "Exchange failed: ${response.code()}")
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = "Exchange failed. Please try again."
+                    )
+                }
             } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(error = e.message)
+                Log.e(TAG, "Error exchanging", e)
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = e.message
+                )
             }
         }
+    }
+    
+    fun refresh() {
+        loadWallet()
+        loadTransactions()
     }
     
     fun clearMessage() {
