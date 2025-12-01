@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 /**
- * Gift Panel ViewModel - Manages gift catalog and sending
+ * Gift Panel ViewModel - Manages gift catalog and sending (Live API Connected)
  * Developer: Hawkaye Visions LTD — Pakistan
  * 
  * Gift data is synced from backend database via API.
@@ -68,8 +68,11 @@ class GiftPanelViewModel @Inject constructor(
                     Log.d(TAG, "Loaded ${allGifts.size} gifts from API")
                 } else {
                     Log.e(TAG, "Failed to load gifts: ${response.code()}")
-                    // Fall back to mock data
-                    allGifts = getGiftCatalog()
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = "Failed to load gifts"
+                    )
+                    return@launch
                 }
                 
                 // Also fetch wallet balance
@@ -93,11 +96,9 @@ class GiftPanelViewModel @Inject constructor(
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Error loading gifts", e)
-                allGifts = getGiftCatalog()
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
-                    gifts = allGifts,
-                    coins = 0
+                    error = e.message
                 )
             }
         }
@@ -145,7 +146,6 @@ class GiftPanelViewModel @Inject constructor(
                     }
                 } catch (e: Exception) {
                     Log.e(TAG, "Error sending gift", e)
-                    // Show error instead of optimistic update to prevent inconsistent state
                     _uiState.value = _uiState.value.copy(
                         error = "Network error. Please check your connection."
                     )
@@ -162,75 +162,9 @@ class GiftPanelViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(error = null)
     }
     
-    /**
-     * Gift catalog fallback - Used when API fails
-     * This data comes from database via API in production.
-     */
-    private fun getGiftCatalog(): List<Gift> = listOf(
-        // Love Category
-        Gift("gift_001", "Rose", "love", 50, 50, "common", isAnimated = true),
-        Gift("gift_002", "Heart", "love", 100, 100, "common", isAnimated = true),
-        Gift("gift_003", "Kiss", "love", 200, 200, "common", isAnimated = true),
-        Gift("gift_004", "Hug", "love", 300, 300, "common", isAnimated = true),
-        Gift("gift_005", "Love Letter", "love", 500, 500, "common", isAnimated = true),
-        Gift("gift_006", "Teddy Bear", "love", 1000, 1000, "common", isAnimated = true),
-        Gift("gift_007", "Rose Bouquet", "love", 2000, 2000, "rare", isAnimated = true),
-        Gift("gift_008", "Cupid's Arrow", "love", 5000, 5000, "rare", isAnimated = true),
-        Gift("gift_009", "Romantic Dinner", "love", 10000, 10000, "rare", isAnimated = true),
-        Gift("gift_107", "Engagement Ring", "love", 50000, 50000, "epic", isAnimated = true, isFullScreen = true),
-        Gift("gift_108", "Wedding", "love", 100000, 100000, "epic", isAnimated = true, isFullScreen = true),
-        
-        // Celebration Category
-        Gift("gift_010", "Balloon", "celebration", 50, 50, "common", isAnimated = true),
-        Gift("gift_011", "Confetti", "celebration", 100, 100, "common", isAnimated = true),
-        Gift("gift_012", "Party Hat", "celebration", 200, 200, "common", isAnimated = true),
-        Gift("gift_013", "Cake", "celebration", 500, 500, "common", isAnimated = true),
-        Gift("gift_014", "Champagne", "celebration", 1000, 1000, "common", isAnimated = true),
-        Gift("gift_015", "Gift Box", "celebration", 2000, 2000, "rare", isAnimated = true),
-        Gift("gift_016", "Trophy", "celebration", 5000, 5000, "rare", isAnimated = true),
-        Gift("gift_017", "Firework", "celebration", 10000, 10000, "rare", isAnimated = true),
-        
-        // Luxury Category
-        Gift("gift_018", "Diamond Ring", "luxury", 5000, 5000, "rare", isAnimated = true),
-        Gift("gift_019", "Gold Bar", "luxury", 10000, 10000, "rare", isAnimated = true),
-        Gift("gift_020", "Crown", "luxury", 20000, 20000, "epic", isAnimated = true),
-        Gift("gift_021", "Sports Car", "luxury", 50000, 50000, "epic", isAnimated = true),
-        Gift("gift_022", "Yacht", "luxury", 100000, 100000, "epic", isAnimated = true, isFullScreen = true),
-        Gift("gift_023", "Private Jet", "luxury", 200000, 200000, "epic", isAnimated = true, isFullScreen = true),
-        Gift("gift_024", "Mansion", "luxury", 500000, 500000, "legendary", isAnimated = true, isFullScreen = true),
-        Gift("gift_025", "Island", "luxury", 1000000, 1000000, "legendary", isAnimated = true, isFullScreen = true),
-        
-        // Nature Category
-        Gift("gift_026", "Flower", "nature", 50, 50, "common", isAnimated = true),
-        Gift("gift_027", "Butterfly", "nature", 100, 100, "common", isAnimated = true),
-        Gift("gift_028", "Rainbow", "nature", 500, 500, "common", isAnimated = true),
-        Gift("gift_030", "Cherry Blossom", "nature", 1000, 1000, "rare", isAnimated = true),
-        Gift("gift_032", "Northern Lights", "nature", 10000, 10000, "epic", isAnimated = true, isFullScreen = true),
-        
-        // Fantasy Category
-        Gift("gift_033", "Unicorn", "fantasy", 5000, 5000, "rare", isAnimated = true),
-        Gift("gift_034", "Dragon", "fantasy", 20000, 20000, "epic", isAnimated = true, isFullScreen = true),
-        Gift("gift_035", "Phoenix", "fantasy", 50000, 50000, "epic", isAnimated = true, isFullScreen = true),
-        Gift("gift_036", "Magic Wand", "fantasy", 2000, 2000, "rare", isAnimated = true),
-        Gift("gift_038", "Castle", "fantasy", 100000, 100000, "epic", isAnimated = true, isFullScreen = true),
-        
-        // Special Category
-        Gift("gift_039", "Star", "special", 100, 100, "common", isAnimated = true),
-        Gift("gift_042", "Galaxy", "special", 50000, 50000, "epic", isAnimated = true, isFullScreen = true),
-        Gift("gift_043", "Coffee", "special", 50, 50, "common", isAnimated = true),
-        Gift("gift_047", "Thumbs Up", "special", 10, 10, "common", isAnimated = true),
-        Gift("gift_048", "Applause", "special", 50, 50, "common", isAnimated = true),
-        Gift("gift_070", "Rocket", "special", 5000, 5000, "rare", isAnimated = true),
-        
-        // Custom (Aura Exclusive) Category
-        Gift("gift_051", "Aura Rose Garden", "custom", 100000, 100000, "epic", isAnimated = true, isFullScreen = true, isCustom = true),
-        Gift("gift_053", "Aura Golden Rain", "custom", 500000, 500000, "legendary", isAnimated = true, isFullScreen = true, isCustom = true),
-        Gift("gift_055", "Aura Northern Lights", "custom", 1000000, 1000000, "legendary", isAnimated = true, isFullScreen = true, isCustom = true),
-        
-        // Legendary Category
-        Gift("gift_059", "Universe Creator", "legendary", 50000000, 50000000, "legendary", isAnimated = true, isFullScreen = true, isLegendary = true),
-        Gift("gift_061", "Love Story", "legendary", 100000000, 100000000, "legendary", isAnimated = true, isFullScreen = true, isLegendary = true)
-    )
+    fun refresh() {
+        loadGifts()
+    }
 }
 
 data class GiftPanelUiState(

@@ -78,11 +78,17 @@ class MessagesViewModel @Inject constructor(
                 Log.d(TAG, "Loaded ${conversations.size} conversations")
             } else {
                 Log.e(TAG, "Failed to load conversations: ${response.code()}")
-                // Keep existing placeholder data or show empty state
+                _uiState.value = _uiState.value.copy(
+                    conversations = emptyList(),
+                    error = "Failed to load conversations"
+                )
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error loading conversations", e)
-            // Keep existing placeholder data or show empty state
+            _uiState.value = _uiState.value.copy(
+                conversations = emptyList(),
+                error = e.message
+            )
         }
     }
     
