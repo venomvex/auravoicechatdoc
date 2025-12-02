@@ -13,7 +13,7 @@ This is the **Master Implementation Guide** that consolidates all documentation,
 3. [Administrative Hierarchy & Panels](#administrative-hierarchy--panels)
 4. [Core Systems & Functions](#core-systems--functions)
 5. [Economy & Monetization](#economy--monetization)
-6. [Firebase Integration](#firebase-integration)
+6. [AWS Integration](#aws-integration)
 7. [Payment Gateway Setup](#payment-gateway-setup)
 8. [Google Play Store Submission](#google-play-store-submission)
 9. [Regional Configuration](#regional-configuration)
@@ -316,7 +316,7 @@ GET /level/rewards/{level}
 POST /level/rewards/{level}/claim
 ```
 
-**Firebase Path:** `/users/{userId}/level`
+**AWS DynamoDB/RDS Path:** `/users/{userId}/level`
 
 ---
 

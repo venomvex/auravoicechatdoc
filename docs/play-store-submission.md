@@ -462,7 +462,7 @@ android {
 - [ ] Plan regular updates
 - [ ] A/B test store listing
 - [ ] Implement deep links
-- [ ] Set up Firebase Analytics
+- [ ] Set up AWS Pinpoint Analytics
 
 ---
 

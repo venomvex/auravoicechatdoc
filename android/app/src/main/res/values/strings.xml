@@ -4,9 +4,9 @@
     <string name="app_name">Aura Voice Chat</string>
     
     <!-- Facebook SDK -->
-    <string name="facebook_app_id">YOUR_FACEBOOK_APP_ID</string>
-    <string name="facebook_client_token">YOUR_FACEBOOK_CLIENT_TOKEN</string>
-    <string name="fb_login_protocol_scheme">fbYOUR_FACEBOOK_APP_ID</string>
+    <string name="facebook_app_id">827047836745157</string>
+    <string name="facebook_client_token">3e9a45282302900555d5a36bf4374c44</string>
+    <string name="fb_login_protocol_scheme">fb827047836745157</string>
     
     <!-- Authentication -->
     <string name="login_title">Welcome to Aura</string>

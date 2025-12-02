@@ -444,7 +444,7 @@ Error: App doesn't support 64-bit
 Solution: Ensure ndk.abiFilters includes 'arm64-v8a'
 ```
 
-**4. Firebase configuration missing**
+**4. AWS configuration missing**
 ```
 Error: awsconfiguration.json not found
 Solution: Download from AWS Console and place in app/

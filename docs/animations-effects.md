@@ -250,7 +250,7 @@ Each theme includes: Frame, Vehicle, Seat Effect, Mic Skin, Chat Bubble
 
 ---
 
-## Firebase Storage
+## AWS S3 Storage
 
 ### Asset Structure
 
@@ -274,7 +274,7 @@ Each theme includes: Frame, Vehicle, Seat Effect, Mic Skin, Chat Bubble
       - bubble.json
 ```
 
-### CDN Configuration
+### CloudFront CDN Configuration
 
 - Global CDN for asset delivery
 - Edge caching for popular animations

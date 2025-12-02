@@ -69,7 +69,7 @@ android {
 
     buildTypes {
         debug {
-            applicationIdSuffix = ".debug"
+           // applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
             isDebuggable = true
             isMinifyEnabled = false
@@ -96,7 +96,7 @@ android {
     productFlavors {
         create("dev") {
             dimension = "environment"
-            applicationIdSuffix = ".dev"
+            //applicationIdSuffix = ".dev"
             versionNameSuffix = "-dev"
             buildConfigField("String", "ENVIRONMENT", "\"development\"")
             // TODO: For production, update to domain with HTTPS (e.g., https://api-dev.auravoice.chat)
@@ -104,7 +104,7 @@ android {
         }
         create("staging") {
             dimension = "environment"
-            applicationIdSuffix = ".staging"
+            //applicationIdSuffix = ".staging"
             versionNameSuffix = "-staging"
             buildConfigField("String", "ENVIRONMENT", "\"staging\"")
             // TODO: For production, update to domain with HTTPS (e.g., https://api-staging.auravoice.chat)

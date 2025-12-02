@@ -1,8 +1,11 @@
 package com.aura.voicechat.ui.auth
 
 import android.app.Activity
+import android.content.IntentSender
 import android.util.Log
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -37,8 +40,8 @@ import com.aura.voicechat.R
 import com.aura.voicechat.ui.theme.GradientPurpleEnd
 import com.aura.voicechat.ui.theme.GradientPurpleStart
 import com.aura.voicechat.ui.theme.Purple80
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.common.api.ApiException
 import com.facebook.CallbackManager
 import com.facebook.FacebookCallback
@@ -128,13 +131,13 @@ fun CountryPickerDialog(
         if (searchQuery.isEmpty()) {
             countries
         } else {
-            countries.filter {
-                it.name.contains(searchQuery, ignoreCase = true) ||
-                    it.dialCode.contains(searchQuery)
+            countries.filter { 
+                it.name.contains(searchQuery, ignoreCase = true) || 
+                it.dialCode.contains(searchQuery) 
             }
         }
     }
-
+    
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             modifier = Modifier
@@ -151,9 +154,9 @@ fun CountryPickerDialog(
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold
                 )
-
+                
                 Spacer(modifier = Modifier.height(16.dp))
-
+                
                 // Search field
                 OutlinedTextField(
                     value = searchQuery,
@@ -169,9 +172,9 @@ fun CountryPickerDialog(
                         focusedLabelColor = Purple80
                     )
                 )
-
+                
                 Spacer(modifier = Modifier.height(16.dp))
-
+                
                 LazyColumn {
                     items(filteredCountries) { country ->
                         Row(
@@ -208,10 +211,10 @@ fun CountryPickerDialog(
 /**
  * Login Screen with Google, Facebook, and Phone (OTP) login
  * Developer: Hawkaye Visions LTD — Pakistan
- *
+ * 
  * Performs a backend health check on first load to verify connectivity
  * to the EC2 backend server.
- *
+ * 
  * Social login flow:
  * 1. User taps Google/Facebook button
  * 2. SDK launcher is triggered (rememberLauncherForActivityResult)
@@ -229,34 +232,42 @@ fun LoginScreen(
     var phoneNumber by remember { mutableStateOf("") }
     var selectedCountry by remember { mutableStateOf(countries[0]) } // Default to US
     var showCountryPicker by remember { mutableStateOf(false) }
-
+    
     val context = LocalContext.current
     val snackbarHostState = remember { SnackbarHostState() }
-
-    // Google Sign-In configuration using BuildConfig
-    val googleSignInClient = remember {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(BuildConfig.GOOGLE_WEB_CLIENT_ID)
-            .requestEmail()
+    
+    // Google Identity Services (GIS) One Tap client
+    val oneTapClient = remember { Identity.getSignInClient(context) }
+    val signInRequest = remember {
+        BeginSignInRequest.builder()
+            .setGoogleIdTokenRequestOptions(
+                BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
+                    .setSupported(true)
+                    .setServerClientId(BuildConfig.GOOGLE_WEB_CLIENT_ID)
+                    .setFilterByAuthorizedAccounts(false)
+                    .build()
+            )
+            .setAutoSelectEnabled(true)
             .build()
-        GoogleSignIn.getClient(context, gso)
     }
-
-    // Google Sign-In launcher
+    
+    // Google Sign-In launcher using GIS with StartIntentSenderForResult
     val googleSignInLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
+        contract = ActivityResultContracts.StartIntentSenderForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             try {
-                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-                val account = task.getResult(ApiException::class.java)
-                val idToken = account.idToken
+                val credential = oneTapClient.getSignInCredentialFromIntent(result.data)
+                val idToken = credential.googleIdToken
+                val email = credential.id
+                val displayName = credential.displayName
+                
                 if (idToken != null) {
                     Log.d(TAG, "Google Sign-In successful, sending token to backend")
                     viewModel.onGoogleTokenReceived(
                         idToken = idToken,
-                        email = account.email,
-                        displayName = account.displayName
+                        email = email,
+                        displayName = displayName
                     )
                 } else {
                     Log.e(TAG, "Google Sign-In: ID token is null")
@@ -268,10 +279,10 @@ fun LoginScreen(
             Log.w(TAG, "Google Sign-In cancelled or failed: ${result.resultCode}")
         }
     }
-
+    
     // Facebook Callback Manager
     val facebookCallbackManager = remember { CallbackManager.Factory.create() }
-
+    
     // Register Facebook callback
     DisposableEffect(Unit) {
         LoginManager.getInstance().registerCallback(
@@ -287,27 +298,27 @@ fun LoginScreen(
                         displayName = null
                     )
                 }
-
+                
                 override fun onCancel() {
                     Log.w(TAG, "Facebook Sign-In cancelled")
                 }
-
+                
                 override fun onError(error: FacebookException) {
                     Log.e(TAG, "Facebook Sign-In failed", error)
                 }
             }
         )
-
+        
         onDispose {
             LoginManager.getInstance().unregisterCallback(facebookCallbackManager)
         }
     }
-
+    
     // Ping backend on first load to verify connectivity
     LaunchedEffect(Unit) {
         viewModel.pingBackend()
     }
-
+    
     // Show error snackbar when error occurs
     LaunchedEffect(uiState.error) {
         uiState.error?.let { error ->
@@ -318,7 +329,7 @@ fun LoginScreen(
             viewModel.clearError()
         }
     }
-
+    
     // Country picker dialog
     if (showCountryPicker) {
         CountryPickerDialog(
@@ -330,7 +341,7 @@ fun LoginScreen(
             onDismiss = { showCountryPicker = false }
         )
     }
-
+    
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
@@ -360,9 +371,9 @@ fun LoginScreen(
                         .clip(RoundedCornerShape(24.dp)),
                     contentScale = ContentScale.Fit
                 )
-
+                
                 Spacer(modifier = Modifier.height(24.dp))
-
+                
                 // App Name
                 Text(
                     text = "Aura Voice Chat",
@@ -370,16 +381,16 @@ fun LoginScreen(
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
                 )
-
+                
                 Text(
                     text = "Connect with people around the world",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                     textAlign = TextAlign.Center
                 )
-
+                
                 Spacer(modifier = Modifier.height(48.dp))
-
+                
                 // Phone Number Input with Country Code Picker
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -406,9 +417,9 @@ fun LoginScreen(
                             contentDescription = "Select country"
                         )
                     }
-
+                    
                     Spacer(modifier = Modifier.width(8.dp))
-
+                    
                     // Phone Number Field
                     OutlinedTextField(
                         value = phoneNumber,
@@ -424,9 +435,9 @@ fun LoginScreen(
                         )
                     )
                 }
-
+                
                 Spacer(modifier = Modifier.height(16.dp))
-
+                
                 // Continue with Phone Button
                 Button(
                     onClick = {
@@ -451,9 +462,9 @@ fun LoginScreen(
                         fontWeight = FontWeight.SemiBold
                     )
                 }
-
+                
                 Spacer(modifier = Modifier.height(24.dp))
-
+                
                 // OR Divider
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -467,16 +478,25 @@ fun LoginScreen(
                     )
                     HorizontalDivider(modifier = Modifier.weight(1f))
                 }
-
+                
                 Spacer(modifier = Modifier.height(24.dp))
-
-                // Google Sign In - Uses Google Sign-In SDK
+                
+                // Google Sign In - Uses Google Identity Services (GIS)
                 Button(
                     onClick = {
-                        Log.d(TAG, "Launching Google Sign-In")
-                        googleSignInClient.signOut().addOnCompleteListener {
-                            googleSignInLauncher.launch(googleSignInClient.signInIntent)
-                        }
+                        Log.d(TAG, "Launching Google Sign-In with GIS One Tap")
+                        oneTapClient.beginSignIn(signInRequest)
+                            .addOnSuccessListener { result ->
+                                try {
+                                    val intentSenderRequest = IntentSenderRequest.Builder(result.pendingIntent.intentSender).build()
+                                    googleSignInLauncher.launch(intentSenderRequest)
+                                } catch (e: IntentSender.SendIntentException) {
+                                    Log.e(TAG, "Couldn't start One Tap UI: ${e.localizedMessage}")
+                                }
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e(TAG, "Google Sign-In failed to begin: ${e.localizedMessage}")
+                            }
                     },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -493,21 +513,22 @@ fun LoginScreen(
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
-
+                
                 Spacer(modifier = Modifier.height(12.dp))
-
-                // Facebook Sign In - Uses Facebook Login SDK (FIXED)
+                
+                // Facebook Sign In - Uses Facebook Login SDK
                 Button(
                     onClick = {
                         Log.d(TAG, "Launching Facebook Sign-In")
-                        (context as? Activity)?.let { activity ->
-                            // Use the Activity-based overload
+                        val activity = context as? ComponentActivity
+                        if (activity != null) {
                             LoginManager.getInstance().logInWithReadPermissions(
                                 activity,
+                                facebookCallbackManager,
                                 listOf("email", "public_profile")
                             )
-                        } ?: run {
-                            Log.e(TAG, "Context is not an Activity, cannot launch Facebook login")
+                        } else {
+                            Log.e(TAG, "Context is not a ComponentActivity, cannot launch Facebook login")
                         }
                     },
                     modifier = Modifier
@@ -525,9 +546,9 @@ fun LoginScreen(
                         style = MaterialTheme.typography.titleMedium
                     )
                 }
-
+                
                 Spacer(modifier = Modifier.height(32.dp))
-
+                
                 // Terms and Privacy
                 Text(
                     text = "By continuing, you agree to our Terms of Service and Privacy Policy",
@@ -536,7 +557,7 @@ fun LoginScreen(
                     textAlign = TextAlign.Center
                 )
             }
-
+            
             // Loading overlay
             if (uiState.isLoading) {
                 Box(
@@ -550,7 +571,7 @@ fun LoginScreen(
             }
         }
     }
-
+    
     // Handle successful login
     LaunchedEffect(uiState.isLoggedIn) {
         if (uiState.isLoggedIn) {
