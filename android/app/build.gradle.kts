@@ -238,6 +238,9 @@ dependencies {
 
     // Serialization
     implementation(libs.gson)
+    implementation(libs.moshi)
+    implementation(libs.moshi.kotlin)
+    implementation(libs.retrofit.converter.moshi)
 
     // Dependency Injection - Hilt
     implementation(libs.hilt.android)
