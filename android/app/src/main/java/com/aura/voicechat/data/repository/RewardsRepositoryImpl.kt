@@ -33,7 +33,7 @@ class RewardsRepositoryImpl @Inject constructor(
                     },
                     streak = dto.streak,
                     nextResetUtc = dto.nextResetUtc,
-                    vipTier = dto.vipTier.replace("VIP", "").toIntOrNull() ?: 0,
+                    vipTier = dto.vipTier,
                     vipMultiplier = dto.vipMultiplier
                 )
                 Result.success(status)
