@@ -12,7 +12,7 @@ import { logger } from '../utils/logger';
  */
 export const getNotifications = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 20;
     const type = req.query.type as string;
@@ -84,7 +84,7 @@ export const getNotifications = async (req: Request, res: Response, next: NextFu
  */
 export const markAsRead = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
     const { notificationId } = req.params;
 
     await query(
@@ -104,7 +104,7 @@ export const markAsRead = async (req: Request, res: Response, next: NextFunction
  */
 export const markAllAsRead = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const userId = req.user?.userId;
+    const userId = req.user?.id;
 
     await query(
       'UPDATE notifications SET is_read = true WHERE user_id = $1 AND is_read = false',

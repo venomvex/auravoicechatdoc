@@ -399,3 +399,6 @@ export const requireSeller = async (
     }
   }
 };
+
+// Alias for backward compatibility
+export const authMiddleware = authenticate;

@@ -390,22 +390,6 @@ export const getEarningWallet = async (req: Request, res: Response, next: NextFu
 // Get earning history (alias)
 export const getEarningHistory = getEarningsHistory;
 
-// Get pending earnings
-export const getPendingEarnings = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  try {
-    const userId = req.user?.id;
-
-    const result = await query(
-      `SELECT * FROM earnings WHERE user_id = $1 AND status = 'pending' ORDER BY created_at DESC`,
-      [userId]
-    );
-
-    res.json({ pending: result.rows });
-  } catch (error) {
-    next(error);
-  }
-};
-
 // Get withdrawal methods
 export const getWithdrawalMethods = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {

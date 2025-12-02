@@ -1311,4 +1311,467 @@ INSERT INTO earning_targets (name, description, type, target_type, target_amount
     ('Room Host III', 'Receive 100,000 diamonds while hosting', 'hosting', 'receive', 100000, 70000, 'weekly', 3, 5)
 ON CONFLICT DO NOTHING;
 
+-- ============================================================================
+-- ADDITIONAL TABLES REQUIRED BY BACKEND
+-- ============================================================================
+
+-- Admin Logs
+CREATE TABLE IF NOT EXISTS admin_logs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    admin_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    action_type VARCHAR(100) NOT NULL,
+    target_type VARCHAR(50),
+    target_id UUID,
+    description TEXT,
+    metadata JSONB,
+    ip_address VARCHAR(45),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_admin_logs_admin ON admin_logs(admin_id);
+CREATE INDEX idx_admin_logs_action ON admin_logs(action_type);
+CREATE INDEX idx_admin_logs_created ON admin_logs(created_at DESC);
+
+-- Conversations (for direct messaging)
+-- Note: user1_id should always be < user2_id to prevent duplicate conversations
+CREATE TABLE IF NOT EXISTS conversations (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user1_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user2_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    last_message TEXT,
+    last_message_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    unread_count INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user1_id, user2_id),
+    CONSTRAINT conversation_user_order CHECK (user1_id < user2_id)
+);
+
+CREATE INDEX idx_conversations_user1 ON conversations(user1_id);
+CREATE INDEX idx_conversations_user2 ON conversations(user2_id);
+CREATE INDEX idx_conversations_last_message ON conversations(last_message_at DESC);
+
+-- System Settings
+CREATE TABLE IF NOT EXISTS system_settings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    key VARCHAR(100) UNIQUE NOT NULL,
+    value JSONB NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- System Messages (broadcasts)
+CREATE TABLE IF NOT EXISTS system_messages (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    type VARCHAR(50) DEFAULT 'info' CHECK (type IN ('info', 'warning', 'alert', 'promotion')),
+    target_audience VARCHAR(50) DEFAULT 'all' CHECK (target_audience IN ('all', 'vip', 'guides', 'admins')),
+    is_active BOOLEAN DEFAULT TRUE,
+    start_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    end_at TIMESTAMP WITH TIME ZONE,
+    created_by UUID REFERENCES users(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_system_messages_active ON system_messages(is_active, start_at, end_at);
+
+-- Transactions (wallet transactions)
+CREATE TABLE IF NOT EXISTS transactions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type VARCHAR(50) NOT NULL CHECK (type IN ('deposit', 'withdrawal', 'transfer', 'gift', 'purchase', 'reward', 'exchange', 'refund')),
+    status VARCHAR(20) DEFAULT 'completed' CHECK (status IN ('pending', 'completed', 'failed', 'cancelled')),
+    currency VARCHAR(20) NOT NULL CHECK (currency IN ('coins', 'diamonds', 'beans', 'usd')),
+    amount DECIMAL(15, 2) NOT NULL,
+    fee DECIMAL(15, 2) DEFAULT 0,
+    from_user_id UUID REFERENCES users(id),
+    to_user_id UUID REFERENCES users(id),
+    description TEXT,
+    metadata JSONB,
+    reference VARCHAR(255) UNIQUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_transactions_user ON transactions(user_id);
+CREATE INDEX idx_transactions_type ON transactions(type);
+CREATE INDEX idx_transactions_created ON transactions(created_at DESC);
+
+-- Level Configs
+CREATE TABLE IF NOT EXISTS level_configs (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    level INTEGER UNIQUE NOT NULL,
+    required_exp BIGINT NOT NULL,
+    title VARCHAR(100),
+    badge_url TEXT,
+    benefits JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Level Rewards
+CREATE TABLE IF NOT EXISTS level_rewards (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    level INTEGER NOT NULL,
+    reward_type VARCHAR(50) NOT NULL,
+    reward_amount BIGINT NOT NULL,
+    item_id VARCHAR(100),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Level Claims
+CREATE TABLE IF NOT EXISTS level_claims (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    level INTEGER NOT NULL,
+    reward_id UUID REFERENCES level_rewards(id),
+    claimed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, level),
+    CONSTRAINT valid_level CHECK (level >= 1 AND level <= 100)
+);
+
+-- Level History
+CREATE TABLE IF NOT EXISTS level_history (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    old_level INTEGER NOT NULL,
+    new_level INTEGER NOT NULL,
+    exp_gained BIGINT,
+    source VARCHAR(100),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_level_history_user ON level_history(user_id);
+
+-- EXP History
+CREATE TABLE IF NOT EXISTS exp_history (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    amount BIGINT NOT NULL,
+    source VARCHAR(100) NOT NULL,
+    source_id UUID,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_exp_history_user ON exp_history(user_id);
+
+-- CP (Couple Partnership) Requests
+CREATE TABLE IF NOT EXISTS cp_requests (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    from_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    to_user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'rejected', 'expired')),
+    message TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    responded_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE INDEX idx_cp_requests_from ON cp_requests(from_user_id);
+CREATE INDEX idx_cp_requests_to ON cp_requests(to_user_id);
+
+-- CP Rewards
+CREATE TABLE IF NOT EXISTS cp_rewards (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    cp_level INTEGER NOT NULL,
+    reward_type VARCHAR(50) NOT NULL,
+    reward_amount BIGINT NOT NULL,
+    item_id VARCHAR(100),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- CP Claims
+CREATE TABLE IF NOT EXISTS cp_claims (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    partnership_id UUID NOT NULL REFERENCES cp_partnerships(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    cp_level INTEGER NOT NULL,
+    reward_id UUID REFERENCES cp_rewards(id),
+    claimed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(partnership_id, user_id, cp_level)
+);
+
+-- Event Participants
+CREATE TABLE IF NOT EXISTS event_participants (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    score BIGINT DEFAULT 0,
+    rank INTEGER,
+    reward_claimed BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(event_id, user_id)
+);
+
+CREATE INDEX idx_event_participants_event ON event_participants(event_id);
+CREATE INDEX idx_event_participants_user ON event_participants(user_id);
+
+-- Event Milestones
+CREATE TABLE IF NOT EXISTS event_milestones (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    milestone_number INTEGER NOT NULL,
+    target_score BIGINT NOT NULL,
+    reward_type VARCHAR(50) NOT NULL,
+    reward_amount BIGINT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Event Rewards
+CREATE TABLE IF NOT EXISTS event_rewards (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    rank_from INTEGER NOT NULL,
+    rank_to INTEGER NOT NULL,
+    reward_type VARCHAR(50) NOT NULL,
+    reward_amount BIGINT NOT NULL,
+    item_id VARCHAR(100),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Milestone Claims
+CREATE TABLE IF NOT EXISTS milestone_claims (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    milestone_id UUID NOT NULL REFERENCES event_milestones(id) ON DELETE CASCADE,
+    claimed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, milestone_id)
+);
+
+-- Tickets (support)
+CREATE TABLE IF NOT EXISTS tickets (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    subject VARCHAR(255) NOT NULL,
+    description TEXT NOT NULL,
+    category VARCHAR(50) NOT NULL,
+    priority VARCHAR(20) DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
+    status VARCHAR(20) DEFAULT 'open' CHECK (status IN ('open', 'in_progress', 'resolved', 'closed')),
+    assigned_to UUID REFERENCES users(id),
+    resolution TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    resolved_at TIMESTAMP WITH TIME ZONE
+);
+
+CREATE INDEX idx_tickets_user ON tickets(user_id);
+CREATE INDEX idx_tickets_status ON tickets(status);
+
+-- Announcements
+CREATE TABLE IF NOT EXISTS announcements (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    type VARCHAR(50) DEFAULT 'general',
+    target_audience VARCHAR(50) DEFAULT 'all',
+    priority INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT TRUE,
+    start_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    end_at TIMESTAMP WITH TIME ZONE,
+    created_by UUID REFERENCES users(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Feature Flags
+CREATE TABLE IF NOT EXISTS feature_flags (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(100) UNIQUE NOT NULL,
+    description TEXT,
+    is_enabled BOOLEAN DEFAULT FALSE,
+    rollout_percentage INTEGER DEFAULT 0 CHECK (rollout_percentage >= 0 AND rollout_percentage <= 100),
+    target_users JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Version History (for app updates)
+CREATE TABLE IF NOT EXISTS version_history (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    platform VARCHAR(20) NOT NULL CHECK (platform IN ('android', 'ios', 'web', 'backend')),
+    version VARCHAR(20) NOT NULL,
+    build_number INTEGER,
+    release_notes TEXT,
+    is_mandatory BOOLEAN DEFAULT FALSE,
+    min_supported_version VARCHAR(20),
+    download_url TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================================================
+-- RESELLER SYSTEM TABLES
+-- ============================================================================
+
+-- Reseller Tiers
+CREATE TABLE IF NOT EXISTS reseller_tiers (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tier INTEGER UNIQUE NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    min_balance DECIMAL(15, 2) NOT NULL,
+    discount_percentage DECIMAL(5, 2) NOT NULL,
+    benefits JSONB,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Reseller Packages (coin packages for resellers)
+CREATE TABLE IF NOT EXISTS reseller_packages (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name VARCHAR(100) NOT NULL,
+    coins BIGINT NOT NULL,
+    price_usd DECIMAL(10, 2) NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Reseller Inventory
+CREATE TABLE IF NOT EXISTS reseller_inventory (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    coins_available BIGINT DEFAULT 0,
+    total_purchased BIGINT DEFAULT 0,
+    total_sold BIGINT DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id)
+);
+
+-- Reseller Purchases (reseller buying coins from platform)
+CREATE TABLE IF NOT EXISTS reseller_purchases (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    reseller_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    package_id UUID REFERENCES reseller_packages(id),
+    coins BIGINT NOT NULL,
+    amount_paid DECIMAL(15, 2) NOT NULL,
+    discount_applied DECIMAL(5, 2) DEFAULT 0,
+    payment_method VARCHAR(50),
+    status VARCHAR(20) DEFAULT 'completed',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Reseller Sales (reseller selling to users)
+CREATE TABLE IF NOT EXISTS reseller_sales (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    reseller_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    buyer_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    coins BIGINT NOT NULL,
+    price DECIMAL(15, 2) NOT NULL,
+    status VARCHAR(20) DEFAULT 'completed',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Reseller Transactions
+CREATE TABLE IF NOT EXISTS reseller_transactions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    reseller_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type VARCHAR(50) NOT NULL,
+    amount DECIMAL(15, 2) NOT NULL,
+    coins BIGINT,
+    description TEXT,
+    reference_id UUID,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_reseller_transactions_reseller ON reseller_transactions(reseller_id);
+
+-- Reseller Withdrawals
+CREATE TABLE IF NOT EXISTS reseller_withdrawals (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    reseller_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    amount DECIMAL(15, 2) NOT NULL,
+    fee DECIMAL(15, 2) DEFAULT 0,
+    net_amount DECIMAL(15, 2) NOT NULL,
+    method VARCHAR(50) NOT NULL,
+    account_details JSONB NOT NULL,
+    status VARCHAR(20) DEFAULT 'pending',
+    processed_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Reseller Orders (orders placed by users)
+CREATE TABLE IF NOT EXISTS reseller_orders (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    buyer_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    reseller_id UUID REFERENCES users(id),
+    coins_requested BIGINT NOT NULL,
+    price DECIMAL(15, 2) NOT NULL,
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'completed', 'cancelled')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    completed_at TIMESTAMP WITH TIME ZONE
+);
+
+-- Reseller Contacts
+CREATE TABLE IF NOT EXISTS reseller_contacts (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    reseller_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    nickname VARCHAR(100),
+    total_transactions INTEGER DEFAULT 0,
+    total_coins BIGINT DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(reseller_id, user_id)
+);
+
+-- Reseller Ratings
+CREATE TABLE IF NOT EXISTS reseller_ratings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    reseller_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    comment TEXT,
+    order_id UUID REFERENCES reseller_orders(id),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, order_id)
+);
+
+-- Reseller Bonuses
+CREATE TABLE IF NOT EXISTS reseller_bonuses (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    reseller_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type VARCHAR(50) NOT NULL,
+    amount DECIMAL(15, 2) NOT NULL,
+    reason TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Reseller Topups
+CREATE TABLE IF NOT EXISTS reseller_topups (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    reseller_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    amount DECIMAL(15, 2) NOT NULL,
+    payment_method VARCHAR(50) NOT NULL,
+    payment_reference VARCHAR(255),
+    status VARCHAR(20) DEFAULT 'pending',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    processed_at TIMESTAMP WITH TIME ZONE
+);
+
+-- Insert default level configs
+INSERT INTO level_configs (level, required_exp, title) VALUES
+    (1, 0, 'Newbie'),
+    (2, 100, 'Beginner'),
+    (3, 300, 'Amateur'),
+    (4, 600, 'Rookie'),
+    (5, 1000, 'Regular'),
+    (10, 5000, 'Rising Star'),
+    (20, 20000, 'Star'),
+    (30, 50000, 'Super Star'),
+    (40, 100000, 'Celebrity'),
+    (50, 200000, 'Legend'),
+    (60, 400000, 'Icon'),
+    (70, 700000, 'Master'),
+    (80, 1000000, 'Grand Master'),
+    (90, 1500000, 'Champion'),
+    (100, 2000000, 'King')
+ON CONFLICT (level) DO NOTHING;
+
+-- Insert default reseller tiers
+INSERT INTO reseller_tiers (tier, name, min_balance, discount_percentage) VALUES
+    (1, 'Bronze', 0, 5),
+    (2, 'Silver', 1000, 8),
+    (3, 'Gold', 5000, 12),
+    (4, 'Platinum', 20000, 15),
+    (5, 'Diamond', 50000, 20)
+ON CONFLICT (tier) DO NOTHING;
+
 COMMIT;
