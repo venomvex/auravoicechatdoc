@@ -1,6 +1,6 @@
 # EXP & Level System
 
-Comprehensive documentation for the Experience Points (EXP) and User Level system in Aura Voice Chat, with Firebase integration and reward structures.
+Comprehensive documentation for the Experience Points (EXP) and User Level system in Aura Voice Chat, with AWS integration and reward structures.
 
 ## Overview
 
@@ -156,80 +156,110 @@ VIP users earn bonus EXP:
 
 ---
 
-## Firebase Integration
+## AWS Integration
 
-### Database Structure
+### Database Structure (DynamoDB/RDS)
 
 ```
-/users/{userId}
-  /level
+# Users Table
+users
+  - id (PK)
+  - level_data:
     - currentLevel: number
     - currentExp: number
     - totalExp: number
     - expToNextLevel: number
     - lastLevelUp: timestamp
     
-  /expHistory
-    /{date}
-      - earned: number
-      - breakdown: {
-          daily: number,
-          room: number,
-          social: number,
-          gifts: number,
-          games: number
-        }
+# User EXP History Table
+user_exp_history
+  - userId (PK)
+  - date (SK)
+  - earned: number
+  - breakdown: {
+      daily: number,
+      room: number,
+      social: number,
+      gifts: number,
+      games: number
+    }
         
-/levelRewards
-  /{level}
-    - coins: number
-    - cosmetics: array
-    - features: array
-    - claimed: boolean
+# Level Rewards Table
+level_rewards
+  - level (PK)
+  - coins: number
+  - cosmetics: array
+  - features: array
+  - claimed: boolean
 ```
 
-### Security Rules
+### IAM Policies
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /users/{userId}/level {
-      allow read: if true; // Public level info
-      allow write: if false; // Server only
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:GetItem",
+        "dynamodb:Query"
+      ],
+      "Resource": "arn:aws:dynamodb:*:*:table/users",
+      "Condition": {
+        "ForAllValues:StringEquals": {
+          "dynamodb:Attributes": ["id", "level_data"]
+        }
+      }
+    },
+    {
+      "Effect": "Allow", 
+      "Action": ["dynamodb:GetItem"],
+      "Resource": "arn:aws:dynamodb:*:*:table/user_exp_history",
+      "Condition": {
+        "StringEquals": {
+          "dynamodb:LeadingKeys": "${cognito-identity.amazonaws.com:sub}"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["dynamodb:GetItem"],
+      "Resource": "arn:aws:dynamodb:*:*:table/level_rewards"
     }
-    
-    match /users/{userId}/expHistory/{date} {
-      allow read: if request.auth.uid == userId;
-      allow write: if false; // Server only
-    }
-    
-    match /levelRewards/{level} {
-      allow read: if true;
-      allow write: if false; // Admin only
-    }
-  }
+  ]
 }
 ```
 
-### Cloud Functions
+### Lambda Functions
 
 ```typescript
-// Award EXP function
-export const awardExp = functions.https.onCall(async (data, context) => {
-  const { userId, amount, source, description } = data;
+// Award EXP Lambda function
+import { DynamoDB } from 'aws-sdk';
+import { APIGatewayProxyHandler } from 'aws-lambda';
+
+const dynamodb = new DynamoDB.DocumentClient();
+
+export const awardExp: APIGatewayProxyHandler = async (event) => {
+  const { userId, amount, source, description } = JSON.parse(event.body || '{}');
   
-  // Validate
-  if (!context.auth) throw new Error('Unauthenticated');
+  // Validate authentication via Cognito
+  const cognitoUserId = event.requestContext.authorizer?.claims?.sub;
+  if (!cognitoUserId) {
+    return { statusCode: 401, body: JSON.stringify({ error: 'Unauthenticated' }) };
+  }
   
   // Get current level data
-  const userRef = admin.firestore().doc(`users/${userId}/level`);
-  const userData = await userRef.get();
+  const userData = await dynamodb.get({
+    TableName: 'users',
+    Key: { id: userId }
+  }).promise();
   
   // Calculate new totals
-  const currentExp = userData.data()?.currentExp || 0;
-  const totalExp = userData.data()?.totalExp || 0;
-  const currentLevel = userData.data()?.currentLevel || 1;
+  const levelData = userData.Item?.level_data || {};
+  const currentExp = levelData.currentExp || 0;
+  const totalExp = levelData.totalExp || 0;
+  const currentLevel = levelData.currentLevel || 1;
   
   // Apply VIP multiplier
   const vipMultiplier = await getVipMultiplier(userId);
@@ -240,21 +270,31 @@ export const awardExp = functions.https.onCall(async (data, context) => {
   const newLevel = calculateLevel(newTotalExp);
   
   // Update database
-  await userRef.update({
-    currentExp: calculateCurrentLevelExp(newTotalExp, newLevel),
-    totalExp: newTotalExp,
-    currentLevel: newLevel,
-    expToNextLevel: calculateExpToNextLevel(newTotalExp, newLevel),
-    lastUpdated: admin.firestore.FieldValue.serverTimestamp()
-  });
+  await dynamodb.update({
+    TableName: 'users',
+    Key: { id: userId },
+    UpdateExpression: 'SET level_data = :levelData',
+    ExpressionAttributeValues: {
+      ':levelData': {
+        currentExp: calculateCurrentLevelExp(newTotalExp, newLevel),
+        totalExp: newTotalExp,
+        currentLevel: newLevel,
+        expToNextLevel: calculateExpToNextLevel(newTotalExp, newLevel),
+        lastUpdated: new Date().toISOString()
+      }
+    }
+  }).promise();
   
   // Check for level up
   if (newLevel > currentLevel) {
     await handleLevelUp(userId, currentLevel, newLevel);
   }
   
-  return { success: true, expAwarded: finalAmount, newLevel, newTotalExp };
-});
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ success: true, expAwarded: finalAmount, newLevel, newTotalExp })
+  };
+};
 
 // Level up handler
 async function handleLevelUp(userId: string, oldLevel: number, newLevel: number) {
@@ -263,17 +303,18 @@ async function handleLevelUp(userId: string, oldLevel: number, newLevel: number)
     const rewards = await getLevelRewards(level);
     await grantRewards(userId, rewards);
     
-    // Send notification
+    // Send notification via AWS Pinpoint
     await sendLevelUpNotification(userId, level, rewards);
   }
   
-  // Log analytics event
-  await logAnalyticsEvent('level_up', {
+  // Log analytics event via CloudWatch
+  console.log(JSON.stringify({
+    event: 'level_up',
     userId,
     oldLevel,
     newLevel,
     timestamp: Date.now()
-  });
+  }));
 }
 ```
 

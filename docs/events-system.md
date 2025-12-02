@@ -1,6 +1,6 @@
 # Events System
 
-Comprehensive documentation for all events in Aura Voice Chat, including room slider events, time-limited events, seasonal events, and Firebase integration.
+Comprehensive documentation for all events in Aura Voice Chat, including room slider events, time-limited events, seasonal events, and AWS integration.
 
 ## Overview
 
@@ -220,117 +220,138 @@ Spin to win event items:
 
 ---
 
-## Firebase Integration
+## AWS Integration
 
-### Database Structure
+### Database Structure (DynamoDB/RDS)
 
 ```
-/events
-  /{eventId}
-    - config: object (event settings)
-    - status: string (draft/active/ended)
-    - stats: object (participation counts)
+# Events Table
+events
+  - id (PK)
+  - config: object (event settings)
+  - status: string (draft/active/ended)
+  - stats: object (participation counts)
     
-/eventParticipation
-  /{eventId}
-    /{userId}
-      - joined: timestamp
-      - progress: number
-      - milestones: array
-      - rewards: array
-      - lastActivity: timestamp
+# Event Participation Table
+event_participation
+  - eventId (PK)
+  - oderId (SK)
+  - joined: timestamp
+  - progress: number
+  - milestones: array
+  - rewards: array
+  - lastActivity: timestamp
       
-/eventLeaderboards
-  /{eventId}
-    /{rank}
-      - userId: string
-      - score: number
-      - lastUpdated: timestamp
+# Event Leaderboards Table
+event_leaderboards
+  - eventId (PK)
+  - rank (SK)
+  - userId: string
+  - score: number
+  - lastUpdated: timestamp
 ```
 
-### Security Rules
+### IAM Policies
 
-```javascript
-rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /events/{eventId} {
-      allow read: if true;
-      allow write: if false; // Admin only
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["dynamodb:GetItem", "dynamodb:Query"],
+      "Resource": "arn:aws:dynamodb:*:*:table/events"
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["dynamodb:GetItem", "dynamodb:PutItem"],
+      "Resource": "arn:aws:dynamodb:*:*:table/event_participation",
+      "Condition": {
+        "StringEquals": {
+          "dynamodb:LeadingKeys": "${cognito-identity.amazonaws.com:sub}"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["dynamodb:GetItem", "dynamodb:Query"],
+      "Resource": "arn:aws:dynamodb:*:*:table/event_leaderboards"
     }
-    
-    match /eventParticipation/{eventId}/{userId} {
-      allow read: if request.auth.uid == userId;
-      allow create: if request.auth.uid == userId 
-        && isEventActive(eventId)
-        && meetsEligibility(eventId);
-      allow update: if false; // Server only
-    }
-    
-    match /eventLeaderboards/{eventId}/{rank} {
-      allow read: if true;
-      allow write: if false; // Server only
-    }
-    
-    function isEventActive(eventId) {
-      let event = get(/databases/$(database)/documents/events/$(eventId)).data;
-      return event.status == 'active' 
-        && event.startTime <= request.time 
-        && event.endTime > request.time;
-    }
-    
-    function meetsEligibility(eventId) {
-      // Check user meets event requirements
-      return true; // Simplified
-    }
-  }
+  ]
 }
 ```
 
-### Cloud Functions
+### Lambda Functions
 
 ```typescript
-// Join event
-export const joinEvent = functions.https.onCall(async (data, context) => {
-  const { eventId } = data;
+// Join event Lambda function
+import { DynamoDB } from 'aws-sdk';
+import { APIGatewayProxyHandler } from 'aws-lambda';
+
+const dynamodb = new DynamoDB.DocumentClient();
+
+export const joinEvent: APIGatewayProxyHandler = async (event) => {
+  const { eventId } = JSON.parse(event.body || '{}');
   
-  if (!context.auth) throw new Error('Unauthenticated');
+  // Validate authentication via Cognito
+  const userId = event.requestContext.authorizer?.claims?.sub;
+  if (!userId) {
+    return { statusCode: 401, body: JSON.stringify({ error: 'Unauthenticated' }) };
+  }
   
-  const userId = context.auth.uid;
-  const eventRef = admin.firestore().doc(`events/${eventId}`);
-  const event = await eventRef.get();
+  // Get event details
+  const eventData = await dynamodb.get({
+    TableName: 'events',
+    Key: { id: eventId }
+  }).promise();
   
-  if (!event.exists) throw new Error('Event not found');
-  if (event.data()?.status !== 'active') throw new Error('Event not active');
+  if (!eventData.Item) {
+    return { statusCode: 404, body: JSON.stringify({ error: 'Event not found' }) };
+  }
+  if (eventData.Item.status !== 'active') {
+    return { statusCode: 400, body: JSON.stringify({ error: 'Event not active' }) };
+  }
   
   // Create participation record
-  await admin.firestore().doc(`eventParticipation/${eventId}/${userId}`).set({
-    joined: admin.firestore.FieldValue.serverTimestamp(),
-    progress: 0,
-    milestones: [],
-    rewards: []
-  });
+  await dynamodb.put({
+    TableName: 'event_participation',
+    Item: {
+      eventId,
+      userId,
+      joined: new Date().toISOString(),
+      progress: 0,
+      milestones: [],
+      rewards: []
+    }
+  }).promise();
   
-  return { success: true, eventId };
-});
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ success: true, eventId })
+  };
+};
 
-// Update event progress
-export const updateEventProgress = functions.firestore
-  .document('transactions/{transactionId}')
-  .onCreate(async (snap, context) => {
-    const transaction = snap.data();
+// Update event progress (DynamoDB Streams trigger)
+import { DynamoDBStreamHandler } from 'aws-lambda';
+
+export const updateEventProgress: DynamoDBStreamHandler = async (event) => {
+  for (const record of event.Records) {
+    if (record.eventName !== 'INSERT') continue;
+    
+    const transaction = DynamoDB.Converter.unmarshall(record.dynamodb?.NewImage || {});
     
     // Find active events this transaction qualifies for
     const activeEvents = await getActiveEventsForTransaction(transaction);
     
-    for (const event of activeEvents) {
+    for (const evt of activeEvents) {
       await incrementEventProgress(
-        event.id, 
+        evt.id, 
         transaction.userId, 
-        calculateProgressValue(event, transaction)
+        calculateProgressValue(evt, transaction)
       );
     }
-  });
+  }
+};
 ```
 
 ---

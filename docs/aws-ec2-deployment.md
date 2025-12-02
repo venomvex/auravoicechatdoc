@@ -230,12 +230,12 @@ REDIS_URL=redis://localhost:6379
 JWT_SECRET=your-256-bit-secret
 JWT_REFRESH_SECRET=your-256-bit-refresh-secret
 
-# Firebase (copy from Firebase Console)
-FIREBASE_PROJECT_ID=your-project-id
-FIREBASE_CLIENT_EMAIL=your-client-email
-FIREBASE_PRIVATE_KEY="your-private-key"
+# AWS Cognito (configure in AWS Console)
+AWS_COGNITO_USER_POOL_ID=your-user-pool-id
+AWS_COGNITO_CLIENT_ID=your-client-id
+AWS_COGNITO_REGION=ap-south-1
 
-# Twilio
+# Twilio (OTP fallback)
 TWILIO_ACCOUNT_SID=your-account-sid
 TWILIO_AUTH_TOKEN=your-auth-token
 TWILIO_PHONE_NUMBER=+1234567890

@@ -3,6 +3,7 @@ package com.aura.voicechat.ui.auth
 import android.app.Activity
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -37,8 +38,8 @@ import com.aura.voicechat.R
 import com.aura.voicechat.ui.theme.GradientPurpleEnd
 import com.aura.voicechat.ui.theme.GradientPurpleStart
 import com.aura.voicechat.ui.theme.Purple80
-import com.google.android.gms.auth.api.signin.GoogleSignIn
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.auth.api.identity.BeginSignInRequest
+import com.google.android.gms.auth.api.identity.Identity
 import com.google.android.gms.common.api.ApiException
 import com.facebook.CallbackManager
 import com.facebook.FacebookCallback
@@ -231,41 +232,46 @@ fun LoginScreen(
     var showCountryPicker by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
+    val activity = context as? Activity
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Google Sign-In configuration using BuildConfig
-    val googleSignInClient = remember {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(BuildConfig.GOOGLE_WEB_CLIENT_ID)
-            .requestEmail()
+    // Google Identity Services (GIS) One Tap client - modern replacement for deprecated GoogleSignIn
+    val oneTapClient = remember { Identity.getSignInClient(context) }
+    val signInRequest = remember {
+        BeginSignInRequest.builder()
+            .setGoogleIdTokenRequestOptions(
+                BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
+                    .setSupported(true)
+                    .setServerClientId(BuildConfig.GOOGLE_WEB_CLIENT_ID)
+                    .setFilterByAuthorizedAccounts(false)
+                    .build()
+            )
+            .setAutoSelectEnabled(true)
             .build()
-        GoogleSignIn.getClient(context, gso)
     }
 
-    // Google Sign-In launcher
+    // Google Sign-In launcher using GIS One Tap
     val googleSignInLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
+        contract = ActivityResultContracts.StartIntentSenderForResult()
     ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            try {
-                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-                val account = task.getResult(ApiException::class.java)
-                val idToken = account.idToken
-                if (idToken != null) {
-                    Log.d(TAG, "Google Sign-In successful, sending token to backend")
-                    viewModel.onGoogleTokenReceived(
-                        idToken = idToken,
-                        email = account.email,
-                        displayName = account.displayName
-                    )
-                } else {
-                    Log.e(TAG, "Google Sign-In: ID token is null")
-                }
-            } catch (e: ApiException) {
-                Log.e(TAG, "Google Sign-In failed: ${e.statusCode}", e)
+        try {
+            val credential = oneTapClient.getSignInCredentialFromIntent(result.data)
+            val idToken = credential.googleIdToken
+            val email = credential.id
+            val displayName = credential.displayName
+            
+            if (idToken != null) {
+                Log.d(TAG, "Google Sign-In successful via GIS One Tap, sending token to backend")
+                viewModel.onGoogleTokenReceived(
+                    idToken = idToken,
+                    email = email,
+                    displayName = displayName
+                )
+            } else {
+                Log.e(TAG, "Google Sign-In: ID token is null")
             }
-        } else {
-            Log.w(TAG, "Google Sign-In cancelled or failed: ${result.resultCode}")
+        } catch (e: ApiException) {
+            Log.e(TAG, "Google Sign-In failed: ${e.statusCode}", e)
         }
     }
 
@@ -470,13 +476,24 @@ fun LoginScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Google Sign In - Uses Google Sign-In SDK
+                // Google Sign In - Uses Google Identity Services (GIS) One Tap
                 Button(
                     onClick = {
-                        Log.d(TAG, "Launching Google Sign-In")
-                        googleSignInClient.signOut().addOnCompleteListener {
-                            googleSignInLauncher.launch(googleSignInClient.signInIntent)
-                        }
+                        Log.d(TAG, "Launching Google Sign-In with GIS One Tap")
+                        oneTapClient.beginSignIn(signInRequest)
+                            .addOnSuccessListener { result ->
+                                try {
+                                    val intentSenderRequest = IntentSenderRequest.Builder(
+                                        result.pendingIntent.intentSender
+                                    ).build()
+                                    googleSignInLauncher.launch(intentSenderRequest)
+                                } catch (e: Exception) {
+                                    Log.e(TAG, "Couldn't start One Tap UI: ${e.localizedMessage}")
+                                }
+                            }
+                            .addOnFailureListener { e ->
+                                Log.e(TAG, "Google Sign-In failed to begin: ${e.localizedMessage}")
+                            }
                     },
                     modifier = Modifier
                         .fillMaxWidth()

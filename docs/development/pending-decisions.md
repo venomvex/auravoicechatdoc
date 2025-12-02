@@ -24,7 +24,7 @@ The following are **recommended answers** based on industry best practices, user
 | # | Question | Recommended | Rationale |
 |---|----------|-------------|-----------|
 | 1 | Non-gold icons style | **A) Slight gradient skeuomorphic** | Maintains consistency with existing Aura branding and provides visual richness |
-| 2 | Twilio fallback trigger | **A) Auto if Firebase fails** | Provides seamless user experience without manual intervention |
+| 2 | Twilio fallback trigger | **A) Auto if AWS Cognito fails** | Provides seamless user experience without manual intervention |
 | 3 | Tutorial scope expansion | **B) Add Seat & Gift steps** | Helps users understand core features without overwhelming them |
 | 4 | Banner workflow | **C) Owner drafts + auto-publish if passes automated checks** | Balances control with efficiency; reduces moderation load |
 | 5 | Banner rotation interval | **5 seconds** | Industry standard for carousel rotation |
@@ -101,7 +101,7 @@ The following decisions have been made and are documented in the relevant featur
 - ✅ Target SDK: API 34 (Android 14)
 
 ### Authentication
-- ✅ OTP provider: Firebase primary, Twilio fallback
+- ✅ OTP provider: AWS Cognito primary, Twilio fallback
 - ✅ OTP max attempts: 5 per day
 - ✅ OTP length: 4 digits
 - ✅ OTP resend cooldown: 30 seconds
@@ -145,7 +145,7 @@ The following decisions have been made and are documented in the relevant featur
 ### Authentication
 
 2. **Twilio fallback trigger:**
-   - A) Auto if Firebase fails
+   - A) Auto if AWS Cognito fails
    - B) Manual fallback after 2 failures
    - C) Region-based
 
