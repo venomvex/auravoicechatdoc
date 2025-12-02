@@ -248,7 +248,8 @@ fun AuraNavHost(
         composable(Screen.Family.route) {
             FamilyScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToMember = { userId -> navController.navigate(Screen.Profile.createRoute(userId)) }
+                onNavigateToMemberProfile = { userId -> navController.navigate(Screen.Profile.createRoute(userId)) },
+                onNavigateToFamilyRanking = { navController.navigate(Screen.RankingFamily.route) }
             )
         }
         

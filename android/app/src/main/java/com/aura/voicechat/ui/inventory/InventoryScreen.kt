@@ -372,135 +372,132 @@ private fun ItemDetailDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = DarkCard
-    ) {
-        Column(
-            modifier = Modifier.padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Item Image
-            Box(
-                modifier = Modifier
-                    .size(120.dp)
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(DarkSurface),
-                contentAlignment = Alignment.Center
+        containerColor = DarkCard,
+        title = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (item.iconUrl != null) {
-                    AsyncImage(
-                        model = item.iconUrl,
-                        contentDescription = null,
-                        modifier = Modifier.size(80.dp)
-                    )
-                } else {
-                    Icon(
-                        Icons.Default.AutoAwesome,
-                        contentDescription = null,
-                        tint = AccentMagenta,
-                        modifier = Modifier.size(64.dp)
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            // Item Name
-            Text(
-                text = item.name,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = TextPrimary
-            )
-            
-            // Category & Rarity
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = item.category.replace("_", " ").replaceFirstChar { it.uppercase() },
-                    style = MaterialTheme.typography.bodySmall,
-                    color = TextSecondary
-                )
-                Text("•", color = TextTertiary)
+                // Item Image
                 Box(
                     modifier = Modifier
-                        .background(
-                            when (item.rarity) {
-                                "legendary" -> VipGold
-                                "epic" -> AccentMagenta
-                                "rare" -> AccentCyan
-                                else -> TextTertiary
-                            },
-                            RoundedCornerShape(4.dp)
+                        .size(120.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(DarkSurface),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (item.iconUrl != null) {
+                        AsyncImage(
+                            model = item.iconUrl,
+                            contentDescription = null,
+                            modifier = Modifier.size(80.dp)
                         )
-                        .padding(horizontal = 6.dp, vertical = 2.dp)
-                ) {
-                    Text(
-                        text = item.rarity.uppercase(),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = if (item.rarity == "legendary") DarkCanvas else Color.White
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            // Description
-            Text(
-                text = item.description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = TextSecondary,
-                textAlign = TextAlign.Center
-            )
-            
-            // Expiry
-            if (item.expiresIn != null) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        Icons.Default.Schedule,
-                        contentDescription = null,
-                        tint = if (item.isExpiringSoon) WarningOrange else TextTertiary,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "Expires in ${item.expiresIn}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = if (item.isExpiringSoon) WarningOrange else TextTertiary
-                    )
-                }
-            }
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
-            // Action Buttons
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                OutlinedButton(
-                    onClick = onDismiss,
-                    modifier = Modifier.weight(1f)
-                ) {
-                    Text("Close")
+                    } else {
+                        Icon(
+                            Icons.Default.AutoAwesome,
+                            contentDescription = null,
+                            tint = AccentMagenta,
+                            modifier = Modifier.size(64.dp)
+                        )
+                    }
                 }
                 
-                Button(
-                    onClick = if (isEquipped) onUnequip else onEquip,
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = if (isEquipped) DarkSurface else AccentMagenta
-                    )
+                Spacer(modifier = Modifier.height(16.dp))
+                
+                // Item Name
+                Text(
+                    text = item.name,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = TextPrimary
+                )
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Category & Rarity
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(if (isEquipped) "Unequip" else "Equip")
+                    Text(
+                        text = item.category.replace("_", " ").replaceFirstChar { it.uppercase() },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
+                    )
+                    Text("•", color = TextTertiary)
+                    Box(
+                        modifier = Modifier
+                            .background(
+                                when (item.rarity) {
+                                    "legendary" -> VipGold
+                                    "epic" -> AccentMagenta
+                                    "rare" -> AccentCyan
+                                    else -> TextTertiary
+                                },
+                                RoundedCornerShape(4.dp)
+                            )
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    ) {
+                        Text(
+                            text = item.rarity.uppercase(),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (item.rarity == "legendary") DarkCanvas else Color.White
+                        )
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // Description
+                Text(
+                    text = item.description,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextSecondary,
+                    textAlign = TextAlign.Center
+                )
+                
+                // Expiry
+                if (item.expiresIn != null) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            Icons.Default.Schedule,
+                            contentDescription = null,
+                            tint = if (item.isExpiringSoon) WarningOrange else TextTertiary,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "Expires in ${item.expiresIn}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (item.isExpiringSoon) WarningOrange else TextTertiary
+                        )
+                    }
                 }
             }
+        },
+        dismissButton = {
+            OutlinedButton(onClick = onDismiss) {
+                Text("Close")
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = if (isEquipped) onUnequip else onEquip,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = if (isEquipped) DarkSurface else AccentMagenta
+                )
+            ) {
+                Text(if (isEquipped) "Unequip" else "Equip")
+            }
         }
-    }
+    )
 }
 
 data class InventoryItem(

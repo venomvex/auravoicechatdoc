@@ -255,54 +255,56 @@ private fun WinDialog(
     
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = DarkCard
-    ) {
-        Column(
-            modifier = Modifier.padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "🎉",
-                style = MaterialTheme.typography.displayLarge
-            )
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            Text(
-                text = "Congratulations!",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = VipGold
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Text(
-                text = "You won",
-                style = MaterialTheme.typography.bodyLarge,
-                color = TextSecondary
-            )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Default.MonetizationOn,
-                    contentDescription = null,
-                    tint = CoinGold,
-                    modifier = Modifier.size(32.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
+        containerColor = DarkCard,
+        title = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 Text(
-                    text = formatNumber(prize.value),
-                    style = MaterialTheme.typography.headlineMedium,
+                    text = "🎉",
+                    style = MaterialTheme.typography.displayLarge
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Congratulations!",
+                    style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
-                    color = CoinGold
+                    color = VipGold
                 )
             }
-            
-            Spacer(modifier = Modifier.height(24.dp))
-            
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "You won",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = TextSecondary
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Default.MonetizationOn,
+                        contentDescription = null,
+                        tint = CoinGold,
+                        modifier = Modifier.size(32.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = formatNumber(prize.value),
+                        style = MaterialTheme.typography.headlineMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = CoinGold
+                    )
+                }
+            }
+        },
+        confirmButton = {
             Button(
                 onClick = onDismiss,
                 colors = ButtonDefaults.buttonColors(containerColor = AccentMagenta),
@@ -311,7 +313,7 @@ private fun WinDialog(
                 Text("Collect")
             }
         }
-    }
+    )
 }
 
 data class WheelPrize(

@@ -51,8 +51,7 @@ class FollowListViewModel @Inject constructor(
                             name = dto.name,
                             avatar = dto.avatar,
                             level = dto.level,
-                            vipTier = dto.vipTier,
-                            isOnline = dto.isOnline,
+                            vipLevel = dto.vipTier,
                             isFollowing = dto.isFollowing
                         )
                     }
