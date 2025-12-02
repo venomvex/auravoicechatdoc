@@ -59,8 +59,8 @@ class VipViewModel @Inject constructor(
                             description = pkg.description,
                             price = pkg.price,
                             originalPrice = pkg.originalPrice,
-                            bonusDiamonds = pkg.bonusDiamonds,
-                            days = pkg.days,
+                            diamonds = pkg.bonusDiamonds,
+                            durationDays = pkg.days,
                             isBestValue = pkg.isBestValue
                         )
                     }

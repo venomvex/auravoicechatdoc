@@ -43,24 +43,30 @@ class GiftPanelViewModel @Inject constructor(
                 if (response.isSuccessful) {
                     val data = response.body()
                     allGifts = data?.gifts?.map { dto ->
+                        // Get price from whichever field is available
+                        val giftPrice = dto.priceCoins ?: dto.price ?: 0L
+                        val giftDiamondValue = dto.diamondValue ?: dto.diamondValueAlt ?: 0L
+                        val giftIconUrl = dto.thumbnailUrl ?: dto.iconUrl
+                        val giftAnimationUrl = dto.animationUrl ?: dto.animationFile
+                        
                         Gift(
                             id = dto.id,
                             name = dto.name,
                             category = dto.category,
-                            price = dto.priceCoins,
-                            diamondValue = dto.diamondValue,
-                            rarity = when {
-                                dto.priceCoins >= 50000000 -> "legendary"
-                                dto.priceCoins >= 10000 -> "epic"
-                                dto.priceCoins >= 1000 -> "rare"
+                            price = giftPrice,
+                            diamondValue = giftDiamondValue,
+                            rarity = dto.rarity ?: when {
+                                giftPrice >= 50000000 -> "legendary"
+                                giftPrice >= 10000 -> "epic"
+                                giftPrice >= 1000 -> "rare"
                                 else -> "common"
                             },
-                            iconUrl = dto.thumbnailUrl,
-                            animationFile = dto.animationUrl,
-                            isAnimated = dto.animationUrl != null,
-                            isFullScreen = dto.priceCoins >= 50000,
-                            isCustom = dto.category == "custom",
-                            isLegendary = dto.priceCoins >= 50000000,
+                            iconUrl = giftIconUrl,
+                            animationFile = giftAnimationUrl,
+                            isAnimated = dto.isAnimated || giftAnimationUrl != null,
+                            isFullScreen = dto.isFullScreen || giftPrice >= 50000,
+                            isCustom = dto.isCustom || dto.category == "custom",
+                            isLegendary = dto.isLegendary || giftPrice >= 50000000,
                             isPremium = dto.isPremium
                         )
                     } ?: emptyList()
@@ -116,7 +122,7 @@ class GiftPanelViewModel @Inject constructor(
     fun sendGift(recipientId: String, giftId: String, quantity: Int, roomId: String? = null) {
         viewModelScope.launch {
             val gift = allGifts.find { it.id == giftId } ?: return@launch
-            val totalCost = (gift.price ?: gift.priceCoins ?: 0L) * quantity
+            val totalCost = gift.price * quantity
             val currentCoins = _uiState.value.coins
             
             if (currentCoins >= totalCost) {

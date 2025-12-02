@@ -41,27 +41,56 @@ class InventoryViewModel @Inject constructor(
                 if (response.isSuccessful && response.body() != null) {
                     val data = response.body()!!
                     allItems = data.items.map { dto ->
+                        // Calculate expiration info
+                        val expiresAt = dto.expiresAt
+                        val expiresIn = if (expiresAt != null) {
+                            val now = System.currentTimeMillis()
+                            val diff = expiresAt - now
+                            when {
+                                diff <= 0 -> "Expired"
+                                diff < 24 * 60 * 60 * 1000 -> "${diff / (60 * 60 * 1000)}h"
+                                else -> "${diff / (24 * 60 * 60 * 1000)}d"
+                            }
+                        } else null
+                        val isExpiringSoon = expiresAt != null && (expiresAt - System.currentTimeMillis()) < 24 * 60 * 60 * 1000
+                        
                         InventoryItem(
                             id = dto.id,
                             name = dto.name,
-                            description = dto.description,
+                            description = dto.description ?: "",
                             category = dto.category,
                             rarity = dto.rarity,
-                            expiresIn = dto.expiresIn,
-                            isExpiringSoon = dto.isExpiringSoon,
-                            isBaggage = dto.isBaggage
+                            iconUrl = dto.iconUrl,
+                            expiresIn = expiresIn,
+                            isExpiringSoon = isExpiringSoon,
+                            isBaggage = dto.source == "gift_received" || dto.source == "baggage"
                         )
                     }
                     
-                    val equipped = data.equippedItems.map { dto ->
-                        InventoryItem(
-                            id = dto.id,
-                            name = dto.name,
-                            description = dto.description,
-                            category = dto.category,
-                            rarity = dto.rarity,
-                            expiresIn = dto.expiresIn
-                        )
+                    // Also load equipped items
+                    var equipped: List<InventoryItem> = emptyList()
+                    try {
+                        val equippedResponse = apiService.getEquippedItems()
+                        if (equippedResponse.isSuccessful && equippedResponse.body() != null) {
+                            val equippedData = equippedResponse.body()!!
+                            equipped = listOfNotNull(
+                                equippedData.frame, equippedData.vehicle, equippedData.theme,
+                                equippedData.micSkin, equippedData.seatEffect, equippedData.chatBubble,
+                                equippedData.entranceStyle, equippedData.roomCard, equippedData.cover
+                            ).map { dto ->
+                                InventoryItem(
+                                    id = dto.id,
+                                    name = dto.name,
+                                    description = dto.description ?: "",
+                                    category = dto.category,
+                                    rarity = dto.rarity,
+                                    iconUrl = dto.iconUrl,
+                                    expiresIn = null
+                                )
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error loading equipped items", e)
                     }
                     
                     _uiState.value = _uiState.value.copy(
@@ -133,7 +162,9 @@ class InventoryViewModel @Inject constructor(
     fun unequipItem(itemId: String) {
         viewModelScope.launch {
             try {
-                val response = apiService.unequipItem(com.aura.voicechat.data.model.UnequipItemRequest(itemId))
+                // Find the item's category
+                val item = _uiState.value.equippedItems.find { it.id == itemId } ?: return@launch
+                val response = apiService.unequipItem(com.aura.voicechat.data.model.UnequipItemRequest(item.category))
                 if (response.isSuccessful) {
                     val currentEquipped = _uiState.value.equippedItems.toMutableList()
                     currentEquipped.removeAll { it.id == itemId }
