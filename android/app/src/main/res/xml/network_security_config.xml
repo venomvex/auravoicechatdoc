@@ -23,6 +23,6 @@
       TODO: For production, set up HTTPS with a proper domain name and certificate.
     -->
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="false">43.204.130.237</domain>
+        <domain includeSubdomains="false">13.127.85.109</domain>
     </domain-config>
 </network-security-config>

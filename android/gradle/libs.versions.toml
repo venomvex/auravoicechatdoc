@@ -6,12 +6,11 @@
 
 [versions]
 # Build tools
-# Note: AGP 8.2.2 is used for compatibility with current Gradle version.
-# The original 8.7.3 version was not available in the Google Maven repository.
-# Consider upgrading when stable versions are released to Google's Maven.
-agp = "8.13.1"
-kotlin = "2.2.21"
-ksp = "2.1.0-1.0.29"
+# Note: AGP 8.2.2 is used for stability and compatibility with Gradle 8.x.
+# Kotlin 2.0.21 with matching KSP version.
+agp = "8.2.2"
+kotlin = "2.0.21"
+ksp = "2.0.21-1.0.27"
 
 # Updates
 glance = "1.2.0-beta01"

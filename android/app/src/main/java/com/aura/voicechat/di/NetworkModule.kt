@@ -32,7 +32,7 @@ import javax.inject.Singleton
  * - Push Notifications: AWS SNS
  * 
  * Backend URL is configured via BuildConfig.API_BASE_URL
- * Currently pointing to EC2 instance at http://43.204.130.237
+ * Currently pointing to EC2 instance at http://13.127.85.109
  * 
  * Includes AuthInterceptor to inject authentication tokens into API requests.
  * 

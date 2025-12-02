@@ -8,7 +8,7 @@ import retrofit2.http.GET
  * Developer: Hawkaye Visions LTD — Pakistan
  * 
  * Used to verify connectivity to the backend server.
- * The backend is currently running on EC2 at http://43.204.130.237
+ * The backend is currently running on EC2 at http://13.127.85.109
  * 
  * TODO: For production, update to use HTTPS with a proper domain name.
  */
