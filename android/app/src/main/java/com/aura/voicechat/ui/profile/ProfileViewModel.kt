@@ -82,9 +82,9 @@ class ProfileViewModel @Inject constructor(
                     lastActiveAt = data.lastActiveAt,
                     kycStatus = when (data.kycStatus.lowercase()) {
                         "verified", "approved" -> KycStatus.VERIFIED
-                        "pending" -> KycStatus.PENDING
+                        "pending", "pending_review" -> KycStatus.PENDING_REVIEW
                         "rejected" -> KycStatus.REJECTED
-                        else -> KycStatus.NOT_SUBMITTED
+                        else -> KycStatus.NOT_STARTED
                     },
                     cpPartnerId = data.cpPartnerId,
                     familyId = data.familyId,
@@ -132,7 +132,7 @@ class ProfileViewModel @Inject constructor(
                     bio = data.bio,
                     isOnline = data.isOnline,
                     lastActiveAt = data.lastActiveAt,
-                    kycStatus = KycStatus.NOT_SUBMITTED, // Don't expose KYC status
+                    kycStatus = KycStatus.NOT_STARTED, // Don't expose KYC status
                     cpPartnerId = data.cpPartnerId,
                     familyId = data.familyId,
                     createdAt = data.createdAt

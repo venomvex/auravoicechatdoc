@@ -58,11 +58,11 @@ class FamilyViewModel @Inject constructor(
                         isAdmin = data.family?.isAdmin ?: false,
                         members = data.family?.members?.map { m ->
                             FamilyMember(
-                                id = m.userId,
+                                userId = m.userId,
                                 name = m.userName,
                                 avatar = m.userAvatar,
                                 role = m.role,
-                                contribution = m.contribution
+                                weeklyContribution = m.contribution
                             )
                         } ?: emptyList(),
                         perks = data.family?.perks?.map { p ->
@@ -105,7 +105,7 @@ class FamilyViewModel @Inject constructor(
                         id = a.id,
                         type = a.type,
                         message = a.message,
-                        time = a.timeAgo
+                        timeAgo = a.timeAgo
                     )
                 }
                 _uiState.value = _uiState.value.copy(recentActivities = activities)

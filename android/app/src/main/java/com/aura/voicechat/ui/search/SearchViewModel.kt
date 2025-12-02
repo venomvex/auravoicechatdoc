@@ -55,13 +55,14 @@ class SearchViewModel @Inject constructor(
             if (response.isSuccessful && response.body() != null) {
                 val results = response.body()!!.users.map { user ->
                     SearchUser(
-                        id = user.id,
+                        userId = user.id,
                         name = user.name,
                         avatar = user.avatar,
                         level = user.level,
                         isOnline = user.isOnline
                     )
                 }
+                addToRecentSearches(query)
                 _uiState.value = _uiState.value.copy(
                     userResults = results,
                     isLoading = false
@@ -89,13 +90,14 @@ class SearchViewModel @Inject constructor(
             if (response.isSuccessful && response.body() != null) {
                 val results = response.body()!!.data.map { room ->
                     SearchRoom(
-                        id = room.id,
+                        roomId = room.id,
                         name = room.name,
-                        coverImage = room.coverImage,
+                        cover = room.coverImage,
                         ownerName = room.ownerName,
-                        userCount = room.userCount
+                        memberCount = room.userCount
                     )
                 }
+                addToRecentSearches(query)
                 _uiState.value = _uiState.value.copy(
                     roomResults = results,
                     isLoading = false
@@ -164,6 +166,20 @@ class SearchViewModel @Inject constructor(
         )
     }
     
+    fun clearRecentSearches() {
+        _uiState.value = _uiState.value.copy(recentSearches = emptyList())
+    }
+    
+    private fun addToRecentSearches(query: String) {
+        if (query.isBlank()) return
+        val current = _uiState.value.recentSearches.toMutableList()
+        current.remove(query) // Remove if exists to avoid duplicates
+        current.add(0, query) // Add at the beginning
+        _uiState.value = _uiState.value.copy(
+            recentSearches = current.take(10) // Keep only last 10 searches
+        )
+    }
+    
     fun dismissError() {
         _uiState.value = _uiState.value.copy(error = null)
     }
@@ -175,5 +191,6 @@ data class SearchUiState(
     val userResults: List<SearchUser> = emptyList(),
     val roomResults: List<SearchRoom> = emptyList(),
     val idSearchResult: IdSearchResult? = null,
+    val recentSearches: List<String> = emptyList(),
     val error: String? = null
 )

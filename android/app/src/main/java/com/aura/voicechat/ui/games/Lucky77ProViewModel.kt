@@ -54,7 +54,7 @@ class Lucky77ProViewModel @Inject constructor(
                 val recentWins = if (historyResponse.isSuccessful) {
                     historyResponse.body()?.records?.map { record ->
                         ProWinRecord(
-                            playerName = record.userName ?: "Player",
+                            username = record.userName ?: "Player",
                             amount = record.winAmount?.toInt() ?: 0,
                             timestamp = record.timestamp ?: System.currentTimeMillis()
                         )

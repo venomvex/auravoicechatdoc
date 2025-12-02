@@ -124,7 +124,7 @@ fun FamilyScreen(
                         onMemberClick = onNavigateToMemberProfile,
                         isAdmin = uiState.isOwner || uiState.isAdmin,
                         onKick = { viewModel.kickMember(it) },
-                        onPromote = { viewModel.promoteMember(it) }
+                        onPromote = { viewModel.promoteMember(it, "admin") }
                     )
                     2 -> FamilyActivityTab(activities = uiState.recentActivities)
                     3 -> FamilyPerksTab(perks = uiState.perks, currentLevel = uiState.familyLevel)

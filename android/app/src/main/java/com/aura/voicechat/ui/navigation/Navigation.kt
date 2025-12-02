@@ -233,15 +233,14 @@ fun AuraNavHost(
         composable(Screen.Friends.route) {
             FriendsScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToProfile = { userId -> navController.navigate(Screen.Profile.createRoute(userId)) },
-                onNavigateToChat = { chatId -> /* Navigate to chat */ }
+                onNavigateToProfile = { userId -> navController.navigate(Screen.Profile.createRoute(userId)) }
             )
         }
         
         composable(Screen.CpPartner.route) {
             CpScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToProfile = { userId -> navController.navigate(Screen.Profile.createRoute(userId)) }
+                onNavigateToPartnerProfile = { userId -> navController.navigate(Screen.Profile.createRoute(userId)) }
             )
         }
         

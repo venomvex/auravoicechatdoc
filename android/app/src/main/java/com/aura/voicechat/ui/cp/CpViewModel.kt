@@ -226,6 +226,30 @@ class CpViewModel @Inject constructor(
         }
     }
     
+    fun claimTaskReward(taskId: String) {
+        viewModelScope.launch {
+            try {
+                // In a real implementation, this would call an API to claim the task reward
+                // For now, we update the UI state to reflect the claimed task
+                val updatedTasks = _uiState.value.dailyTasks.map { task ->
+                    if (task.id == taskId && task.isCompleted) {
+                        task.copy(isClaimed = true)
+                    } else {
+                        task
+                    }
+                }
+                _uiState.value = _uiState.value.copy(
+                    dailyTasks = updatedTasks,
+                    message = "Task reward claimed!"
+                )
+                Log.d(TAG, "Claimed task reward: $taskId")
+            } catch (e: Exception) {
+                Log.e(TAG, "Error claiming task reward", e)
+                _uiState.value = _uiState.value.copy(error = e.message)
+            }
+        }
+    }
+    
     fun refresh() {
         loadCpData()
     }

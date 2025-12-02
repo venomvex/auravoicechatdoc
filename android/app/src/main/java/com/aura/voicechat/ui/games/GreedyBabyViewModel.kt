@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.random.Random
@@ -85,7 +86,7 @@ class GreedyBabyViewModel @Inject constructor(
     private fun loadUserCoins() {
         viewModelScope.launch {
             try {
-                val response = apiService.getWalletBalance()
+                val response = apiService.getWalletBalances()
                 if (response.isSuccessful && response.body() != null) {
                     _uiState.update { state ->
                         state.copy(userCoins = response.body()!!.coins)
@@ -105,13 +106,13 @@ class GreedyBabyViewModel @Inject constructor(
                 if (response.isSuccessful && response.body() != null) {
                     val records = response.body()!!.records.map { dto ->
                         WinningRecord(
-                            roundId = dto.id,
+                            roundId = dto.id ?: "",
                             item = _uiState.value.wheelItems.find { it.id == dto.result } 
                                 ?: _uiState.value.wheelItems.first(),
-                            totalBet = dto.bet,
-                            won = dto.won,
-                            payout = dto.payout,
-                            timestamp = dto.createdAt
+                            totalBet = dto.totalValue ?: 0L,
+                            won = (dto.winAmount ?: 0L) > 0L,
+                            payout = dto.winAmount ?: 0L,
+                            timestamp = dto.timestamp ?: System.currentTimeMillis()
                         )
                     }
                     _uiState.update { state ->

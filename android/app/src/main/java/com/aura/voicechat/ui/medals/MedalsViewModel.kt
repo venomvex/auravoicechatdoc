@@ -47,8 +47,8 @@ class MedalsViewModel @Inject constructor(
                             name = dto.name,
                             description = dto.description,
                             category = dto.category,
-                            progress = dto.progress ?: 0,
-                            target = dto.target,
+                            progress = if (dto.earnedAt != null) 100L else 0L,
+                            target = 100L,
                             isDisplayed = dto.isDisplayed ?: false
                         )
                     } ?: emptyList()

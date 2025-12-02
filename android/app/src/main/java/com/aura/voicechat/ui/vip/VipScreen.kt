@@ -91,7 +91,7 @@ fun VipScreen(
             item {
                 VipBenefitsCard(
                     tier = selectedTier,
-                    benefits = uiState.getBenefitsForTier(selectedTier)
+                    benefits = viewModel.getBenefitsForTier(selectedTier)
                 )
             }
             
@@ -111,7 +111,7 @@ fun VipScreen(
                     contentPadding = PaddingValues(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    items(uiState.getExclusiveItems(selectedTier)) { item ->
+                    items(viewModel.getExclusiveItems(selectedTier)) { item ->
                         VipExclusiveItem(item = item)
                     }
                 }
