@@ -40,7 +40,7 @@ android {
         buildConfigField("String", "AGORA_APP_ID", "\"f4da0e66ab6944cd953ff76a99c9d7c3\"")
         buildConfigField("String", "AWS_REGION", "\"ap-south-1\"")
         // Google Sign-In Web Client ID - obtain from Google Cloud Console
-        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"YOUR_GOOGLE_WEB_CLIENT_ID\"")
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"780667973697-6kk9m79d5t392t24psbrfg5kflj31ulg.apps.googleusercontent.com\"")
     }
 
     signingConfigs {
