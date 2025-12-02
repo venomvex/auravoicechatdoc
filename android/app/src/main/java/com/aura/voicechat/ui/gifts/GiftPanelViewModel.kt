@@ -116,12 +116,12 @@ class GiftPanelViewModel @Inject constructor(
     fun sendGift(recipientId: String, giftId: String, quantity: Int, roomId: String? = null) {
         viewModelScope.launch {
             val gift = allGifts.find { it.id == giftId } ?: return@launch
-            val totalCost = gift.price * quantity
+            val totalCost = (gift.price ?: gift.priceCoins ?: 0L) * quantity
             val currentCoins = _uiState.value.coins
             
             if (currentCoins >= totalCost) {
                 try {
-                    val response = apiService.sendGift(
+                    val response = apiService.sendGiftSimple(
                         SendGiftRequest(
                             giftId = giftId,
                             receiverId = recipientId,

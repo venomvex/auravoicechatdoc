@@ -47,12 +47,12 @@ class StoreViewModel @Inject constructor(
                         StoreItem(
                             id = dto.id,
                             name = dto.name,
-                            description = dto.description,
+                            description = dto.description ?: "",
                             category = dto.category,
                             price = dto.price,
                             rarity = dto.rarity,
-                            duration = dto.duration,
-                            imageUrl = dto.imageUrl
+                            iconUrl = dto.iconUrl,
+                            duration = dto.duration
                         )
                     }
                     
@@ -73,12 +73,12 @@ class StoreViewModel @Inject constructor(
                             featuredItem = StoreItem(
                                 id = featured.id,
                                 name = featured.name,
-                                description = featured.description,
+                                description = featured.description ?: "",
                                 category = featured.category,
                                 price = featured.price,
                                 rarity = featured.rarity,
-                                duration = featured.duration,
-                                imageUrl = featured.imageUrl
+                                iconUrl = featured.iconUrl,
+                                duration = featured.duration
                             )
                         )
                     }
@@ -96,7 +96,7 @@ class StoreViewModel @Inject constructor(
     private fun loadWallet() {
         viewModelScope.launch {
             try {
-                val response = apiService.getWalletBalance()
+                val response = apiService.getWalletBalances()
                 if (response.isSuccessful && response.body() != null) {
                     _uiState.value = _uiState.value.copy(
                         coins = response.body()!!.coins
@@ -130,11 +130,11 @@ class StoreViewModel @Inject constructor(
             }
             
             try {
-                val response = apiService.purchaseItem(PurchaseItemRequest(itemId))
+                val response = apiService.purchaseItem(PurchaseItemRequest(itemId, 1))
                 if (response.isSuccessful && response.body() != null) {
                     val result = response.body()!!
                     _uiState.value = _uiState.value.copy(
-                        coins = result.remainingCoins,
+                        coins = result.newBalance,
                         purchaseSuccess = true,
                         purchasedItemId = itemId,
                         purchaseMessage = "Successfully purchased ${item.name}!"

@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.aura.voicechat.ui.theme.GradientPurpleEnd
 import com.aura.voicechat.ui.theme.GradientPurpleStart
@@ -109,7 +110,7 @@ fun OtpVerificationScreen(
                     .focusRequester(focusRequester),
                 textStyle = LocalTextStyle.current.copy(
                     textAlign = TextAlign.Center,
-                    letterSpacing = 8.dp.value.sp
+                    letterSpacing = 8.sp
                 ),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = Purple80,
@@ -197,6 +198,3 @@ fun OtpVerificationScreen(
         }
     }
 }
-
-private val Int.sp: androidx.compose.ui.unit.TextUnit
-    get() = androidx.compose.ui.unit.TextUnit(this.toFloat(), androidx.compose.ui.unit.TextUnitType.Sp)

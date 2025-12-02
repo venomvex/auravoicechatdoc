@@ -15,6 +15,7 @@ import javax.inject.Inject
  * Developer: Hawkaye Visions LTD — Pakistan
  * 
  * Uses live backend API for events data.
+ * Properly maps from EventDto, EventDetailsResponse, and EventProgressResponse.
  */
 @HiltViewModel
 class EventsViewModel @Inject constructor(
@@ -37,89 +38,107 @@ class EventsViewModel @Inject constructor(
                     if (targetEvent != null) {
                         // Load event details
                         val detailsResponse = apiService.getEventDetails(targetEvent.id)
-                        if (detailsResponse.isSuccessful) {
-                            val details = detailsResponse.body()
-                            
-                            when (eventType) {
-                                "recharge" -> {
-                                    _uiState.value = EventsUiState(
-                                        isLoading = false,
-                                        eventName = details?.name ?: "Monthly Recharge Rewards",
-                                        timeRemaining = details?.timeRemaining ?: "Loading...",
-                                        rechargeTiers = details?.rechargeTiers?.map { tier ->
-                                            RechargeTier(
-                                                id = tier.id,
-                                                amount = tier.amount,
-                                                currentAmount = tier.currentAmount ?: 0,
-                                                reward = tier.reward,
-                                                bonus = tier.bonus ?: 0,
-                                                isCompleted = tier.isCompleted ?: false,
-                                                isClaimed = tier.isClaimed ?: false
-                                            )
-                                        } ?: emptyList()
+                        val progressResponse = apiService.getEventProgress(targetEvent.id)
+                        
+                        val eventDetails = detailsResponse.body()
+                        val eventProgress = progressResponse.body()
+                        val eventData = eventDetails?.event ?: targetEvent
+                        
+                        // Calculate time remaining
+                        val timeRemaining = calculateTimeRemaining(eventData.endAt)
+                        
+                        when (eventType) {
+                            "recharge" -> {
+                                // Map rewards to recharge tiers
+                                val tiers = eventData.rewards?.mapIndexed { index, reward ->
+                                    val rewardProgress = eventProgress?.rewards?.find { it.rewardId == reward.id }
+                                    RechargeTier(
+                                        id = reward.id,
+                                        targetAmount = reward.requirement,
+                                        currentAmount = eventProgress?.progress ?: 0,
+                                        rewardName = reward.name,
+                                        bonusCoins = reward.value,
+                                        isCompleted = (eventProgress?.progress ?: 0) >= reward.requirement,
+                                        isClaimed = rewardProgress?.isClaimed ?: false
                                     )
-                                }
-                                "party_star" -> {
-                                    _uiState.value = EventsUiState(
-                                        isLoading = false,
-                                        eventName = details?.name ?: "Weekly Party Star",
-                                        timeRemaining = details?.timeRemaining ?: "Loading...",
-                                        myPoints = details?.myPoints ?: 0,
-                                        myRank = details?.myRank ?: 0,
-                                        nextTierPoints = details?.nextTierPoints ?: 0,
-                                        topStars = details?.topStars?.map { star ->
-                                            PartyStar(
-                                                id = star.id,
-                                                name = star.name,
-                                                level = star.level,
-                                                rank = star.rank,
-                                                points = star.points
-                                            )
-                                        } ?: emptyList(),
-                                        partyRewards = details?.partyRewards?.map { reward ->
-                                            PartyReward(
-                                                rankRange = reward.rankRange,
-                                                rewards = reward.rewards
-                                            )
-                                        } ?: emptyList()
-                                    )
-                                }
-                                "room_support" -> {
-                                    _uiState.value = EventsUiState(
-                                        isLoading = false,
-                                        eventName = details?.name ?: "Support Room",
-                                        timeRemaining = details?.timeRemaining ?: "Permanent",
-                                        supportOptions = details?.supportOptions?.map { option ->
-                                            SupportOption(
-                                                id = option.id,
-                                                name = option.name,
-                                                description = option.description,
-                                                cost = option.cost
-                                            )
-                                        } ?: emptyList(),
-                                        topSupporters = details?.topSupporters?.map { supporter ->
-                                            Supporter(
-                                                id = supporter.id,
-                                                name = supporter.name,
-                                                rank = supporter.rank,
-                                                amount = supporter.amount
-                                            )
-                                        } ?: emptyList()
-                                    )
-                                }
-                                else -> {
-                                    _uiState.value = _uiState.value.copy(
-                                        isLoading = false,
-                                        error = "Unknown event type"
-                                    )
-                                }
+                                } ?: emptyList()
+                                
+                                _uiState.value = EventsUiState(
+                                    isLoading = false,
+                                    eventName = eventData.name,
+                                    timeRemaining = timeRemaining,
+                                    rechargeTiers = tiers
+                                )
                             }
-                        } else {
-                            // Fallback to basic data
-                            loadFallbackData(eventType)
+                            "party_star" -> {
+                                // Map rankings to party stars
+                                val stars = eventDetails?.rankings?.mapIndexed { index, ranking ->
+                                    PartyStar(
+                                        userId = ranking.userId,
+                                        userName = ranking.userName,
+                                        level = ranking.userLevel,
+                                        rank = ranking.rank,
+                                        points = ranking.value
+                                    )
+                                } ?: emptyList()
+                                
+                                // Map rewards to party rewards
+                                val rewards = eventData.rewards?.map { reward ->
+                                    PartyReward(
+                                        rankRange = "Top ${reward.requirement.toInt()}",
+                                        prize = "${reward.value} ${reward.type}"
+                                    )
+                                } ?: emptyList()
+                                
+                                _uiState.value = EventsUiState(
+                                    isLoading = false,
+                                    eventName = eventData.name,
+                                    timeRemaining = timeRemaining,
+                                    myPoints = eventProgress?.progress ?: 0,
+                                    myRank = eventProgress?.rank ?: 0,
+                                    nextTierPoints = getNextTierPoints(eventData.rewards, eventProgress?.progress ?: 0),
+                                    topStars = stars,
+                                    partyRewards = rewards
+                                )
+                            }
+                            "room_support" -> {
+                                // Map rewards to support options
+                                val options = eventData.rewards?.map { reward ->
+                                    SupportOption(
+                                        id = reward.id,
+                                        name = reward.name,
+                                        description = "${reward.value} support points",
+                                        cost = reward.requirement
+                                    )
+                                } ?: emptyList()
+                                
+                                // Map rankings to supporters
+                                val supporters = eventDetails?.rankings?.mapIndexed { index, ranking ->
+                                    Supporter(
+                                        userId = ranking.userId,
+                                        userName = ranking.userName,
+                                        rank = ranking.rank,
+                                        amount = ranking.value
+                                    )
+                                } ?: emptyList()
+                                
+                                _uiState.value = EventsUiState(
+                                    isLoading = false,
+                                    eventName = eventData.name,
+                                    timeRemaining = if (eventData.isActive) "Active" else timeRemaining,
+                                    supportOptions = options,
+                                    topSupporters = supporters
+                                )
+                            }
+                            else -> {
+                                _uiState.value = _uiState.value.copy(
+                                    isLoading = false,
+                                    error = "Unknown event type"
+                                )
+                            }
                         }
                     } else {
-                        // Event not found, load fallback
+                        // Event not found, show fallback data
                         loadFallbackData(eventType)
                     }
                 } else {
@@ -134,108 +153,52 @@ class EventsViewModel @Inject constructor(
         }
     }
     
+    private fun calculateTimeRemaining(endAt: Long): String {
+        val now = System.currentTimeMillis()
+        val diff = endAt - now
+        if (diff <= 0) return "Ended"
+        
+        val days = diff / (24 * 60 * 60 * 1000)
+        val hours = (diff % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)
+        
+        return when {
+            days > 0 -> "${days}d ${hours}h"
+            hours > 0 -> "${hours}h"
+            else -> "< 1h"
+        }
+    }
+    
+    private fun getNextTierPoints(rewards: List<com.aura.voicechat.data.model.EventRewardDto>?, currentPoints: Long): Long {
+        if (rewards.isNullOrEmpty()) return 0
+        val nextTier = rewards.sortedBy { it.requirement }.find { it.requirement > currentPoints }
+        return nextTier?.requirement ?: rewards.maxOfOrNull { it.requirement } ?: 0
+    }
+    
     private fun loadFallbackData(eventType: String) {
-        // Fallback to loading from individual event endpoints if available
+        // Fallback with placeholder data when API fails
         when (eventType) {
-            "recharge" -> loadRechargeEvent()
-            "party_star" -> loadPartyStarEvent()
-            "room_support" -> loadRoomSupportEvent()
-        }
-    }
-    
-    private fun loadRechargeEvent() {
-        viewModelScope.launch {
-            try {
-                val progressResponse = apiService.getEventProgress("recharge")
-                if (progressResponse.isSuccessful) {
-                    val progress = progressResponse.body()
-                    _uiState.value = EventsUiState(
-                        isLoading = false,
-                        eventName = "Monthly Recharge Rewards",
-                        timeRemaining = progress?.timeRemaining ?: "5 days",
-                        rechargeTiers = progress?.tiers?.map { tier ->
-                            RechargeTier(
-                                tier.id, 
-                                tier.targetAmount ?: 0,
-                                tier.currentAmount ?: 0, 
-                                tier.reward ?: "",
-                                tier.bonus ?: 0,
-                                tier.isCompleted ?: false,
-                                tier.isClaimed ?: false
-                            )
-                        } ?: emptyList()
-                    )
-                } else {
-                    _uiState.value = EventsUiState(
-                        isLoading = false,
-                        eventName = "Monthly Recharge Rewards",
-                        timeRemaining = "Loading...",
-                        error = "Failed to load event data"
-                    )
-                }
-            } catch (e: Exception) {
+            "recharge" -> {
                 _uiState.value = EventsUiState(
                     isLoading = false,
-                    error = e.message
+                    eventName = "Monthly Recharge Rewards",
+                    timeRemaining = "Loading...",
+                    error = "Event not available"
                 )
             }
-        }
-    }
-    
-    private fun loadPartyStarEvent() {
-        viewModelScope.launch {
-            try {
-                val progressResponse = apiService.getEventProgress("party_star")
-                if (progressResponse.isSuccessful) {
-                    val progress = progressResponse.body()
-                    _uiState.value = EventsUiState(
-                        isLoading = false,
-                        eventName = "Weekly Party Star",
-                        timeRemaining = progress?.timeRemaining ?: "3 days",
-                        myPoints = progress?.myPoints ?: 0,
-                        myRank = progress?.myRank ?: 0,
-                        nextTierPoints = progress?.nextTierPoints ?: 0
-                    )
-                } else {
-                    _uiState.value = EventsUiState(
-                        isLoading = false,
-                        eventName = "Weekly Party Star",
-                        timeRemaining = "Loading...",
-                        error = "Failed to load event data"
-                    )
-                }
-            } catch (e: Exception) {
+            "party_star" -> {
                 _uiState.value = EventsUiState(
                     isLoading = false,
-                    error = e.message
+                    eventName = "Weekly Party Star",
+                    timeRemaining = "Loading...",
+                    error = "Event not available"
                 )
             }
-        }
-    }
-    
-    private fun loadRoomSupportEvent() {
-        viewModelScope.launch {
-            try {
-                val progressResponse = apiService.getEventProgress("room_support")
-                if (progressResponse.isSuccessful) {
-                    val progress = progressResponse.body()
-                    _uiState.value = EventsUiState(
-                        isLoading = false,
-                        eventName = "Support Room",
-                        timeRemaining = "Permanent"
-                    )
-                } else {
-                    _uiState.value = EventsUiState(
-                        isLoading = false,
-                        eventName = "Support Room",
-                        timeRemaining = "Permanent",
-                        error = "Failed to load event data"
-                    )
-                }
-            } catch (e: Exception) {
+            "room_support" -> {
                 _uiState.value = EventsUiState(
                     isLoading = false,
-                    error = e.message
+                    eventName = "Support Room",
+                    timeRemaining = "Active",
+                    error = "Event not available"
                 )
             }
         }
@@ -267,7 +230,7 @@ class EventsViewModel @Inject constructor(
                 val response = apiService.participateInEvent(optionId)
                 if (response.isSuccessful) {
                     // Reload room support event to get updated data
-                    loadRoomSupportEvent()
+                    loadEvent("room_support")
                 }
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(error = e.message)

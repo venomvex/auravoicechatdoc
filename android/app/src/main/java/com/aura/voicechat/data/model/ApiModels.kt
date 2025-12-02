@@ -635,20 +635,26 @@ data class GiftCatalogResponse(
 data class GiftDto(
     @SerializedName("id") val id: String,
     @SerializedName("name") val name: String,
-    @SerializedName("description") val description: String?,
+    @SerializedName("description") val description: String? = null,
     @SerializedName("category") val category: String,
-    @SerializedName("price") val price: Long,
-    @SerializedName("diamondValue") val diamondValue: Long,
-    @SerializedName("rarity") val rarity: String,
-    @SerializedName("iconUrl") val iconUrl: String?,
-    @SerializedName("animationFile") val animationFile: String?,
-    @SerializedName("soundFile") val soundFile: String?,
-    @SerializedName("isAnimated") val isAnimated: Boolean,
-    @SerializedName("isFullScreen") val isFullScreen: Boolean,
-    @SerializedName("isCustom") val isCustom: Boolean,
-    @SerializedName("isLegendary") val isLegendary: Boolean,
-    @SerializedName("duration") val duration: Int,
-    @SerializedName("enabled") val enabled: Boolean
+    @SerializedName("price") val price: Long? = null,
+    @SerializedName("price_coins") val priceCoins: Long? = null,
+    @SerializedName("diamondValue") val diamondValue: Long? = null,
+    @SerializedName("diamond_value") val diamondValueAlt: Long? = null,
+    @SerializedName("rarity") val rarity: String? = null,
+    @SerializedName("iconUrl") val iconUrl: String? = null,
+    @SerializedName("animationFile") val animationFile: String? = null,
+    @SerializedName("animation_url") val animationUrl: String? = null,
+    @SerializedName("thumbnail_url") val thumbnailUrl: String? = null,
+    @SerializedName("soundFile") val soundFile: String? = null,
+    @SerializedName("isAnimated") val isAnimated: Boolean = false,
+    @SerializedName("isFullScreen") val isFullScreen: Boolean = false,
+    @SerializedName("isCustom") val isCustom: Boolean = false,
+    @SerializedName("isLegendary") val isLegendary: Boolean = false,
+    @SerializedName("is_premium") val isPremium: Boolean = false,
+    @SerializedName("is_active") val isActive: Boolean = true,
+    @SerializedName("duration") val duration: Int = 0,
+    @SerializedName("enabled") val enabled: Boolean = true
 )
 
 data class GiftCategoryDto(
@@ -663,6 +669,21 @@ data class GiftSendRequestDto(
     @SerializedName("recipients") val recipients: List<String>,
     @SerializedName("quantity") val quantity: Int,
     @SerializedName("roomId") val roomId: String?
+)
+
+// Simple single-recipient gift request (used by RoomViewModel)
+data class SendGiftRequest(
+    @SerializedName("giftId") val giftId: String,
+    @SerializedName("receiverId") val receiverId: String,
+    @SerializedName("roomId") val roomId: String?,
+    @SerializedName("quantity") val quantity: Int = 1
+)
+
+// Simple gift send response
+data class SendGiftResponse(
+    @SerializedName("success") val success: Boolean,
+    @SerializedName("transaction") val transaction: GiftTransactionDto?,
+    @SerializedName("message") val message: String?
 )
 
 data class BaggageSendRequestDto(
@@ -687,18 +708,24 @@ data class GiftHistoryResponse(
 
 data class GiftTransactionDto(
     @SerializedName("id") val id: String,
-    @SerializedName("giftId") val giftId: String,
-    @SerializedName("giftName") val giftName: String,
-    @SerializedName("giftIcon") val giftIcon: String?,
-    @SerializedName("senderId") val senderId: String,
-    @SerializedName("senderName") val senderName: String,
-    @SerializedName("recipientId") val recipientId: String,
-    @SerializedName("recipientName") val recipientName: String,
-    @SerializedName("quantity") val quantity: Int,
-    @SerializedName("coinsSpent") val coinsSpent: Long,
-    @SerializedName("diamondsReceived") val diamondsReceived: Long,
-    @SerializedName("roomId") val roomId: String?,
-    @SerializedName("timestamp") val timestamp: Long
+    @SerializedName("giftId") val giftId: String? = null,
+    @SerializedName("gift_id") val giftIdAlt: String? = null,
+    @SerializedName("giftName") val giftName: String? = null,
+    @SerializedName("giftIcon") val giftIcon: String? = null,
+    @SerializedName("senderId") val senderId: String? = null,
+    @SerializedName("sender_id") val senderIdAlt: String? = null,
+    @SerializedName("senderName") val senderName: String? = null,
+    @SerializedName("recipientId") val recipientId: String? = null,
+    @SerializedName("receiver_id") val receiverId: String? = null,
+    @SerializedName("recipientName") val recipientName: String? = null,
+    @SerializedName("quantity") val quantity: Int = 1,
+    @SerializedName("coinsSpent") val coinsSpent: Long? = null,
+    @SerializedName("coins_spent") val coinsSpentAlt: Long? = null,
+    @SerializedName("diamondsReceived") val diamondsReceived: Long? = null,
+    @SerializedName("diamonds_earned") val diamondsEarned: Long? = null,
+    @SerializedName("roomId") val roomId: String? = null,
+    @SerializedName("timestamp") val timestamp: Long? = null,
+    @SerializedName("created_at") val createdAt: String? = null
 )
 
 // ============================================
@@ -1178,48 +1205,11 @@ data class GuideLeaderboardEntryDto(
 )
 
 // ============================================
-// Gifts Models
+// Gifts Models (Simple Response)
 // ============================================
 
 data class GiftsResponse(
     @SerializedName("gifts") val gifts: List<GiftDto>
-)
-
-data class GiftDto(
-    @SerializedName("id") val id: String,
-    @SerializedName("name") val name: String,
-    @SerializedName("description") val description: String?,
-    @SerializedName("price_coins") val priceCoins: Long,
-    @SerializedName("diamond_value") val diamondValue: Long,
-    @SerializedName("category") val category: String,
-    @SerializedName("animation_url") val animationUrl: String?,
-    @SerializedName("thumbnail_url") val thumbnailUrl: String?,
-    @SerializedName("is_premium") val isPremium: Boolean,
-    @SerializedName("is_active") val isActive: Boolean
-)
-
-data class SendGiftRequest(
-    @SerializedName("giftId") val giftId: String,
-    @SerializedName("receiverId") val receiverId: String,
-    @SerializedName("roomId") val roomId: String?,
-    @SerializedName("quantity") val quantity: Int
-)
-
-data class SendGiftResponse(
-    @SerializedName("success") val success: Boolean,
-    @SerializedName("transaction") val transaction: GiftTransactionDto?,
-    @SerializedName("message") val message: String?
-)
-
-data class GiftTransactionDto(
-    @SerializedName("id") val id: String,
-    @SerializedName("gift_id") val giftId: String,
-    @SerializedName("sender_id") val senderId: String,
-    @SerializedName("receiver_id") val receiverId: String,
-    @SerializedName("quantity") val quantity: Int,
-    @SerializedName("coins_spent") val coinsSpent: Long,
-    @SerializedName("diamonds_earned") val diamondsEarned: Long,
-    @SerializedName("created_at") val createdAt: String
 )
 
 // ============================================

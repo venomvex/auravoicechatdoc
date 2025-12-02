@@ -460,9 +460,9 @@ interface ApiService {
         @Query("category") category: String? = null
     ): Response<GiftsResponse>
     
-    // Send a gift
+    // Send a gift to single recipient (used by RoomViewModel)
     @POST("api/v1/gifts/send")
-    suspend fun sendGift(@Body request: SendGiftRequest): Response<SendGiftResponse>
+    suspend fun sendGiftSimple(@Body request: SendGiftRequest): Response<SendGiftResponse>
     
     // ============================================
     // Room Operations (Live API)

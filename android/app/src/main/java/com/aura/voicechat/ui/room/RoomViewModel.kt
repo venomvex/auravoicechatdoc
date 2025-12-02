@@ -709,7 +709,7 @@ class RoomViewModel @Inject constructor(
         viewModelScope.launch {
             val roomId = currentRoomId ?: return@launch
             try {
-                val response = apiService.sendGift(SendGiftRequest(giftId, receiverId, roomId, quantity))
+                val response = apiService.sendGiftSimple(SendGiftRequest(giftId, receiverId, roomId, quantity))
                 if (response.isSuccessful && response.body() != null) {
                     _uiState.value = _uiState.value.copy(
                         message = "Gift sent!"
