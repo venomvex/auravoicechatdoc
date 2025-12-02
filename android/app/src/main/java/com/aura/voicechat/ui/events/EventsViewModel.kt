@@ -2,6 +2,7 @@ package com.aura.voicechat.ui.events
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aura.voicechat.data.model.EventRewardDto
 import com.aura.voicechat.data.remote.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -168,7 +169,7 @@ class EventsViewModel @Inject constructor(
         }
     }
     
-    private fun getNextTierPoints(rewards: List<com.aura.voicechat.data.model.EventRewardDto>?, currentPoints: Long): Long {
+    private fun getNextTierPoints(rewards: List<EventRewardDto>?, currentPoints: Long): Long {
         if (rewards.isNullOrEmpty()) return 0
         val nextTier = rewards.sortedBy { it.requirement }.find { it.requirement > currentPoints }
         return nextTier?.requirement ?: rewards.maxOfOrNull { it.requirement } ?: 0
