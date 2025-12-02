@@ -12,14 +12,12 @@ import javax.inject.Singleton
 /**
  * Hilt Dependency Injection Module
  * Developer: Hawkaye Visions LTD — Pakistan
+ * 
+ * Note: AuthRepository is bound in AuthBindModule to avoid duplicate bindings.
  */
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
-    
-    @Binds
-    @Singleton
-    abstract fun bindAuthRepository(impl: AuthRepositoryImpl): AuthRepository
     
     @Binds
     @Singleton
