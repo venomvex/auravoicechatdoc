@@ -113,6 +113,7 @@ fun AuraVoiceChatTheme(
             // Set transparent status bar for edge-to-edge effect
             // Note: statusBarColor is deprecated but still needed for transparent status bar
             // on API < 35. The @Suppress is targeted only at this specific usage.
+            // TODO: Remove @Suppress when minSdk >= 35
             @Suppress("DEPRECATION")
             window.statusBarColor = Color.Transparent.toArgb()
             

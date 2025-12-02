@@ -121,7 +121,7 @@ class AuthActivity : ComponentActivity() {
     private fun handleGoogleSignIn(idToken: String, email: String?, displayName: String?) {
         // Use AWS Cognito to federate Google identity
         Log.i(TAG, "Google Sign-In successful, federating with Cognito")
-        Log.d(TAG, "Email: ${email?.take(3)}***, DisplayName: ${displayName?.take(3)}***")
+        // Note: User information is not logged for privacy/security reasons
         // Implementation handled by ViewModel/Repository
     }
     
