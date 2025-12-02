@@ -2,6 +2,8 @@ package com.aura.voicechat.ui.games
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aura.voicechat.data.model.GameActionRequest
+import com.aura.voicechat.data.remote.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -16,6 +18,7 @@ import kotlin.random.Random
  * Lucky 777 Pro ViewModel
  * Developer: Hawkaye Visions LTD — Pakistan
  * 
+ * Uses live backend API for game data, balance, and history.
  * Classic slot machine with:
  * - 3x3 grid (9 symbols)
  * - 5 paylines
@@ -23,7 +26,9 @@ import kotlin.random.Random
  * - Room integration
  */
 @HiltViewModel
-class Lucky777ViewModel @Inject constructor() : ViewModel() {
+class Lucky777ViewModel @Inject constructor(
+    private val apiService: ApiService
+) : ViewModel() {
     
     private val _uiState = MutableStateFlow(Lucky777UiState())
     val uiState: StateFlow<Lucky777UiState> = _uiState.asStateFlow()
@@ -61,22 +66,54 @@ class Lucky777ViewModel @Inject constructor() : ViewModel() {
     }
     
     private fun loadGameData() {
-        // Initial 3x3 grid of symbols
-        val initialReels = List(9) { getWeightedRandomSymbol() }
-        
-        _uiState.value = Lucky777UiState(
-            balance = 500000,
-            jackpotAmount = 125000000,
-            currentBet = betLevels[currentBetIndex],
-            reels = initialReels,
-            todaysWin = 0,
-            topWinners = listOf(
-                Lucky777Winner("1", "JOJO", null, 2842910),
-                Lucky777Winner("2", "HUNTER", null, 1500000),
-                Lucky777Winner("3", "GANGSTER", null, 900000)
-            ),
-            onlineCount = 536
-        )
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            try {
+                // Load wallet balance
+                val walletResponse = apiService.getWalletBalances()
+                val balance = if (walletResponse.isSuccessful) {
+                    walletResponse.body()?.coins ?: 0L
+                } else 0L
+                
+                // Load jackpot
+                val jackpotResponse = apiService.getJackpot("lucky777")
+                val jackpotAmount = if (jackpotResponse.isSuccessful) {
+                    jackpotResponse.body()?.amount ?: 125000000L
+                } else 125000000L
+                
+                // Load game history for top winners
+                val historyResponse = apiService.getGameHistory("lucky777", 1, 10)
+                val topWinners = if (historyResponse.isSuccessful) {
+                    historyResponse.body()?.records?.mapIndexed { index, record ->
+                        Lucky777Winner(
+                            id = record.id ?: (index + 1).toString(),
+                            name = record.userName ?: "Player",
+                            avatarUrl = record.avatarUrl,
+                            winAmount = record.winAmount ?: 0L
+                        )
+                    }?.take(3) ?: emptyList()
+                } else emptyList()
+                
+                // Initial 3x3 grid of symbols
+                val initialReels = List(9) { getWeightedRandomSymbol() }
+                
+                _uiState.value = Lucky777UiState(
+                    isLoading = false,
+                    balance = balance,
+                    jackpotAmount = jackpotAmount,
+                    currentBet = betLevels[currentBetIndex],
+                    reels = initialReels,
+                    todaysWin = 0,
+                    topWinners = topWinners,
+                    onlineCount = 536
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = e.message
+                )
+            }
+        }
     }
     
     fun increaseBet() {
@@ -138,25 +175,50 @@ class Lucky777ViewModel @Inject constructor() : ViewModel() {
                 winLines = emptyList()
             )
             
-            // Simulate spin animation time
-            delay(2000)
-            
-            // Generate 3x3 grid results
-            val result = List(9) { getWeightedRandomSymbol() }
-            
-            // Check win lines (5 lines)
-            val (winAmount, winLines) = calculateWinnings(result)
-            
-            val newTodaysWin = _uiState.value.todaysWin + winAmount
-            
-            _uiState.value = _uiState.value.copy(
-                isSpinning = false,
-                reels = result,
-                lastWin = winAmount,
-                todaysWin = newTodaysWin,
-                balance = _uiState.value.balance + winAmount,
-                winLines = winLines
-            )
+            try {
+                // Call backend to perform game action
+                val response = apiService.gameAction(
+                    "lucky777",
+                    GameActionRequest(
+                        action = "spin",
+                        bet = _uiState.value.currentBet
+                    )
+                )
+                
+                // Simulate spin animation time
+                delay(2000)
+                
+                if (response.isSuccessful) {
+                    val gameResult = response.body()
+                    val result = gameResult?.symbols?.take(9) ?: List(9) { getWeightedRandomSymbol() }
+                    val winAmount = gameResult?.winAmount ?: 0L
+                    val winLines = gameResult?.winLines ?: emptyList()
+                    
+                    val newTodaysWin = _uiState.value.todaysWin + winAmount
+                    
+                    _uiState.value = _uiState.value.copy(
+                        isSpinning = false,
+                        reels = result,
+                        lastWin = winAmount,
+                        todaysWin = newTodaysWin,
+                        balance = _uiState.value.balance + winAmount,
+                        winLines = winLines.map { it.toInt() }
+                    )
+                } else {
+                    // Revert on error
+                    _uiState.value = _uiState.value.copy(
+                        isSpinning = false,
+                        balance = _uiState.value.balance + _uiState.value.currentBet,
+                        error = "Failed to spin"
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isSpinning = false,
+                    balance = _uiState.value.balance + _uiState.value.currentBet,
+                    error = e.message
+                )
+            }
         }
     }
     
@@ -222,5 +284,6 @@ data class Lucky777UiState(
     val todaysWin: Long = 0,
     val winLines: List<Int> = emptyList(),
     val topWinners: List<Lucky777Winner> = emptyList(),
-    val onlineCount: Int = 0
+    val onlineCount: Int = 0,
+    val error: String? = null
 )

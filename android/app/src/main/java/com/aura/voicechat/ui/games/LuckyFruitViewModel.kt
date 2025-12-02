@@ -2,6 +2,8 @@ package com.aura.voicechat.ui.games
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aura.voicechat.data.model.GameActionRequest
+import com.aura.voicechat.data.remote.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +17,7 @@ import kotlin.random.Random
  * Lucky Fruit ViewModel
  * Developer: Hawkaye Visions LTD — Pakistan
  * 
+ * Uses live backend API for game data, balance, and history.
  * Betting game with:
  * - 8 fruits with different multipliers
  * - Lucky and Super Lucky special bets
@@ -22,7 +25,9 @@ import kotlin.random.Random
  * - Real-time chip betting
  */
 @HiltViewModel
-class LuckyFruitViewModel @Inject constructor() : ViewModel() {
+class LuckyFruitViewModel @Inject constructor(
+    private val apiService: ApiService
+) : ViewModel() {
     
     private val _uiState = MutableStateFlow(LuckyFruitUiState())
     val uiState: StateFlow<LuckyFruitUiState> = _uiState.asStateFlow()
@@ -44,12 +49,37 @@ class LuckyFruitViewModel @Inject constructor() : ViewModel() {
     }
     
     private fun loadGameData() {
-        _uiState.value = LuckyFruitUiState(
-            balance = 500000,
-            selectedChip = 5000,
-            todaysWin = 0,
-            recentResults = listOf("orange", "cherry", "grape", "watermelon", "mango", "lemon", "apple", "grape")
-        )
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true)
+            try {
+                // Load wallet balance
+                val walletResponse = apiService.getWalletBalances()
+                val balance = if (walletResponse.isSuccessful) {
+                    walletResponse.body()?.coins ?: 0L
+                } else 0L
+                
+                // Load game history for recent results
+                val historyResponse = apiService.getGameHistory("luckyfruit", 1, 10)
+                val recentResults = if (historyResponse.isSuccessful) {
+                    historyResponse.body()?.records?.mapNotNull { it.result } ?: emptyList()
+                } else emptyList()
+                
+                _uiState.value = LuckyFruitUiState(
+                    isLoading = false,
+                    balance = balance,
+                    selectedChip = 5000,
+                    todaysWin = 0,
+                    recentResults = recentResults.ifEmpty { 
+                        listOf("orange", "cherry", "grape", "watermelon", "mango", "lemon", "apple", "grape") 
+                    }
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    error = e.message
+                )
+            }
+        }
     }
     
     fun selectChip(value: Long) {
@@ -141,33 +171,60 @@ class LuckyFruitViewModel @Inject constructor() : ViewModel() {
         viewModelScope.launch {
             _uiState.value = state.copy(isSpinning = true, winningItem = null)
             
-            // Spin animation time
-            delay(2000)
-            
-            // Determine winner using weighted random
-            val winner = getWeightedRandomFruit()
-            
-            // Calculate winnings
-            val betOnWinner = state.bets[winner] ?: 0
-            val multiplier = LUCKY_FRUIT_ITEMS.find { it.id == winner }?.multiplier ?: 0
-            val winAmount = betOnWinner * multiplier
-            
-            val newTodaysWin = state.todaysWin + winAmount
-            val newResults = listOf(winner) + state.recentResults.take(9)
-            
-            _uiState.value = state.copy(
-                isSpinning = false,
-                winningItem = winner,
-                lastWin = winAmount,
-                todaysWin = newTodaysWin,
-                balance = state.balance + winAmount,
-                bets = emptyMap(), // Clear bets
-                recentResults = newResults
-            )
-            
-            // Reset winning highlight after delay
-            delay(3000)
-            _uiState.value = _uiState.value.copy(winningItem = null)
+            try {
+                // Call backend to perform game action
+                val response = apiService.gameAction(
+                    "luckyfruit",
+                    GameActionRequest(
+                        action = "spin",
+                        bet = state.bets.values.sum(),
+                        bets = state.bets
+                    )
+                )
+                
+                // Spin animation time
+                delay(2000)
+                
+                if (response.isSuccessful) {
+                    val gameResult = response.body()
+                    val winner = gameResult?.result ?: getWeightedRandomFruit()
+                    val winAmount = gameResult?.winAmount ?: 0L
+                    
+                    val newTodaysWin = state.todaysWin + winAmount
+                    val newResults = listOf(winner) + state.recentResults.take(9)
+                    
+                    _uiState.value = state.copy(
+                        isSpinning = false,
+                        winningItem = winner,
+                        lastWin = winAmount,
+                        todaysWin = newTodaysWin,
+                        balance = state.balance + winAmount,
+                        bets = emptyMap(), // Clear bets
+                        recentResults = newResults
+                    )
+                    
+                    // Reset winning highlight after delay
+                    delay(3000)
+                    _uiState.value = _uiState.value.copy(winningItem = null)
+                } else {
+                    // Revert on error
+                    val totalBet = state.bets.values.sum()
+                    _uiState.value = state.copy(
+                        isSpinning = false,
+                        balance = state.balance + totalBet,
+                        bets = emptyMap(),
+                        error = "Failed to spin"
+                    )
+                }
+            } catch (e: Exception) {
+                val totalBet = state.bets.values.sum()
+                _uiState.value = state.copy(
+                    isSpinning = false,
+                    balance = state.balance + totalBet,
+                    bets = emptyMap(),
+                    error = e.message
+                )
+            }
         }
     }
     
@@ -196,5 +253,6 @@ data class LuckyFruitUiState(
     val winningItem: String? = null,
     val lastWin: Long = 0,
     val todaysWin: Long = 0,
-    val recentResults: List<String> = emptyList()
+    val recentResults: List<String> = emptyList(),
+    val error: String? = null
 )

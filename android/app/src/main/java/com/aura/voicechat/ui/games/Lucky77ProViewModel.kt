@@ -2,6 +2,7 @@ package com.aura.voicechat.ui.games
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.aura.voicechat.data.remote.ApiService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,9 +16,13 @@ import kotlin.random.Random
 /**
  * ViewModel for Lucky 77 Pro Game
  * Developer: Hawkaye Visions LTD — Pakistan
+ * 
+ * Uses live backend API for game data, balance, and history.
  */
 @HiltViewModel
-class Lucky77ProViewModel @Inject constructor() : ViewModel() {
+class Lucky77ProViewModel @Inject constructor(
+    private val apiService: ApiService
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(Lucky77ProUiState())
     val uiState: StateFlow<Lucky77ProUiState> = _uiState.asStateFlow()
@@ -29,17 +34,45 @@ class Lucky77ProViewModel @Inject constructor() : ViewModel() {
     }
 
     private fun loadGameData() {
-        _uiState.update { state ->
-            state.copy(
-                userDiamonds = 50000, // From user repository
-                jackpotAmount = 10000000,
-                slots = listOf("💎", "💎", "💎"),
-                recentWins = listOf(
-                    ProWinRecord("VIP★Player", 25000, System.currentTimeMillis()),
-                    ProWinRecord("DiamondKing", 15000, System.currentTimeMillis() - 60000),
-                    ProWinRecord("ProGamer77", 50000, System.currentTimeMillis() - 120000)
-                )
-            )
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            try {
+                // Load wallet balance
+                val walletResponse = apiService.getWalletBalances()
+                val userDiamonds = if (walletResponse.isSuccessful) {
+                    walletResponse.body()?.diamonds ?: 0
+                } else 0
+                
+                // Load jackpot
+                val jackpotResponse = apiService.getJackpot("lucky77pro")
+                val jackpotAmount = if (jackpotResponse.isSuccessful) {
+                    jackpotResponse.body()?.amount ?: 10000000L
+                } else 10000000L
+                
+                // Load recent wins from game history
+                val historyResponse = apiService.getGameHistory("lucky77pro", 1, 10)
+                val recentWins = if (historyResponse.isSuccessful) {
+                    historyResponse.body()?.records?.map { record ->
+                        ProWinRecord(
+                            playerName = record.userName ?: "Player",
+                            amount = record.winAmount?.toInt() ?: 0,
+                            timestamp = record.timestamp ?: System.currentTimeMillis()
+                        )
+                    } ?: emptyList()
+                } else emptyList()
+                
+                _uiState.update { state ->
+                    state.copy(
+                        isLoading = false,
+                        userDiamonds = userDiamonds.toInt(),
+                        jackpotAmount = jackpotAmount,
+                        slots = listOf("💎", "💎", "💎"),
+                        recentWins = recentWins
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, error = e.message) }
+            }
         }
     }
 
@@ -71,40 +104,71 @@ class Lucky77ProViewModel @Inject constructor() : ViewModel() {
                     userDiamonds = state.userDiamonds - cost
                 )
             }
-
-            // Animate slots
-            repeat(20) {
-                _uiState.update { state ->
-                    state.copy(
-                        slots = List(3) { proSymbols.random() }
-                    )
-                }
-                delay(100)
-            }
-
-            // Determine final result
-            val result = determineProResult()
             
-            _uiState.update { state ->
-                state.copy(
-                    slots = result.symbols,
-                    isSpinning = false
+            try {
+                // Call backend to perform game action
+                val response = apiService.gameAction(
+                    "lucky77pro",
+                    com.aura.voicechat.data.model.GameActionRequest(
+                        action = "spin",
+                        bet = currentState.selectedBet.toLong(),
+                        multiplier = currentState.selectedMultiplier
+                    )
                 )
-            }
+                
+                if (response.isSuccessful) {
+                    val result = response.body()
+                    
+                    // Animate slots
+                    repeat(20) {
+                        _uiState.update { state ->
+                            state.copy(
+                                slots = List(3) { proSymbols.random() }
+                            )
+                        }
+                        delay(100)
+                    }
+                    
+                    // Set final result from backend
+                    val symbols = result?.symbols ?: determineProResult().symbols
+                    val winAmount = result?.winAmount?.toInt() ?: 0
+                    val isJackpot = symbols.all { it == "77" }
+                    
+                    _uiState.update { state ->
+                        state.copy(
+                            slots = symbols,
+                            isSpinning = false
+                        )
+                    }
 
-            delay(300)
+                    delay(300)
 
-            // Calculate winnings
-            val winAmount = calculateProWin(result.symbols, currentState.selectedBet, currentState.selectedMultiplier)
-            val isJackpot = result.symbols.all { it == "77" }
-
-            if (winAmount > 0) {
+                    if (winAmount > 0) {
+                        _uiState.update { state ->
+                            state.copy(
+                                lastWinAmount = winAmount,
+                                isJackpot = isJackpot,
+                                showWinDialog = true,
+                                userDiamonds = state.userDiamonds + winAmount
+                            )
+                        }
+                    }
+                } else {
+                    // Revert on error
+                    _uiState.update { state ->
+                        state.copy(
+                            isSpinning = false,
+                            userDiamonds = state.userDiamonds + cost,
+                            error = "Failed to spin"
+                        )
+                    }
+                }
+            } catch (e: Exception) {
                 _uiState.update { state ->
                     state.copy(
-                        lastWinAmount = winAmount,
-                        isJackpot = isJackpot,
-                        showWinDialog = true,
-                        userDiamonds = state.userDiamonds + winAmount
+                        isSpinning = false,
+                        userDiamonds = state.userDiamonds + cost,
+                        error = e.message
                     )
                 }
             }

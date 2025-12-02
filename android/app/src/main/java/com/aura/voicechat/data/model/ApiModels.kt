@@ -447,9 +447,13 @@ data class GameSessionDto(
 
 // Game action request/response
 data class GameActionRequest(
-    @SerializedName("sessionId") val sessionId: String,
+    @SerializedName("sessionId") val sessionId: String? = null,
     @SerializedName("action") val action: String,
-    @SerializedName("data") val data: GameActionDataDto?
+    @SerializedName("bet") val bet: Long? = null,
+    @SerializedName("multiplier") val multiplier: Int? = null,
+    @SerializedName("bets") val bets: Map<String, Long>? = null,
+    @SerializedName("useFreeSpins") val useFreeSpins: Boolean? = null,
+    @SerializedName("data") val data: GameActionDataDto? = null
 )
 
 data class GameActionDataDto(
@@ -460,7 +464,16 @@ data class GameActionDataDto(
 )
 
 data class GameResultResponse(
-    @SerializedName("result") val result: GameResultDto
+    @SerializedName("success") val success: Boolean = true,
+    @SerializedName("symbols") val symbols: List<String>? = null,
+    @SerializedName("winAmount") val winAmount: Long? = null,
+    @SerializedName("winLines") val winLines: List<Long>? = null,
+    @SerializedName("result") val result: String? = null,
+    @SerializedName("prizeIndex") val prizeIndex: Long? = null,
+    @SerializedName("isJackpot") val isJackpot: Boolean? = null,
+    @SerializedName("newBalance") val newBalance: Long? = null,
+    @SerializedName("expEarned") val expEarned: Int? = null,
+    @SerializedName("resultData") val resultData: GameResultDto? = null
 )
 
 // Lucky 777 Pro result
@@ -537,12 +550,16 @@ data class GiftWheelRecordsResponse(
 )
 
 data class GiftWheelRecordDto(
-    @SerializedName("id") val id: String,
-    @SerializedName("drawType") val drawType: String,
-    @SerializedName("drawCount") val drawCount: Int,
-    @SerializedName("items") val items: List<GiftWheelItemDto>,
-    @SerializedName("totalValue") val totalValue: Long,
-    @SerializedName("timestamp") val timestamp: String
+    @SerializedName("id") val id: String? = null,
+    @SerializedName("drawType") val drawType: String? = null,
+    @SerializedName("drawCount") val drawCount: Int? = null,
+    @SerializedName("items") val items: List<GiftWheelItemDto>? = null,
+    @SerializedName("totalValue") val totalValue: Long? = null,
+    @SerializedName("timestamp") val timestamp: Long? = null,
+    @SerializedName("userName") val userName: String? = null,
+    @SerializedName("avatarUrl") val avatarUrl: String? = null,
+    @SerializedName("winAmount") val winAmount: Long? = null,
+    @SerializedName("result") val result: String? = null
 )
 
 // Generic game result wrapper
@@ -593,7 +610,9 @@ data class JackpotDto(
 
 // Game stats
 data class GameStatsResponse(
-    @SerializedName("stats") val stats: GameStatsDto
+    @SerializedName("stats") val stats: GameStatsDto? = null,
+    @SerializedName("giftWheelFreeSpins") val giftWheelFreeSpins: Int = 0,
+    @SerializedName("dailySpinsRemaining") val dailySpinsRemaining: Int = 0
 )
 
 data class GameStatsDto(
