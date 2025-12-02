@@ -62,11 +62,19 @@ export const sendOtp = async (req: Request, res: Response, next: NextFunction): 
     const { phone } = req.body;
     const result = await authService.sendOtp(phone);
     
-    res.json({
+    // Build response - include devOtp if provided (dev/staging only)
+    const response: Record<string, unknown> = {
       success: true,
       cooldownSeconds: result.cooldownSeconds,
       attemptsRemaining: result.attemptsRemaining
-    });
+    };
+    
+    // Include dev OTP for testing in non-production environments
+    if (result.devOtp) {
+      response.devOtp = result.devOtp;
+    }
+    
+    res.json(response);
   } catch (error) {
     next(error);
   }

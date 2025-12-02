@@ -27,13 +27,15 @@ import kotlin.coroutines.resumeWithException
  * 
  * Implements authentication using:
  * - Phone OTP via backend API
- * - Google Sign-In via AWS Amplify/Cognito
- * - Facebook Sign-In via AWS Amplify/Cognito
+ * - Google Sign-In via Google Sign-In SDK + backend API
+ * - Facebook Sign-In via Facebook Login SDK + backend API
  * 
  * Tokens are stored persistently using SharedPreferences.
  * 
- * Note: For social sign-in with Amplify, an Activity reference must be set
- * using setActivity() before calling signInWithGoogle() or signInWithFacebook().
+ * For social sign-in:
+ * - The Compose layer handles SDK integration (ActivityResultContracts)
+ * - Once a token is obtained, call loginWithGoogleToken() or loginWithFacebookToken()
+ * - These methods send the token to the backend for verification and user creation
  */
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
@@ -43,13 +45,14 @@ class AuthRepositoryImpl @Inject constructor(
     
     private val prefs: SharedPreferences = context.getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
     
-    // Weak reference to the current activity for Amplify social sign-in
+    // Weak reference to the current activity for legacy Amplify social sign-in
     private var activityRef: WeakReference<Activity>? = null
     
     companion object {
         private const val TAG = "AuthRepositoryImpl"
         private const val KEY_USER_ID = "user_id"
         private const val KEY_USER_NAME = "user_name"
+        private const val KEY_USER_ROLE = "user_role"
         private const val KEY_AUTH_TOKEN = "auth_token"
         private const val KEY_REFRESH_TOKEN = "refresh_token"
         private const val KEY_TOKEN_EXPIRY = "token_expiry"
@@ -57,8 +60,8 @@ class AuthRepositoryImpl @Inject constructor(
     }
     
     /**
-     * Set the current activity for Amplify social sign-in.
-     * Should be called from the activity before initiating social sign-in.
+     * Set the current activity for legacy Amplify social sign-in.
+     * Note: Prefer using loginWithGoogleToken/loginWithFacebookToken instead.
      */
     fun setActivity(activity: Activity) {
         activityRef = WeakReference(activity)
@@ -69,6 +72,13 @@ class AuthRepositoryImpl @Inject constructor(
      */
     private fun getActivity(): Activity? {
         return activityRef?.get()
+    }
+    
+    /**
+     * Get the current user's role (e.g., "owner", "admin", "user").
+     */
+    fun getUserRole(): String? {
+        return prefs.getString(KEY_USER_ROLE, null)
     }
     
     /**
@@ -124,17 +134,17 @@ class AuthRepositoryImpl @Inject constructor(
     }
     
     /**
-     * Sign in with Google using AWS Amplify/Cognito.
-     * Uses federated sign-in with Google as the identity provider.
+     * Sign in with Google using AWS Amplify/Cognito (legacy method).
      * 
-     * Note: setActivity() must be called before this method for Amplify to work.
-     * If no activity is available, falls back to backend API.
+     * DEPRECATED: This method requires an Activity reference and uses Amplify.
+     * Use loginWithGoogleToken() instead, which works with the modern Google Sign-In SDK
+     * and Compose's rememberLauncherForActivityResult pattern.
      */
     override suspend fun signInWithGoogle(): Result<Unit> {
         val activity = getActivity()
         if (activity == null) {
-            Log.w(TAG, "No activity available for Amplify sign-in, trying backend fallback")
-            return tryBackendGoogleSignIn(Exception("No activity context available for social sign-in"))
+            Log.w(TAG, "No activity available for Amplify sign-in")
+            return Result.failure(Exception("Google Sign-In requires SDK integration. Use loginWithGoogleToken() instead."))
         }
         
         return try {
@@ -161,24 +171,22 @@ class AuthRepositoryImpl @Inject constructor(
             Result.success(result)
         } catch (e: Exception) {
             Log.e(TAG, "Google Sign-In error", e)
-            // Fallback: Try to use backend endpoint with a mock token for testing
-            // In production, this would use the actual Google ID token
-            tryBackendGoogleSignIn(e)
+            Result.failure(Exception("Google Sign-In failed. Please try again."))
         }
     }
     
     /**
-     * Sign in with Facebook using AWS Amplify/Cognito.
-     * Uses federated sign-in with Facebook as the identity provider.
+     * Sign in with Facebook using AWS Amplify/Cognito (legacy method).
      * 
-     * Note: setActivity() must be called before this method for Amplify to work.
-     * If no activity is available, falls back to backend API.
+     * DEPRECATED: This method requires an Activity reference and uses Amplify.
+     * Use loginWithFacebookToken() instead, which works with the Facebook Login SDK
+     * and Compose's patterns.
      */
     override suspend fun signInWithFacebook(): Result<Unit> {
         val activity = getActivity()
         if (activity == null) {
-            Log.w(TAG, "No activity available for Amplify sign-in, trying backend fallback")
-            return tryBackendFacebookSignIn(Exception("No activity context available for social sign-in"))
+            Log.w(TAG, "No activity available for Amplify sign-in")
+            return Result.failure(Exception("Facebook Sign-In requires SDK integration. Use loginWithFacebookToken() instead."))
         }
         
         return try {
@@ -205,8 +213,104 @@ class AuthRepositoryImpl @Inject constructor(
             Result.success(result)
         } catch (e: Exception) {
             Log.e(TAG, "Facebook Sign-In error", e)
-            // Fallback: Try to use backend endpoint with a mock token for testing
-            tryBackendFacebookSignIn(e)
+            Result.failure(Exception("Facebook Sign-In failed. Please try again."))
+        }
+    }
+    
+    /**
+     * Sign in with Google using an ID token obtained from Google Sign-In SDK.
+     * This is the preferred method for Compose-based apps.
+     * 
+     * @param idToken The Google ID token from GoogleSignInAccount.idToken
+     * @param email Optional email from the Google account
+     * @param displayName Optional display name from the Google account
+     */
+    override suspend fun loginWithGoogleToken(
+        idToken: String,
+        email: String?,
+        displayName: String?
+    ): Result<Unit> {
+        return try {
+            Log.d(TAG, "Signing in with Google token (email: ${email?.take(3)}...)")
+            
+            val request = GoogleSignInRequest(
+                idToken = idToken,
+                email = email,
+                displayName = displayName
+            )
+            
+            val response = apiService.signInWithGoogle(request)
+            
+            if (response.isSuccessful && response.body()?.success == true) {
+                response.body()?.let { body ->
+                    saveAuthData(
+                        userId = body.user.id,
+                        userName = body.user.name,
+                        authToken = body.token,
+                        refreshToken = body.refreshToken,
+                        provider = "google"
+                    )
+                    Log.i(TAG, "Google Sign-In successful. User: ${body.user.id}, isNewUser: ${body.isNewUser}")
+                }
+                Result.success(Unit)
+            } else {
+                val errorBody = response.errorBody()?.string() ?: "Unknown error"
+                Log.e(TAG, "Google Sign-In failed: ${response.code()} - $errorBody")
+                Result.failure(Exception("Google authentication failed. Please try again."))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error during Google Sign-In", e)
+            Result.failure(Exception("Google Sign-In failed: ${e.message}"))
+        }
+    }
+    
+    /**
+     * Sign in with Facebook using an access token obtained from Facebook Login SDK.
+     * This is the preferred method for Compose-based apps.
+     * 
+     * @param accessToken The Facebook access token from AccessToken.currentAccessToken
+     * @param userId Optional Facebook user ID
+     * @param email Optional email from the Facebook account
+     * @param displayName Optional display name from the Facebook account
+     */
+    override suspend fun loginWithFacebookToken(
+        accessToken: String,
+        userId: String?,
+        email: String?,
+        displayName: String?
+    ): Result<Unit> {
+        return try {
+            Log.d(TAG, "Signing in with Facebook token (userId: ${userId?.take(3)}...)")
+            
+            val request = FacebookSignInRequest(
+                accessToken = accessToken,
+                userId = userId,
+                email = email,
+                displayName = displayName
+            )
+            
+            val response = apiService.signInWithFacebook(request)
+            
+            if (response.isSuccessful && response.body()?.success == true) {
+                response.body()?.let { body ->
+                    saveAuthData(
+                        userId = body.user.id,
+                        userName = body.user.name,
+                        authToken = body.token,
+                        refreshToken = body.refreshToken,
+                        provider = "facebook"
+                    )
+                    Log.i(TAG, "Facebook Sign-In successful. User: ${body.user.id}, isNewUser: ${body.isNewUser}")
+                }
+                Result.success(Unit)
+            } else {
+                val errorBody = response.errorBody()?.string() ?: "Unknown error"
+                Log.e(TAG, "Facebook Sign-In failed: ${response.code()} - $errorBody")
+                Result.failure(Exception("Facebook authentication failed. Please try again."))
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error during Facebook Sign-In", e)
+            Result.failure(Exception("Facebook Sign-In failed: ${e.message}"))
         }
     }
     
@@ -327,7 +431,8 @@ class AuthRepositoryImpl @Inject constructor(
         userName: String,
         authToken: String,
         refreshToken: String?,
-        provider: String
+        provider: String,
+        role: String? = null
     ) {
         prefs.edit().apply {
             putString(KEY_USER_ID, userId)
@@ -335,6 +440,7 @@ class AuthRepositoryImpl @Inject constructor(
             putString(KEY_AUTH_TOKEN, authToken)
             refreshToken?.let { putString(KEY_REFRESH_TOKEN, it) }
             putString(KEY_AUTH_PROVIDER, provider)
+            role?.let { putString(KEY_USER_ROLE, it) }
             putLong(KEY_TOKEN_EXPIRY, System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000) // 7 days
             apply()
         }
@@ -347,6 +453,7 @@ class AuthRepositoryImpl @Inject constructor(
         prefs.edit()
             .remove(KEY_USER_ID)
             .remove(KEY_USER_NAME)
+            .remove(KEY_USER_ROLE)
             .remove(KEY_AUTH_TOKEN)
             .remove(KEY_REFRESH_TOKEN)
             .remove(KEY_TOKEN_EXPIRY)
@@ -405,35 +512,5 @@ class AuthRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Log.e(TAG, "Error fetching Amplify user data", e)
         }
-    }
-    
-    /**
-     * Fallback: Return the original error when Amplify sign-in fails.
-     * 
-     * Note: In a production implementation, you would integrate with Google Sign-In SDK
-     * to get a valid ID token and then call the backend. For now, we simply return
-     * the original error as the backend requires valid tokens.
-     */
-    private suspend fun tryBackendGoogleSignIn(originalError: Exception): Result<Unit> {
-        // The backend requires a valid Google ID token for verification.
-        // Without the Google Sign-In SDK integration to get a real token,
-        // we cannot make a valid backend request.
-        Log.w(TAG, "Google Sign-In requires proper SDK integration. Returning original error.")
-        return Result.failure(originalError)
-    }
-    
-    /**
-     * Fallback: Return the original error when Amplify sign-in fails.
-     * 
-     * Note: In a production implementation, you would integrate with Facebook Login SDK
-     * to get a valid access token and then call the backend. For now, we simply return
-     * the original error as the backend requires valid tokens.
-     */
-    private suspend fun tryBackendFacebookSignIn(originalError: Exception): Result<Unit> {
-        // The backend requires a valid Facebook access token for verification.
-        // Without the Facebook Login SDK integration to get a real token,
-        // we cannot make a valid backend request.
-        Log.w(TAG, "Facebook Sign-In requires proper SDK integration. Returning original error.")
-        return Result.failure(originalError)
     }
 }

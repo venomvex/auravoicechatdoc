@@ -258,6 +258,130 @@ docker-compose exec redis redis-cli ping
 
 ---
 
+## Authentication Configuration
+
+The backend supports multiple authentication methods. Configure them in your `.env` file.
+
+### 1. OTP/SMS Authentication
+
+OTP codes are sent via Twilio SMS. Configure these environment variables:
+
+```env
+# Twilio SMS Configuration
+TWILIO_ACCOUNT_SID=your_twilio_account_sid
+TWILIO_AUTH_TOKEN=your_twilio_auth_token
+TWILIO_PHONE_NUMBER=+1234567890
+
+# Node environment (affects OTP behavior)
+NODE_ENV=production  # Options: development, staging, production
+```
+
+**Development/Staging Mode:**
+- When `NODE_ENV=development` or `NODE_ENV=staging`, the OTP code is returned in the API response as `devOtp` for testing.
+- The OTP is also logged to the console.
+- This allows testing without configuring Twilio.
+
+**Production Mode:**
+- OTP is sent via Twilio SMS only.
+- No OTP is returned in the response or logged.
+- Twilio must be properly configured.
+
+**Rate Limiting:**
+- 5 OTP requests per phone number per hour
+- 3 verification attempts per OTP code
+- OTP codes expire after 5 minutes
+
+### 2. Google Sign-In
+
+Google OAuth is handled on the client side. The backend verifies Google ID tokens.
+
+**Android Configuration:**
+1. Create a project in [Google Cloud Console](https://console.cloud.google.com/)
+2. Enable Google Sign-In API
+3. Create OAuth 2.0 credentials:
+   - **Web client ID** - For backend token verification
+   - **Android client ID** - For the Android app
+4. Add SHA-1 fingerprint to Android client
+5. Update Android app's `LoginScreen.kt`:
+   ```kotlin
+   .requestIdToken("YOUR_GOOGLE_WEB_CLIENT_ID")
+   ```
+
+**Backend Token Verification (Optional Enhancement):**
+```env
+# Google OAuth (for server-side verification)
+GOOGLE_CLIENT_ID=your_google_web_client_id
+```
+
+### 3. Facebook Login
+
+Facebook OAuth is handled on the client side. The backend verifies Facebook access tokens.
+
+**Android Configuration:**
+1. Create a Facebook App at [developers.facebook.com](https://developers.facebook.com/)
+2. Add Android platform to your app
+3. Add package name and key hashes
+4. Update `AndroidManifest.xml` with:
+   ```xml
+   <meta-data
+       android:name="com.facebook.sdk.ApplicationId"
+       android:value="@string/facebook_app_id" />
+   ```
+5. Add `facebook_app_id` to `strings.xml`
+
+**Backend Token Verification (Optional Enhancement):**
+```env
+# Facebook OAuth (for server-side verification)
+FACEBOOK_APP_ID=your_facebook_app_id
+FACEBOOK_APP_SECRET=your_facebook_app_secret
+```
+
+### JWT Configuration
+
+```env
+# JWT tokens for session management
+JWT_SECRET=your_super_secret_jwt_key_min_32_chars
+JWT_REFRESH_SECRET=your_super_secret_refresh_key_min_32_chars
+JWT_EXPIRES_IN=7d
+JWT_REFRESH_EXPIRES_IN=30d
+```
+
+### Testing Authentication
+
+**OTP Flow (Development):**
+```bash
+# 1. Send OTP
+curl -X POST http://localhost:3000/api/v1/auth/otp/send \
+  -H "Content-Type: application/json" \
+  -d '{"phone": "+923135159626"}'
+
+# Response includes devOtp in dev mode:
+# {"success":true,"cooldownSeconds":60,"attemptsRemaining":4,"devOtp":"123456"}
+
+# 2. Verify OTP
+curl -X POST http://localhost:3000/api/v1/auth/otp/verify \
+  -H "Content-Type: application/json" \
+  -d '{"phone": "+923135159626", "otp": "123456"}'
+```
+
+**Google Sign-In Flow:**
+```bash
+# After getting ID token from Google SDK on Android
+curl -X POST http://localhost:3000/api/v1/auth/google \
+  -H "Content-Type: application/json" \
+  -d '{"idToken": "google_id_token", "email": "user@gmail.com", "displayName": "User Name"}'
+```
+
+**Facebook Sign-In Flow:**
+```bash
+# After getting access token from Facebook SDK on Android
+curl -X POST http://localhost:3000/api/v1/auth/facebook \
+  -H "Content-Type: application/json" \
+  -d '{"accessToken": "fb_access_token", "userId": "fb_user_id", "email": "user@email.com", "displayName": "User Name"}'
+```
+
+---
+
 ## Security Notes
 
 ### Production Checklist

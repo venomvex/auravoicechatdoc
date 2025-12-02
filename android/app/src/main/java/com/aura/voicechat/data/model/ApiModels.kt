@@ -15,7 +15,8 @@ data class SendOtpRequest(
 data class SendOtpResponse(
     @SerializedName("success") val success: Boolean,
     @SerializedName("cooldownSeconds") val cooldownSeconds: Int,
-    @SerializedName("attemptsRemaining") val attemptsRemaining: Int
+    @SerializedName("attemptsRemaining") val attemptsRemaining: Int,
+    @SerializedName("devOtp") val devOtp: String? = null // Only present in dev/staging for testing
 )
 
 data class VerifyOtpRequest(

@@ -18,6 +18,7 @@ interface OtpResult {
   cooldownSeconds: number;
   attemptsRemaining: number;
   message?: string;
+  devOtp?: string; // Only included in development/staging for testing
 }
 
 interface VerifyResult {
@@ -135,10 +136,14 @@ export const sendOtp = async (phone: string): Promise<OtpResult> => {
       }
     }
     
+    // In development/staging, include OTP in response for testing
+    const isDev = config.nodeEnv === 'development' || config.nodeEnv === 'staging';
+    
     return {
       success: true,
       cooldownSeconds: 60,
-      attemptsRemaining: rateCheck.attemptsRemaining
+      attemptsRemaining: rateCheck.attemptsRemaining,
+      ...(isDev && { devOtp: otp }) // Only include OTP in dev/staging
     };
   } catch (error) {
     logger.error('Failed to send OTP', { phone, error });

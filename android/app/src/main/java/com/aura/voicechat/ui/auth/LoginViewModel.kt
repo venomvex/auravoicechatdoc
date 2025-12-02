@@ -21,8 +21,15 @@ import javax.inject.Inject
  * 
  * Uses AuthRepository which implements:
  * - Phone OTP authentication via backend API
- * - Google Sign-In via AWS Amplify/Cognito
- * - Facebook Sign-In via AWS Amplify/Cognito
+ * - Google Sign-In via Google Sign-In SDK + backend API
+ * - Facebook Sign-In via Facebook Login SDK + backend API
+ * 
+ * Social sign-in flow:
+ * 1. LoginScreen launches Google/Facebook SDK via ActivityResultLauncher
+ * 2. SDK returns token (Google ID token or Facebook access token)
+ * 3. LoginScreen calls onGoogleTokenReceived/onFacebookTokenReceived
+ * 4. ViewModel calls authRepository.loginWithGoogleToken/loginWithFacebookToken
+ * 5. Repository sends token to backend for verification and user creation
  */
 @HiltViewModel
 class LoginViewModel @Inject constructor(
@@ -129,8 +136,81 @@ class LoginViewModel @Inject constructor(
     }
     
     /**
-     * Sign in with Google using AWS Amplify/Cognito.
-     * Falls back to backend API if Amplify is not configured.
+     * Handle Google Sign-In token received from the SDK.
+     * This should be called after the Google Sign-In ActivityResultLauncher returns.
+     * 
+     * @param idToken The Google ID token from GoogleSignInAccount.idToken
+     * @param email Optional email from the Google account
+     * @param displayName Optional display name from the Google account
+     */
+    fun onGoogleTokenReceived(idToken: String, email: String?, displayName: String?) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            
+            val result = authRepository.loginWithGoogleToken(idToken, email, displayName)
+            
+            result.fold(
+                onSuccess = {
+                    Log.i(TAG, "Google Sign-In successful")
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        isLoggedIn = true
+                    )
+                },
+                onFailure = { e ->
+                    Log.e(TAG, "Google Sign-In failed", e)
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = e.message ?: "Google Sign-In failed. Please try again."
+                    )
+                }
+            )
+        }
+    }
+    
+    /**
+     * Handle Facebook access token received from the SDK.
+     * This should be called after the Facebook Login SDK callback.
+     * 
+     * @param accessToken The Facebook access token from AccessToken.currentAccessToken
+     * @param userId Optional Facebook user ID
+     * @param email Optional email from the Facebook account
+     * @param displayName Optional display name from the Facebook account
+     */
+    fun onFacebookTokenReceived(
+        accessToken: String,
+        userId: String?,
+        email: String?,
+        displayName: String?
+    ) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            
+            val result = authRepository.loginWithFacebookToken(accessToken, userId, email, displayName)
+            
+            result.fold(
+                onSuccess = {
+                    Log.i(TAG, "Facebook Sign-In successful")
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        isLoggedIn = true
+                    )
+                },
+                onFailure = { e ->
+                    Log.e(TAG, "Facebook Sign-In failed", e)
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = e.message ?: "Facebook Sign-In failed. Please try again."
+                    )
+                }
+            )
+        }
+    }
+    
+    /**
+     * Sign in with Google using legacy Amplify method.
+     * Note: This requires Activity context and may fail. 
+     * Prefer using onGoogleTokenReceived with Google Sign-In SDK.
      */
     fun signInWithGoogle() {
         viewModelScope.launch {
@@ -158,8 +238,9 @@ class LoginViewModel @Inject constructor(
     }
     
     /**
-     * Sign in with Facebook using AWS Amplify/Cognito.
-     * Falls back to backend API if Amplify is not configured.
+     * Sign in with Facebook using legacy Amplify method.
+     * Note: This requires Activity context and may fail.
+     * Prefer using onFacebookTokenReceived with Facebook Login SDK.
      */
     fun signInWithFacebook() {
         viewModelScope.launch {
