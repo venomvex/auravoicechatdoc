@@ -1,38 +1,38 @@
 {
-    "Version": "1.0",
-    "CredentialsProvider": {
-        "CognitoIdentity": {
-            "Default": {
-                "PoolId": "REPLACE_WITH_IDENTITY_POOL_ID",
-                "Region": "us-east-1"
-            }
-        }
-    },
-    "IdentityManager": {
-        "Default": {}
-    },
-    "CognitoUserPool": {
-        "Default": {
-            "PoolId": "REPLACE_WITH_USER_POOL_ID",
-            "AppClientId": "REPLACE_WITH_CLIENT_ID",
-            "Region": "us-east-1"
-        }
-    },
-    "S3TransferUtility": {
-        "Default": {
-            "Bucket": "REPLACE_WITH_S3_BUCKET_NAME",
-            "Region": "us-east-1"
-        }
-    },
-    "PinpointAnalytics": {
-        "Default": {
-            "AppId": "REPLACE_WITH_PINPOINT_APP_ID",
-            "Region": "us-east-1"
-        }
-    },
-    "PinpointTargeting": {
-        "Default": {
-            "Region": "us-east-1"
-        }
+  "Version": "1.0",
+  "CredentialsProvider": {
+    "CognitoIdentity": {
+      "Default": {
+        "PoolId": "ap-south-1:3876124e-4b78-4e88-8913-a1195db3e74f",
+        "Region": "ap-south-1"
+      }
     }
+  },
+  "IdentityManager": {
+    "Default": {}
+  },
+  "CognitoUserPool": {
+    "Default": {
+      "PoolId": "ap-south-1_u62khib2i",
+      "AppClientId": "6526tavfh7gpuomc4pn6nnsbr1",
+      "Region": "ap-south-1"
+    }
+  },
+  "S3TransferUtility": {
+    "Default": {
+      "Bucket": "aura-voice-chat-files",
+      "Region": "ap-south-1"
+    }
+  },
+  "PinpointAnalytics": {
+    "Default": {
+      "AppId": "3c3f5ef30be44766acff1814aab08511",
+      "Region": "ap-south-1"
+    }
+  },
+  "PinpointTargeting": {
+    "Default": {
+      "Region": "ap-south-1"
+    }
+  }
 }
